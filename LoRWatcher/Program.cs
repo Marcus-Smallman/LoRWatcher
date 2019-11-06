@@ -26,7 +26,7 @@ namespace LoRWatcher
             serviceCollection.AddTransient<IGameClient, LoRClient>();
             //serviceCollection.AddTransient<IServiceClient, LoRServiceClient>();
 
-            //serviceCollection.AddSingleton<IWatcher, LoRWatcher>();
+            serviceCollection.AddSingleton<IWatcher, LoRPollWatcher>();
 
             var services = serviceCollection.BuildServiceProvider();
 
