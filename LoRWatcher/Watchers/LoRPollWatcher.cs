@@ -25,8 +25,13 @@ namespace LoRWatcher.Watchers
 
             await Task.Run(async () =>
             {
+                // We only want to run this when the game client exists,
+                // If the game is not running potentially leave it in a
+                // long poll and then when the game client is alive
+                // set it to a faster poll time, then when the player
+                // is in an active game, increase the poll rate to capture
+                // game data
                 var running = true;
-
                 while (running)
                 {
                     await Task.Delay(this.pollIntervalMS);

@@ -6,12 +6,12 @@
 
         public string CardCode { get; set; }
 
-        public string TopLeftX { get; set; }
+        public int TopLeftX { get; set; }
 
-        public string TopLeftY { get; set; }
+        public int TopLeftY { get; set; }
 
-        public string Width { get; set; }
+        public int Width { get; set; }
 
-        public string Height { get; set; }
+        public int Height { get; set; }
     }
 }
