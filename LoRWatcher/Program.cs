@@ -4,6 +4,7 @@ using LoRWatcher.Watchers;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
 using System.Threading.Tasks;
+using LoRWatcher.Caches;
 
 namespace LoRWatcher
 {
@@ -24,8 +25,9 @@ namespace LoRWatcher
             });
 
             serviceCollection.AddTransient<IGameClient, LoRClient>();
-            //serviceCollection.AddTransient<IServiceClient, LoRServiceClient>();
+            serviceCollection.AddTransient<IServiceClient, LoRServiceClient>();
 
+            serviceCollection.AddSingleton<ICache, ActiveGameCache>();
             serviceCollection.AddSingleton<IWatcher, LoRPollWatcher>();
 
             var services = serviceCollection.BuildServiceProvider();

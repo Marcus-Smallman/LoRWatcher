@@ -24,18 +24,14 @@ namespace LoRWatcher.Clients
             try
             {
                 // Add retry
-                using (var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/static-decklist"))
+                using var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/static-decklist");
+                var result = await this.httpClient.SendAsync(request);
+                if (result.IsSuccessStatusCode == true)
                 {
-                    var result = await this.httpClient.SendAsync(request);
-                    if (result.IsSuccessStatusCode == true)
-                    {
-                        var content = await result.Content.ReadAsStringAsync();
-                        var staticDecklist = JsonConvert.DeserializeObject<StaticDecklist>(content);
+                    var content = await result.Content.ReadAsStringAsync();
+                    var staticDecklist = JsonConvert.DeserializeObject<StaticDecklist>(content);
 
-                        return staticDecklist;
-                    }
-
-                    // Log unsuccessful response
+                    return staticDecklist;
                 }
             }
             catch
@@ -52,18 +48,14 @@ namespace LoRWatcher.Clients
             try
             {
                 // Add retry
-                using (var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/positional-rectangles"))
+                using var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/positional-rectangles");
+                var result = await this.httpClient.SendAsync(request);
+                if (result.IsSuccessStatusCode == true)
                 {
-                    var result = await this.httpClient.SendAsync(request);
-                    if (result.IsSuccessStatusCode == true)
-                    {
-                        var content = await result.Content.ReadAsStringAsync();
-                        var positionalRectangles = JsonConvert.DeserializeObject<PositionalRectangles>(content);
+                    var content = await result.Content.ReadAsStringAsync();
+                    var positionalRectangles = JsonConvert.DeserializeObject<PositionalRectangles>(content);
 
-                        return positionalRectangles;
-                    }
-
-                    // Log unsuccessful response
+                    return positionalRectangles;
                 }
             }
             catch
@@ -80,18 +72,14 @@ namespace LoRWatcher.Clients
             try
             {
                 // Add retry
-                using (var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/game-result"))
+                using var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/game-result");
+                var result = await this.httpClient.SendAsync(request);
+                if (result.IsSuccessStatusCode == true)
                 {
-                    var result = await this.httpClient.SendAsync(request);
-                    if (result.IsSuccessStatusCode == true)
-                    {
-                        var content = await result.Content.ReadAsStringAsync();
-                        var gameResult = JsonConvert.DeserializeObject<GameResult>(content);
+                    var content = await result.Content.ReadAsStringAsync();
+                    var gameResult = JsonConvert.DeserializeObject<GameResult>(content);
 
-                        return gameResult;
-                    }
-
-                    // Log unsuccessful response
+                    return gameResult;
                 }
             }
             catch
