@@ -5,6 +5,6 @@ namespace LoRWatcher.Clients
 {
     public interface IServiceClient
     {
-        Task ReportGameAsync(MatchReport matchReport);
+        Task<bool> ReportGameAsync(MatchReport matchReport);
     }
 }

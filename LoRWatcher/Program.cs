@@ -14,14 +14,18 @@ namespace LoRWatcher
         {
             var serviceCollection = new ServiceCollection();
 
-            // Add a single http client.
             serviceCollection.AddSingleton<HttpClient>();
 
-            // Add configuration.
             serviceCollection.AddSingleton<LoRWatcherConfiguration>(s => new LoRWatcherConfiguration
             {
                 Address = "localhost",
                 Port = 21337
+            });
+
+            serviceCollection.AddSingleton<LoRServiceConfiguration>(s => new LoRServiceConfiguration
+            {
+                UrlScheme = "http",
+                UrlEndpoint = "localhost:5000"
             });
 
             serviceCollection.AddTransient<IGameClient, LoRClient>();

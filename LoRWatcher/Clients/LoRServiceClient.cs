@@ -1,19 +1,48 @@
 ﻿using System;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using LoRWatcher.Caches;
+using LoRWatcher.Configuration;
+using Newtonsoft.Json;
 
 namespace LoRWatcher.Clients
 {
     public class LoRServiceClient
         : IServiceClient
     {
-        public Task ReportGameAsync(MatchReport matchReport)
+        private readonly HttpClient httpClient;
+
+        private readonly LoRServiceConfiguration loRServiceConfiguration;
+
+        public LoRServiceClient(HttpClient httpClient, LoRServiceConfiguration loRServiceConfiguration)
         {
-            Console.WriteLine("Player: {0}, Opponent: {1}", matchReport.PlayerName, matchReport.OpponentName);
+            this.httpClient = httpClient;
+            this.loRServiceConfiguration = loRServiceConfiguration;
+        }
 
-            // TODO: Call service API with correct data
+        public async Task<bool> ReportGameAsync(MatchReport matchReport)
+        {
+            try
+            {
+                // Add retry
+                using var request = new HttpRequestMessage(HttpMethod.Post, $"{this.loRServiceConfiguration.UrlScheme}://{this.loRServiceConfiguration.UrlEndpoint}/api/v1/match/report");
+                
+                request.Content = new StringContent(JsonConvert.SerializeObject(matchReport), Encoding.UTF8, "application/json");
 
-            return Task.CompletedTask;
+                var result = await this.httpClient.SendAsync(request);
+                if (result.IsSuccessStatusCode == true)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // Log error
+            }
+
+            // Return errored response
+            return false;
         }
     }
 }
