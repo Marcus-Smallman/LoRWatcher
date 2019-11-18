@@ -1,4 +1,5 @@
 ﻿using LoRWatcher.Clients;
+using System.Threading.Tasks;
 
 namespace LoRWatcher.Caches
 {
@@ -6,8 +7,8 @@ namespace LoRWatcher.Caches
     {
         bool IsEmpty { get; }
 
-        MatchReport GetMatchReport();
+        Task<MatchReport> GetMatchReportAsync();
 
-        void UpdateActiveMatch(PositionalRectangles positionalRectangles);
+        Task UpdateActiveMatchAsync(PositionalRectangles positionalRectangles);
     }
 }

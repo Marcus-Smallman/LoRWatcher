@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
 using System.Threading.Tasks;
 using LoRWatcher.Caches;
+using LoRWatcher.Logger;
 
 namespace LoRWatcher
 {
@@ -15,6 +16,8 @@ namespace LoRWatcher
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddSingleton<HttpClient>();
+
+            serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
 
             serviceCollection.AddSingleton<LoRWatcherConfiguration>(s => new LoRWatcherConfiguration
             {

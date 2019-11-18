@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using LoRWatcher.Caches;
 using LoRWatcher.Configuration;
+using LoRWatcher.Logger;
+using LoRWatcher.Utils;
 using Newtonsoft.Json;
 
 namespace LoRWatcher.Clients
@@ -15,33 +17,41 @@ namespace LoRWatcher.Clients
 
         private readonly LoRServiceConfiguration loRServiceConfiguration;
 
-        public LoRServiceClient(HttpClient httpClient, LoRServiceConfiguration loRServiceConfiguration)
+        private readonly ILogger logger;
+
+        public LoRServiceClient(HttpClient httpClient, LoRServiceConfiguration loRServiceConfiguration, ILogger logger)
         {
             this.httpClient = httpClient;
             this.loRServiceConfiguration = loRServiceConfiguration;
+            this.logger = logger;
         }
 
         public async Task<bool> ReportGameAsync(MatchReport matchReport)
         {
             try
             {
-                // Add retry
-                using var request = new HttpRequestMessage(HttpMethod.Post, $"{this.loRServiceConfiguration.UrlScheme}://{this.loRServiceConfiguration.UrlEndpoint}/api/v1/match/report");
-                
-                request.Content = new StringContent(JsonConvert.SerializeObject(matchReport), Encoding.UTF8, "application/json");
-
-                var result = await this.httpClient.SendAsync(request);
-                if (result.IsSuccessStatusCode == true)
+                return await Retry.InvokeAsync(async () =>
                 {
-                    return true;
-                }
+                    using var request = new HttpRequestMessage(HttpMethod.Post, $"{this.loRServiceConfiguration.UrlScheme}://{this.loRServiceConfiguration.UrlEndpoint}/api/v1/match/report");
+
+                    request.Content = new StringContent(JsonConvert.SerializeObject(matchReport), Encoding.UTF8, "application/json");
+
+                    var result = await this.httpClient.SendAsync(request);
+                    if (result.IsSuccessStatusCode == true)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                });
             }
-            catch
+            catch (Exception ex)
             {
-                // Log error
+                this.logger.Error($"Error occurred reporting match: {ex.Message}");
+
+                // Return errored response
             }
 
-            // Return errored response
             return false;
         }
     }
