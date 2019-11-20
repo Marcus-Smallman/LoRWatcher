@@ -11,7 +11,7 @@ namespace LoRService.Controllers
     [ApiController]
     public class MatchController : ControllerBase
     {
-        private IMatchReportDatabase matchReportDatabase;
+        private readonly IMatchReportDatabase matchReportDatabase;
 
         public MatchController(IMatchReportDatabase matchReportDatabase)
         {
