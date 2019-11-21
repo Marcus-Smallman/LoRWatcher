@@ -1,9 +1,12 @@
-﻿namespace LoRService.Services.MongoDB.Documents
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace LoRService.Services.MongoDB.Documents
 {
     public class MatchReportDocument
     {
-        public string Id { get; set; }
+        public string MatchId { get; set; }
 
+        [BsonId]
         public string PlayerName { get; set; }
 
         public string PlayerDeckCode { get; set; }

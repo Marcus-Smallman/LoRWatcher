@@ -41,5 +41,29 @@ namespace LoRService.Controllers
                 StatusCode = (int)HttpStatusCode.InternalServerError
             };
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPlayerMatchReports(string playerName)
+        {
+            // Add validation on model. Check deck is correct using library?
+
+            var (result, errorMessage) = await this.matchReportDatabase.GetPlayerMatchReportsAsync(playerName);
+            if (result != null)
+            {
+                return new ContentResult
+                {
+                    Content = JsonConvert.SerializeObject(result),
+                    ContentType = "application/json",
+                    StatusCode = (int)HttpStatusCode.OK
+                };
+            }
+
+            return new ContentResult
+            {
+                Content = JsonConvert.SerializeObject(new { error = errorMessage }),
+                ContentType = "application/json",
+                StatusCode = (int)HttpStatusCode.InternalServerError
+            };
+        }
     }
 }
