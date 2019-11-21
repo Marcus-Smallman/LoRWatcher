@@ -43,7 +43,7 @@ namespace LoRService.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPlayerMatchReports(string playerName)
+        public async Task<IActionResult> GetPlayerMatchReports([FromBody]string playerName)
         {
             // Add validation on model. Check deck is correct using library?
 
