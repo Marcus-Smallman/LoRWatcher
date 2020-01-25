@@ -59,6 +59,31 @@ namespace LoRWatcher.Utils
         }
 
         /// <summary>
+        /// Retries execution of an async lamda function.
+        /// </summary>
+        /// <param name="func">A function that should return a non null object if no more retires need to occur; else null to carry on retrying.</param>
+        /// <returns>A task.</returns>
+        public static T Invoke<T>(Func<T> func)
+            where T : class
+        {
+            var retryCount = 0;
+            while (retryCount < NumOfRetries)
+            {
+                var result = func();
+                if (result != null)
+                {
+                    return result;
+                }
+
+                Task.Delay(WaitTimeMS);
+
+                retryCount++;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Retries execution of a lamda function.
         /// </summary>
         /// <param name="func">A function that should return true if no more retires need to occur; else false to carry on retrying.</param>

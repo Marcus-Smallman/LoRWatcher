@@ -3,6 +3,7 @@ using LoRWatcher.Logger;
 using LoRWatcher.Utils;
 using Newtonsoft.Json;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LoRWatcher.Caches
@@ -32,12 +33,12 @@ namespace LoRWatcher.Caches
             this.PreviousGameId = GameIdStartCount;
         }
 
-        public async Task<MatchReport> GetMatchReportAsync()
+        public async Task<MatchReport> GetMatchReportAsync(CancellationToken cancellationToken)
         {
             MatchReport matchReport = null;
             await Retry.InvokeAsync(async () =>
             {
-                var gameResult = await this.loRClient.GetGameResult();
+                var gameResult = await this.loRClient.GetGameResultAsync(cancellationToken);
                 if (gameResult.GameId != this.PreviousGameId)
                 {
                     this.currentMatch.Result = bool.Parse(gameResult.LocalPlayerWon);
@@ -70,7 +71,7 @@ namespace LoRWatcher.Caches
             return matchReport;
         }
 
-        public async Task UpdateActiveMatchAsync(PositionalRectangles positionalRectangles)
+        public async Task UpdateActiveMatchAsync(PositionalRectangles positionalRectangles, CancellationToken cancellationToken)
         {
             this.logger.Debug($"Positional rectangles: {JsonConvert.SerializeObject(positionalRectangles)}");
 
@@ -80,7 +81,7 @@ namespace LoRWatcher.Caches
                 return;
             }
 
-            var activeDecklist = await this.loRClient.GetActiveDecklistAsync();
+            var activeDecklist = await this.loRClient.GetActiveDecklistAsync(cancellationToken);
 
             this.currentMatch = new MatchReport
             {

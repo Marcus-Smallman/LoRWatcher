@@ -2,6 +2,7 @@
 using LoRWatcher.Clients;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace LoRWatcher.Watchers
 {
     public class LoRPollWatcher
-        : IWatcher
+        : BackgroundService
     {
         private int PollIntervalMS { get; set; }
 
@@ -17,35 +18,32 @@ namespace LoRWatcher.Watchers
 
         private readonly ICache activeGameCache;
 
-        //private readonly IServiceClient serviceClient;
-
         private readonly IWatcherDataStore watcherDataStore;
 
         private readonly ILogger logger;
-
-        private CancellationTokenSource cancellationTokenSource;
 
         public LoRPollWatcher(
             IGameClient loRClient,
             ICache activeGameCache,
             IWatcherDataStore watcherDataStore,
-            //IServiceClient serviceClient,
             ILogger logger)
         {
             this.loRClient = loRClient;
             this.activeGameCache = activeGameCache;
             this.watcherDataStore = watcherDataStore;
-            //this.serviceClient = serviceClient;
             this.logger = logger;
 
             this.SetDefaults();
         }
 
-        public async Task StartAsync()
+        private void SetDefaults()
         {
-            this.cancellationTokenSource = new CancellationTokenSource();
+            this.PollIntervalMS = 1000;
+        }
 
-            await Task.Run(async () =>
+        protected override Task ExecuteAsync(CancellationToken cancellationToken)
+        {
+            return Task.Run(async () =>
             {
                 this.logger.Debug("Starting watcher");
 
@@ -54,7 +52,7 @@ namespace LoRWatcher.Watchers
                 {
                     try
                     {
-                        var cardPositions = await this.loRClient.GetCardPositionsAsync();
+                        var cardPositions = await this.loRClient.GetCardPositionsAsync(cancellationToken);
                         switch (cardPositions?.GameState)
                         {
                             case GameState.Menus:
@@ -63,12 +61,12 @@ namespace LoRWatcher.Watchers
                                 {
                                     this.logger.Debug("Getting match report");
 
-                                    var matchReport = await this.activeGameCache.GetMatchReportAsync();
+                                    var matchReport = await this.activeGameCache.GetMatchReportAsync(cancellationToken);
                                     if (matchReport != null)
                                     {
                                         this.logger.Debug("Reporting match");
 
-                                        await this.watcherDataStore.ReportGameAsync(matchReport);
+                                        await this.watcherDataStore.ReportGameAsync(matchReport, cancellationToken);
                                     }
                                 }
                                 else
@@ -82,7 +80,7 @@ namespace LoRWatcher.Watchers
 
                                 this.logger.Debug("Updating active match");
 
-                                await this.activeGameCache.UpdateActiveMatchAsync(cardPositions);
+                                await this.activeGameCache.UpdateActiveMatchAsync(cardPositions, cancellationToken);
                                 break;
                             default:
                                 this.SetDefaults();
@@ -94,20 +92,10 @@ namespace LoRWatcher.Watchers
                         this.logger.Error($"Error occurred polling client: {ex.Message}");
                     }
 
-                    await Task.Delay(this.PollIntervalMS);
+                    await Task.Delay(this.PollIntervalMS, cancellationToken);
                 }
             },
-            cancellationTokenSource.Token);
-        }
-
-        public void Stop()
-        {
-            this.cancellationTokenSource.Cancel();
-        }
-
-        private void SetDefaults()
-        {
-            this.PollIntervalMS = 1000;
+            cancellationToken);
         }
     }
 }

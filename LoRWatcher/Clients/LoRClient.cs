@@ -4,6 +4,7 @@ using LoRWatcher.Utils;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LoRWatcher.Clients
@@ -24,14 +25,14 @@ namespace LoRWatcher.Clients
             this.logger = logger;
         }
 
-        public async Task<StaticDecklist> GetActiveDecklistAsync()
+        public async Task<StaticDecklist> GetActiveDecklistAsync(CancellationToken cancellationToken)
         {
             try
             {
                 return await Retry.InvokeAsync(async () =>
                 {
                     using var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/static-decklist");
-                    var result = await this.httpClient.SendAsync(request);
+                    var result = await this.httpClient.SendAsync(request, cancellationToken);
                     if (result.IsSuccessStatusCode == true)
                     {
                         var content = await result.Content.ReadAsStringAsync();
@@ -53,14 +54,14 @@ namespace LoRWatcher.Clients
             return null;
         }
 
-        public async Task<PositionalRectangles> GetCardPositionsAsync()
+        public async Task<PositionalRectangles> GetCardPositionsAsync(CancellationToken cancellationToken)
         {
             try
             {
                 return await Retry.InvokeAsync(async () =>
                 {
                     using var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/positional-rectangles");
-                    var result = await this.httpClient.SendAsync(request);
+                    var result = await this.httpClient.SendAsync(request, cancellationToken);
                     if (result.IsSuccessStatusCode == true)
                     {
                         var content = await result.Content.ReadAsStringAsync();
@@ -82,14 +83,14 @@ namespace LoRWatcher.Clients
             return null;
         }
 
-        public async Task<GameResult> GetGameResult()
+        public async Task<GameResult> GetGameResultAsync(CancellationToken cancellationToken)
         {
             try
             {
                 return await Retry.InvokeAsync(async () =>
                 {
                     using var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/game-result");
-                    var result = await this.httpClient.SendAsync(request);
+                    var result = await this.httpClient.SendAsync(request, cancellationToken);
                     if (result.IsSuccessStatusCode == true)
                     {
                         var content = await result.Content.ReadAsStringAsync();

@@ -1,0 +1,50 @@
+﻿@page "/matchreports"
+
+@using LoRWatcher.Stores
+@using LoRWatcher.Caches
+@using System.Threading;
+@inject IWatcherDataStore watcherDataStore
+
+<h1>Match Reports</h1>
+
+<p>This component lists all match reports.</p>
+
+@if (matchReports == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Player Deck Code</th>
+                <th>Player Name</th>
+                <th>Opponent Name</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var matchReport in matchReports)
+            {
+                <tr>
+                    <td>@matchReport.Id</td>
+                    <td>@matchReport.PlayerDeckCode</td>
+                    <td>@matchReport.PlayerName</td>
+                    <td>@matchReport.OpponentName</td>
+                    <td>@matchReport.Result</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    IEnumerable<MatchReport> matchReports;
+
+    protected override async Task OnInitializedAsync()
+    {
+        matchReports = await watcherDataStore.GetMatchReportsAsync(CancellationToken.None);
+    }
+}

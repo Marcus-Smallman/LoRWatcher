@@ -1,13 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace LoRWatcher.Clients
 {
     public interface IGameClient
     {
-        Task<StaticDecklist> GetActiveDecklistAsync();
+        Task<StaticDecklist> GetActiveDecklistAsync(CancellationToken cancellationToken);
 
-        Task<PositionalRectangles> GetCardPositionsAsync();
+        Task<PositionalRectangles> GetCardPositionsAsync(CancellationToken cancellationToken);
 
-        Task<GameResult> GetGameResult();
+        Task<GameResult> GetGameResultAsync(CancellationToken cancellationToken);
     }
 }

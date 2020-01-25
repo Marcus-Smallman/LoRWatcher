@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using LoRWatcher.Caches;
 using LoRWatcher.Configuration;
@@ -26,7 +27,7 @@ namespace LoRWatcher.Clients
             this.logger = logger;
         }
 
-        public async Task<bool> ReportGameAsync(MatchReport matchReport)
+        public async Task<bool> ReportGameAsync(MatchReport matchReport, CancellationToken cancellationToken)
         {
             try
             {
@@ -36,7 +37,7 @@ namespace LoRWatcher.Clients
 
                     request.Content = new StringContent(JsonConvert.SerializeObject(matchReport), Encoding.UTF8, "application/json");
 
-                    var result = await this.httpClient.SendAsync(request);
+                    var result = await this.httpClient.SendAsync(request, cancellationToken);
                     if (result.IsSuccessStatusCode == true)
                     {
                         return true;
