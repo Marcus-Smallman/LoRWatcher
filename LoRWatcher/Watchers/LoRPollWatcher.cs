@@ -1,6 +1,7 @@
 ﻿using LoRWatcher.Caches;
 using LoRWatcher.Clients;
 using LoRWatcher.Logger;
+using LoRWatcher.Stores;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,17 +17,25 @@ namespace LoRWatcher.Watchers
 
         private readonly ICache activeGameCache;
 
-        private readonly IServiceClient serviceClient;
+        //private readonly IServiceClient serviceClient;
+
+        private readonly IWatcherDataStore watcherDataStore;
 
         private readonly ILogger logger;
 
         private CancellationTokenSource cancellationTokenSource;
 
-        public LoRPollWatcher(IGameClient loRClient, ICache activeGameCache, IServiceClient serviceClient, ILogger logger)
+        public LoRPollWatcher(
+            IGameClient loRClient,
+            ICache activeGameCache,
+            IWatcherDataStore watcherDataStore,
+            //IServiceClient serviceClient,
+            ILogger logger)
         {
             this.loRClient = loRClient;
             this.activeGameCache = activeGameCache;
-            this.serviceClient = serviceClient;
+            this.watcherDataStore = watcherDataStore;
+            //this.serviceClient = serviceClient;
             this.logger = logger;
 
             this.SetDefaults();
@@ -49,7 +58,7 @@ namespace LoRWatcher.Watchers
                         switch (cardPositions?.GameState)
                         {
                             case GameState.Menus:
-                                this.PollIntervalMS = 5000;
+                                this.PollIntervalMS = 2500;
                                 if (this.activeGameCache.IsEmpty == false)
                                 {
                                     this.logger.Debug("Getting match report");
@@ -59,7 +68,7 @@ namespace LoRWatcher.Watchers
                                     {
                                         this.logger.Debug("Reporting match");
 
-                                        await this.serviceClient.ReportGameAsync(matchReport);
+                                        await this.watcherDataStore.ReportGameAsync(matchReport);
                                     }
                                 }
                                 else
@@ -69,7 +78,7 @@ namespace LoRWatcher.Watchers
 
                                 break;
                             case GameState.InProgress:
-                                this.PollIntervalMS = 1000;
+                                this.PollIntervalMS = 250;
 
                                 this.logger.Debug("Updating active match");
 

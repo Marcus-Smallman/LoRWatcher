@@ -6,6 +6,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LoRWatcher.Caches;
 using LoRWatcher.Logger;
+using LoRWatcher.Stores;
+using LiteDB;
 
 namespace LoRWatcher
 {
@@ -32,7 +34,11 @@ namespace LoRWatcher
             });
 
             serviceCollection.AddTransient<IGameClient, LoRClient>();
-            serviceCollection.AddTransient<IServiceClient, LoRServiceClient>();
+            //serviceCollection.AddTransient<IServiceClient, LoRServiceClient>();
+
+            serviceCollection.AddTransient<IWatcherDataStore, LiteDBWatcherDataStore>();
+
+            serviceCollection.AddSingleton<IConnection<LiteDatabase>, LiteDBConnection>();
 
             serviceCollection.AddSingleton<ICache, ActiveGameCache>();
             serviceCollection.AddSingleton<IWatcher, LoRPollWatcher>();
