@@ -5,10 +5,6 @@ VisualStudioVersion = 16.0.29324.140
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRWatcher", "LoRWatcher\LoRWatcher.csproj", "{F68C2442-8EC3-49BB-862C-3FEC6B6CB5EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRService", "LoRService\LoRService.csproj", "{530B56D7-EBC2-49C6-848E-7CEA5F7FE3BA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRViewer", "LoRViewer\LoRViewer.csproj", "{F5BABD70-C2F0-4F3F-B746-57835804385A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,14 +15,6 @@ Global
 		{F68C2442-8EC3-49BB-862C-3FEC6B6CB5EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F68C2442-8EC3-49BB-862C-3FEC6B6CB5EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F68C2442-8EC3-49BB-862C-3FEC6B6CB5EC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{530B56D7-EBC2-49C6-848E-7CEA5F7FE3BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{530B56D7-EBC2-49C6-848E-7CEA5F7FE3BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{530B56D7-EBC2-49C6-848E-7CEA5F7FE3BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{530B56D7-EBC2-49C6-848E-7CEA5F7FE3BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5BABD70-C2F0-4F3F-B746-57835804385A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5BABD70-C2F0-4F3F-B746-57835804385A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5BABD70-C2F0-4F3F-B746-57835804385A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5BABD70-C2F0-4F3F-B746-57835804385A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

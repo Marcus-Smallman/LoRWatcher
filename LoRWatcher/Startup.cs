@@ -37,14 +37,7 @@ namespace LoRWatcher
                 Port = 21337
             });
 
-            services.AddSingleton<LoRServiceConfiguration>(s => new LoRServiceConfiguration
-            {
-                UrlScheme = "http",
-                UrlEndpoint = "localhost:5000"
-            });
-
             services.AddTransient<IGameClient, LoRClient>();
-            //serviceCollection.AddTransient<IServiceClient, LoRServiceClient>();
 
             services.AddTransient<IWatcherDataStore, LiteDBWatcherDataStore>();
 
