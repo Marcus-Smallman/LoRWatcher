@@ -5,23 +5,25 @@
 @using System.Threading;
 @inject IWatcherDataStore watcherDataStore
 
-<h1>Match Reports</h1>
-
-<p>This component lists all match reports.</p>
-
 @if (matchReports == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
+    <h1><b>@matchReports.First().PlayerName</b></h1>
+
+    <br />
+
     <h4>Total Wins: @matchReports.Where(mr => mr.Result == true).Count()</h4>
     <h4>Total Losses: @matchReports.Where(mr => mr.Result == false).Count()</h4>
+
+    <br />
+
     <table class="table">
         <thead>
             <tr>
                 <th>Finish Time</th>
-                <th>Player Name</th>
                 <th>Opponent Name</th>
                 <th>Result</th>
                 <th>Player Deck Code</th>
@@ -49,7 +51,6 @@ else
 
                 <tr class="@bgColour">
                     <td>@timeSince</td>
-                    <td>@matchReport.PlayerName</td>
                     <td>@matchReport.OpponentName</td>
                     @if (matchReport.Result == true)
                     {
