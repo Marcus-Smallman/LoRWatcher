@@ -36,15 +36,15 @@ else
                 TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(matchReport.FinishTime.UtcDateTime);
                 if (timeSinceTime.TotalHours < 1)
                 {
-                    timeSince = string.Format("{0} minutes ago", (int)timeSinceTime.TotalMinutes);
+                    timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
                 }
                 else if (timeSinceTime.TotalDays < 1)
                 {
-                    timeSince = string.Format("{0} hours ago", (int)timeSinceTime.TotalHours);
+                    timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
                 }
                 else
                 {
-                    timeSince = string.Format("{0} days ago", (int)timeSinceTime.TotalDays);
+                    timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
                 }
 
                 <tr class="@bgColour">
