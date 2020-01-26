@@ -42,7 +42,8 @@ namespace LoRWatcher.Stores
                             PlayerDeckCode = matchReport.PlayerDeckCode,
                             PlayerName = matchReport.PlayerName,
                             OpponentName = matchReport.OpponentName,
-                            Result = matchReport.Result
+                            Result = matchReport.Result,
+                            FinishTime = matchReport.FinishTime.DateTime
                         };
 
                         collection.Insert(doc);
@@ -87,7 +88,8 @@ namespace LoRWatcher.Stores
                                 PlayerDeckCode = matchReportDoc.PlayerDeckCode,
                                 PlayerName = matchReportDoc.PlayerName,
                                 OpponentName = matchReportDoc.OpponentName,
-                                Result = matchReportDoc.Result
+                                Result = matchReportDoc.Result,
+                                FinishTime = matchReportDoc.FinishTime
                             });
                         }
 

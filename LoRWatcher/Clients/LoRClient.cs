@@ -47,8 +47,6 @@ namespace LoRWatcher.Clients
             catch (Exception ex)
             {
                 this.logger.Error($"Error occurred getting static decklist: {ex.Message}");
-
-                // Return errored response
             }
 
             return null;
@@ -76,8 +74,33 @@ namespace LoRWatcher.Clients
             catch (Exception ex)
             {
                 this.logger.Error($"Error occurred getting positional rectangles: {ex.Message}");
+            }
 
-                // Return errored response
+            return null;
+        }
+
+        public async Task<ExpeditionsState> GetExpeditionsStateAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await Retry.InvokeAsync(async () =>
+                {
+                    using var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/expeditions-state");
+                    var result = await this.httpClient.SendAsync(request, cancellationToken);
+                    if (result.IsSuccessStatusCode == true)
+                    {
+                        var content = await result.Content.ReadAsStringAsync();
+                        var expeditionsState = JsonConvert.DeserializeObject<ExpeditionsState>(content);
+
+                        return expeditionsState;
+                    }
+
+                    return null;
+                });
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error($"Error occurred getting positional rectangles: {ex.Message}");
             }
 
             return null;
@@ -105,8 +128,6 @@ namespace LoRWatcher.Clients
             catch (Exception ex)
             {
                 this.logger.Error($"Error occurred getting game result: {ex.Message}");
-
-                // Return errored response
             }
 
             return null;

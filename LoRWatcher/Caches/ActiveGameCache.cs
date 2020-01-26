@@ -19,18 +19,10 @@ namespace LoRWatcher.Caches
 
         public bool IsEmpty { get => currentMatch == null; }
 
-        private int PreviousGameId { get; set; }
-
-        // Set to -1 as the game id resets to that every time the game client restarts
-        private const int GameIdStartCount = -1;
-
         public ActiveGameCache(IGameClient loRClient, ILogger logger)
         {
             this.loRClient = loRClient;
             this.logger = logger;
-
-            
-            this.PreviousGameId = GameIdStartCount;
         }
 
         public async Task<MatchReport> GetMatchReportAsync(CancellationToken cancellationToken)
@@ -38,17 +30,24 @@ namespace LoRWatcher.Caches
             MatchReport matchReport = null;
             await Retry.InvokeAsync(async () =>
             {
-                var gameResult = await this.loRClient.GetGameResultAsync(cancellationToken);
-                if (gameResult.GameId != this.PreviousGameId)
+                try
                 {
-                    this.currentMatch.Result = bool.Parse(gameResult.LocalPlayerWon);
+                    var gameResult = await this.loRClient.GetGameResultAsync(cancellationToken);
+                    if (gameResult != null)
+                    {
+                        this.currentMatch.Result = bool.Parse(gameResult.LocalPlayerWon);
+                        this.currentMatch.FinishTime = DateTimeOffset.UtcNow;
 
-                    matchReport = MatchReport.Create(this.currentMatch);
+                        matchReport = MatchReport.Create(this.currentMatch);
 
-                    this.currentMatch = null;
-                    this.PreviousGameId = gameResult.GameId;
+                        this.currentMatch = null;
 
-                    return true;
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred getting match report: {ex.Message}");
                 }
 
                 return false;
@@ -56,16 +55,7 @@ namespace LoRWatcher.Caches
 
             if (matchReport == null)
             {
-                if (this.PreviousGameId == GameIdStartCount)
-                {
-                    this.logger.Debug("No match to report");
-                }
-                else
-                {
-                    this.logger.Debug("Match already reported");
-                }
-
-                return null;
+                this.logger.Debug("No match to report");
             }
 
             return matchReport;

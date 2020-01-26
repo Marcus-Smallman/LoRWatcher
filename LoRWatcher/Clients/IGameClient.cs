@@ -9,6 +9,8 @@ namespace LoRWatcher.Clients
 
         Task<PositionalRectangles> GetCardPositionsAsync(CancellationToken cancellationToken);
 
+        Task<ExpeditionsState> GetExpeditionsStateAsync(CancellationToken cancellationToken);
+
         Task<GameResult> GetGameResultAsync(CancellationToken cancellationToken);
     }
 }

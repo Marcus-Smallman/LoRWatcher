@@ -15,25 +15,51 @@
 }
 else
 {
+    <h4>Total Wins: @matchReports.Where(mr => mr.Result == true).Count()</h4>
+    <h4>Total Losses: @matchReports.Where(mr => mr.Result == false).Count()</h4>
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>Player Deck Code</th>
+                <th>Finish Time</th>
                 <th>Player Name</th>
                 <th>Opponent Name</th>
                 <th>Result</th>
+                <th>Player Deck Code</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var matchReport in matchReports)
             {
-                <tr>
-                    <td>@matchReport.Id</td>
-                    <td>@matchReport.PlayerDeckCode</td>
+                var bgColour = matchReport.Result ? "text-primary" : "text-danger";
+
+                var timeSince = string.Empty;
+                TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(matchReport.FinishTime.UtcDateTime);
+                if (timeSinceTime.TotalHours < 1)
+                {
+                    timeSince = string.Format("{0} minutes ago", (int)timeSinceTime.TotalMinutes);
+                }
+                else if (timeSinceTime.TotalDays < 1)
+                {
+                    timeSince = string.Format("{0} hours ago", (int)timeSinceTime.TotalHours);
+                }
+                else
+                {
+                    timeSince = string.Format("{0} days ago", (int)timeSinceTime.TotalDays);
+                }
+
+                <tr class="@bgColour">
+                    <td>@timeSince</td>
                     <td>@matchReport.PlayerName</td>
                     <td>@matchReport.OpponentName</td>
-                    <td>@matchReport.Result</td>
+                    @if (matchReport.Result == true)
+                    {
+                        <td>Win</td>
+                    }
+                    else
+                    {
+                        <td>Loss</td>
+                    }
+                    <td>@matchReport.PlayerDeckCode</td>
                 </tr>
             }
         </tbody>

@@ -71,6 +71,9 @@ namespace LoRWatcher.Watchers
                                 }
                                 else
                                 {
+                                    // TODO: Support expeditions type
+                                    //var expeditionsState = await this.loRClient.GetExpeditionsStateAsync(cancellationToken);
+
                                     this.logger.Debug("Waiting for active match");
                                 }
 

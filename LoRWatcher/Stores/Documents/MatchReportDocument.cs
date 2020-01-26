@@ -1,4 +1,6 @@
-﻿namespace LoRWatcher.Stores.Documents
+﻿using System;
+
+namespace LoRWatcher.Stores.Documents
 {
     public class MatchReportDocument
     {
@@ -11,5 +13,7 @@
         public string OpponentName { get; set; }
 
         public bool Result { get; set; }
+
+        public DateTime FinishTime { get; set; }
     }
 }
