@@ -93,6 +93,8 @@ namespace LoRWatcher.Stores
                             });
                         }
 
+                        matchReports.Reverse();
+
                         return matchReports;
                     }
 
