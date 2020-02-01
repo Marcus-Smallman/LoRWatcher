@@ -36,7 +36,11 @@ else
 
                 var timeSince = string.Empty;
                 TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(matchReport.FinishTime.UtcDateTime);
-                if (timeSinceTime.TotalHours < 1)
+                if (timeSinceTime.TotalMinutes < 1)
+                {
+                    timeSince = "Less than 1 minute ago";
+                }
+                else if (timeSinceTime.TotalHours < 1)
                 {
                     timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
                 }

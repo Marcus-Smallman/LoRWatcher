@@ -93,9 +93,7 @@ namespace LoRWatcher.Stores
                             });
                         }
 
-                        matchReports.Reverse();
-
-                        return matchReports;
+                        return matchReports.OrderByDescending(mr => mr.FinishTime).ToList();
                     }
 
                 }
