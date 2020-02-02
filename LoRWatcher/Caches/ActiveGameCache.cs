@@ -65,7 +65,7 @@ namespace LoRWatcher.Caches
         {
             this.logger.Debug($"Positional rectangles: {JsonConvert.SerializeObject(positionalRectangles)}");
 
-            if (currentMatch != null)
+            if (this.currentMatch != null)
             {
                 // Update match data
                 return;
@@ -73,6 +73,7 @@ namespace LoRWatcher.Caches
 
             var activeDecklist = await this.loRClient.GetActiveDecklistAsync(cancellationToken);
 
+            this.logger.Debug($"Active decklist: {JsonConvert.SerializeObject(activeDecklist)}");
             this.currentMatch = new MatchReport
             {
                 PlayerName = positionalRectangles.PlayerName,

@@ -38,7 +38,7 @@ else
                 TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(matchReport.FinishTime.UtcDateTime);
                 if (timeSinceTime.TotalMinutes < 1)
                 {
-                    timeSince = "Less than 1 minute ago";
+                    timeSince = "< 1 minute ago";
                 }
                 else if (timeSinceTime.TotalHours < 1)
                 {

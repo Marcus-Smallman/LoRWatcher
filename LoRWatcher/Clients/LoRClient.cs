@@ -132,5 +132,41 @@ namespace LoRWatcher.Clients
 
             return null;
         }
+
+        public async Task<bool> IsClientActiveAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                try
+                {
+                    return await Retry.InvokeAsync(async () =>
+                    {
+                        using var request = new HttpRequestMessage(HttpMethod.Get, $"http://{this.loRWatcherConfiguration.Address}:{this.loRWatcherConfiguration.Port}/game-result");
+                        var result = await this.httpClient.SendAsync(request, cancellationToken);
+                        if (result.IsSuccessStatusCode == true)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    });
+                }
+                catch (HttpRequestException ex)
+                {
+                    if (ex.Message != "No connection could be made because the arget machine actively refused it.")
+                    {
+                        throw;
+                    }
+
+                    this.logger.Warning($"Game client not active");
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error($"Error checking if client is active: {ex.Message}");
+            }
+
+            return false;
+        }
     }
 }
