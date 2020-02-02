@@ -153,7 +153,7 @@ namespace LoRWatcher.Clients
                 }
                 catch (HttpRequestException ex)
                 {
-                    if (ex.Message != "No connection could be made because the arget machine actively refused it.")
+                    if (ex.Message != "No connection could be made because the target machine actively refused it.")
                     {
                         throw;
                     }
