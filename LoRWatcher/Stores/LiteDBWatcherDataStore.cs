@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using LiteDB;
+﻿using LiteDB;
 using LoRWatcher.Caches;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores.Documents;
 using LoRWatcher.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LoRWatcher.Stores
 {
@@ -63,7 +63,7 @@ namespace LoRWatcher.Stores
             });
         }
 
-        public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken)
         {
             await Task.Yield();
 
@@ -75,7 +75,8 @@ namespace LoRWatcher.Stores
                     {
                         var collection = connection.GetCollection<MatchReportDocument>("matchreports");
 
-                        var matchReportDocs = collection.FindAll();
+                        var query = Query.All(nameof(MatchReportDocument.FinishTime), Query.Descending);
+                        var matchReportDocs = collection.Find(query, skip, limit);
 
                         this.logger.Debug("Match reports retrieved");
 
@@ -100,6 +101,44 @@ namespace LoRWatcher.Stores
                 catch (Exception ex)
                 {
                     this.logger.Error($"Error occurred retrieving match reports: {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
+
+        public async Task<MatchReportMetadata> GetMatchReportMetadataAsync(CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<MatchReportMetadata>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<MatchReportDocument>("matchreports");
+
+                        var totalGames = collection.Count();
+                        var totalWins = collection.Count((doc) => doc.Result == true);
+                        var totalLosses = totalGames - totalWins;
+
+                        this.logger.Debug("Match report metadata retrieved");
+
+                        var matchReportMetadata = new MatchReportMetadata
+                        {
+                            TotalGames = totalGames,
+                            TotalWins = totalWins,
+                            TotalLosses = totalLosses
+                        };
+                        
+                        return matchReportMetadata;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving match report metadata: {ex.Message}");
 
                     return null;
                 }

@@ -8,7 +8,7 @@
     <Authors>Marcus Smallman</Authors>
     <PackageIcon>favicon.ico</PackageIcon>
     <PackageIconUrl />
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
