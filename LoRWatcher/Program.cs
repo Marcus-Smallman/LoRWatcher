@@ -58,7 +58,7 @@ namespace LoRWatcher
                 browserItem.Click += new EventHandler((s, e) =>
                 {
                     var url = $"http://{configuration["Client:Address"]}:{configuration["Client:Port"]}";
-                    Process.Start(new ProcessStartInfo("cmd", $"/c start {url}"));
+                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                 });
 
                 var exitItem = new ToolStripMenuItem();
