@@ -11,7 +11,7 @@ namespace LoRWatcher.Clients
         public string OpponentName { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public GameState GameState { get; set; }
+        public GameState? GameState { get; set; }
 
         public Screen Screen { get; set; }
 

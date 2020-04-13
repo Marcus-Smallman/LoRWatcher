@@ -18,14 +18,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <Reference Include="System.Drawing.Common">
+      <HintPath>Assemblies\System.Drawing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>Assemblies\System.Windows.Forms.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\favicon.ico">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
+    <Content Update="wwwroot/**/*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
