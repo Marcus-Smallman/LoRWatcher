@@ -43,7 +43,7 @@ namespace LoRWatcher.Stores
                             PlayerName = matchReport.PlayerName,
                             OpponentName = matchReport.OpponentName,
                             Result = matchReport.Result,
-                            FinishTime = matchReport.FinishTime.DateTime
+                            FinishTime = matchReport.FinishTime.UtcDateTime
                         };
 
                         collection.Insert(doc);
