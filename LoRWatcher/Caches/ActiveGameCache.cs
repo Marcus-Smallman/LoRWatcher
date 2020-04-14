@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace LoRWatcher.Caches
 {
     public class ActiveGameCache
-        : ICache
+        : IActiveGameCache
     {
         private readonly ILogger logger;
 

@@ -41,7 +41,8 @@ namespace LoRWatcher
 
             services.AddSingleton<IConnection<LiteDatabase>, LiteDBConnection>();
 
-            services.AddSingleton<ICache, ActiveGameCache>();
+            services.AddSingleton<IActiveGameCache, ActiveGameCache>();
+            services.AddSingleton<IGameStateCache, GameStateCache>();
 
             services.AddHostedService<LoRPollWatcher>();
 

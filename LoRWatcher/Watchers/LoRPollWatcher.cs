@@ -18,7 +18,9 @@ namespace LoRWatcher.Watchers
 
         private readonly IGameClient loRClient;
 
-        private readonly ICache activeGameCache;
+        private readonly IActiveGameCache activeGameCache;
+
+        private readonly IGameStateCache gameStateCache;
 
         private readonly IWatcherDataStore watcherDataStore;
 
@@ -26,11 +28,13 @@ namespace LoRWatcher.Watchers
 
         public LoRPollWatcher(
             IGameClient loRClient,
-            ICache activeGameCache,
+            IActiveGameCache activeGameCache,
+            IGameStateCache gameStateCache,
             IWatcherDataStore watcherDataStore,
             ILogger logger)
         {
             this.loRClient = loRClient;
+            this.gameStateCache = gameStateCache;
             this.activeGameCache = activeGameCache;
             this.watcherDataStore = watcherDataStore;
             this.logger = logger;
@@ -85,6 +89,7 @@ namespace LoRWatcher.Watchers
             try
             {
                 var cardPositions = await this.loRClient.GetCardPositionsAsync(cancellationToken);
+                this.gameStateCache.SetGameState(cardPositions?.GameState);
                 switch (cardPositions?.GameState)
                 {
                     case GameState.Menus:

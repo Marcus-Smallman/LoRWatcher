@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace LoRWatcher.Caches
 {
-    public interface ICache
+    public interface IActiveGameCache
     {
         bool IsEmpty { get; }
 

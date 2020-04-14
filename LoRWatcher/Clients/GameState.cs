@@ -2,6 +2,7 @@
 {
     public enum GameState
     {
+        Offline,
         InProgress,
         Menus
     }
