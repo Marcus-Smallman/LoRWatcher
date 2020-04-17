@@ -56,8 +56,7 @@ namespace LoRWatcher
                 icon.Visible = true;
                 icon.ShowBalloonTip(2000, "LoR Watcher", "Running", ToolTipIcon.None);
 
-                var statusItem = new ToolStripLabel();
-                statusItem.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
+                var statusItem = new ToolStripMenuItem();
 
                 var browserItem = new ToolStripMenuItem();
                 browserItem.Text = "Browser";

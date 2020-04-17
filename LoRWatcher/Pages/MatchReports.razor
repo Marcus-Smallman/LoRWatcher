@@ -126,7 +126,7 @@ else
             pageNum <= this.numOfPages)
         {
             this.activePage = pageNum;
-            var skip = this.numOfPages * (this.activePage - 1);
+            var skip = this.numOfRecords * (this.activePage - 1);
 
             this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(skip, this.numOfRecords, CancellationToken.None);
         }

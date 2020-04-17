@@ -2,13 +2,15 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <PackageId>LoR Watcher</PackageId>
+    <AssemblyName>LoR Watcher</AssemblyName>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <StartupObject />
     <Authors>Marcus Smallman</Authors>
     <PackageIcon>favicon.ico</PackageIcon>
     <PackageIconUrl />
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
