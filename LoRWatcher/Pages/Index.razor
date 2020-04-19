@@ -1,5 +1,11 @@
 ﻿@page "/"
 
-<h1>LoR Watcher</h1>
+@using LoRWatcher.Caches
 
-Welcome to the LoR Watcher interface.
+@inject IGameStateCache gameStateCache
+
+<Container Fluid="true">
+    <h1>LoR Watcher</h1>
+
+    Welcome to the LoR Watcher interface.
+</Container>

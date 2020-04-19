@@ -1,4 +1,7 @@
-﻿using LiteDB;
+﻿using Blazorise;
+using Blazorise.Icons.Material;
+using Blazorise.Material;
+using LiteDB;
 using LoRWatcher.Caches;
 using LoRWatcher.Clients;
 using LoRWatcher.Configuration;
@@ -49,6 +52,14 @@ namespace LoRWatcher
             // Add razor.
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services
+                .AddBlazorise(options =>
+                {
+                    options.ChangeTextOnKeyPress = true;
+                })
+                .AddMaterialProviders()
+                .AddMaterialIcons();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,6 +77,10 @@ namespace LoRWatcher
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.ApplicationServices
+                  .UseMaterialProviders()
+                  .UseMaterialIcons();
 
             app.UseEndpoints(endpoints =>
             {

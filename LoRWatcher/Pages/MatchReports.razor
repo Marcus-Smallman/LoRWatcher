@@ -5,96 +5,97 @@
 @using System.Threading;
 @inject IWatcherDataStore watcherDataStore
 
-@if (matchReports == null &&
+<Container Fluid="true">
+    @if (matchReports == null &&
     matchReportMetadata == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <h1><b>@matchReports?.First().PlayerName</b></h1>
-
-    <br />
-
-    <h4>Total Wins: @matchReportMetadata.TotalWins</h4>
-    <h4>Total Losses: @matchReportMetadata.TotalLosses</h4>
-
-    <br />
-    @if (matchReports != null)
     {
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Finish Time</th>
-                    <th>Opponent Name</th>
-                    <th>Result</th>
-                    <th>Player Deck Code</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var matchReport in matchReports)
-                {
-                    var bgColour = matchReport.Result ? "text-primary" : "text-danger";
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <h1><b>@matchReports?.First().PlayerName</b></h1>
 
-                    var timeSince = string.Empty;
-                    TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(matchReport.FinishTime.UtcDateTime);
-                    if (timeSinceTime.TotalMinutes < 1)
-                    {
-                        timeSince = "< 1 minute ago";
-                    }
-                    else if (timeSinceTime.TotalHours < 1)
-                    {
-                        timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
-                    }
-                    else if (timeSinceTime.TotalDays < 1)
-                    {
-                        timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
-                    }
-                    else
-                    {
-                        timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
-                    }
+        <br />
 
-                    <tr class="@bgColour">
-                        <td>@timeSince</td>
-                        <td>@matchReport.OpponentName</td>
-                        @if (matchReport.Result == true)
+        <h4>Total Wins: @matchReportMetadata.TotalWins</h4>
+        <h4>Total Losses: @matchReportMetadata.TotalLosses</h4>
+
+        <br />
+        @if (matchReports != null)
+        {
+            <Table class="table table-hover">
+                <TableHeader>
+                    <TableRow>
+                        <TableHeaderCell>Finish Time</TableHeaderCell>
+                        <TableHeaderCell>Opponent Name</TableHeaderCell>
+                        <TableHeaderCell>Result</TableHeaderCell>
+                        <TableHeaderCell>Player Deck Code</TableHeaderCell>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    @foreach (var matchReport in matchReports)
+                    {
+                        var bgColour = matchReport.Result ? "text-primary" : "text-danger";
+
+                        var timeSince = string.Empty;
+                        TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(matchReport.FinishTime.UtcDateTime);
+                        if (timeSinceTime.TotalMinutes < 1)
                         {
-                            <td>Win</td>
+                            timeSince = "< 1 minute ago";
+                        }
+                        else if (timeSinceTime.TotalHours < 1)
+                        {
+                            timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
+                        }
+                        else if (timeSinceTime.TotalDays < 1)
+                        {
+                            timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
                         }
                         else
                         {
-                            <td>Loss</td>
+                            timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
                         }
-                        <td>@matchReport.PlayerDeckCode</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-    <nav aria-label="search match reports">
-        <ul class="pagination justify-content-center">
-            <li class="page-item">
-                <a class="page-link" href="javascript:void(0)" @onclick="@(async (e) => await UpdateTableAsync(this.activePage - 1))" aria-label="Previous">
+
+                        <TableRow class="@bgColour">
+                            <TableRowCell>@timeSince</TableRowCell>
+                            <TableRowCell>@matchReport.OpponentName</TableRowCell>
+                            @if (matchReport.Result == true)
+                            {
+                                <TableRowCell>Win</TableRowCell>
+                            }
+                            else
+                            {
+                                <TableRowCell>Loss</TableRowCell>
+                            }
+                            <TableRowCell>@matchReport.PlayerDeckCode</TableRowCell>
+                        </TableRow>
+                    }
+                </TableBody>
+            </Table>
+        }
+        <Pagination Alignment="Alignment.Center">
+            <PaginationItem>
+                <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(this.activePage - 1))">
                     <span aria-hidden="true">&laquo;</span>
-                    <span class="sr-only">Previous</span>
-                </a>
-            </li>
+                </PaginationLink>
+            </PaginationItem>
             @for (var i = 1; i <= this.numOfPages; i++)
             {
                 var pageNum = i;
-                var active = pageNum == this.activePage ? "active" : string.Empty;
-                <li class="page-item @active"><a class="page-link" href="javascript:void(0)" @onclick="@(async (e) => await UpdateTableAsync(pageNum))">@pageNum</a></li>
+                <PaginationItem Active="pageNum == this.activePage">
+                    <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(pageNum))">
+                        @pageNum
+                    </PaginationLink>
+                </PaginationItem>
             }
-            <li class="page-item">
-                <a class="page-link" href="javascript:void(0)" @onclick="@(async (e) => await UpdateTableAsync(this.activePage + 1))" aria-label="Next">
+            <PaginationItem>
+                <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(this.activePage + 1))">
                     <span aria-hidden="true">&raquo;</span>
-                    <span class="sr-only">Next</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-}
+                </PaginationLink>
+            </PaginationItem>
+        </Pagination>
+    }
+</Container>
 
 @code {
     private MatchReportMetadata matchReportMetadata;
