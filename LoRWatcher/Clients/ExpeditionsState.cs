@@ -10,8 +10,6 @@ namespace LoRWatcher.Clients
 
         public IEnumerable<string> Record { get; set; }
 
-        public IEnumerable<string> DraftPicks { get; set; }
-
         public IEnumerable<string> Deck { get; set; }
 
         public string Games { get; set; }

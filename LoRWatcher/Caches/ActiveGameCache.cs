@@ -1,5 +1,6 @@
 ﻿using LoRWatcher.Clients;
 using LoRWatcher.Logger;
+using LoRWatcher.Stores.Documents;
 using LoRWatcher.Utils;
 using Newtonsoft.Json;
 using System;
@@ -13,15 +14,18 @@ namespace LoRWatcher.Caches
     {
         private readonly ILogger logger;
 
+        private readonly IActiveExpeditionCache activeExpeditionCache;
+
         private readonly IGameClient loRClient;
 
         private MatchReport currentMatch;
 
         public bool IsEmpty { get => currentMatch == null; }
 
-        public ActiveGameCache(IGameClient loRClient, ILogger logger)
+        public ActiveGameCache(IGameClient loRClient, IActiveExpeditionCache activeExpeditionCache, ILogger logger)
         {
             this.loRClient = loRClient;
+            this.activeExpeditionCache = activeExpeditionCache;
             this.logger = logger;
         }
 
@@ -73,13 +77,26 @@ namespace LoRWatcher.Caches
 
             var activeDecklist = await this.loRClient.GetActiveDecklistAsync(cancellationToken);
 
+            var gameType = this.GetGameType(activeDecklist.DeckCode);
+
             this.logger.Debug($"Active decklist: {JsonConvert.SerializeObject(activeDecklist)}");
             this.currentMatch = new MatchReport
             {
                 PlayerName = positionalRectangles.PlayerName,
                 PlayerDeckCode = activeDecklist.DeckCode,
                 OpponentName = positionalRectangles.OpponentName,
+                Type = gameType
             };
+        }
+
+        private GameType GetGameType(string activeDeckCode)
+        {
+            if (this.activeExpeditionCache.GetDeckCode() == activeDeckCode)
+            {
+                return GameType.Expedition;
+            }
+
+            return GameType.Normal;
         }
     }
 }

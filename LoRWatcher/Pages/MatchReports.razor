@@ -30,6 +30,7 @@
                         <TableHeaderCell>Opponent Name</TableHeaderCell>
                         <TableHeaderCell>Result</TableHeaderCell>
                         <TableHeaderCell>Player Deck Code</TableHeaderCell>
+                        <TableHeaderCell>Type</TableHeaderCell>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -56,19 +57,20 @@
                             timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
                         }
 
-                        <TableRow class="@bgColour">
-                            <TableRowCell>@timeSince</TableRowCell>
-                            <TableRowCell>@matchReport.OpponentName</TableRowCell>
-                            @if (matchReport.Result == true)
-                            {
-                                <TableRowCell>Win</TableRowCell>
-                            }
-                            else
-                            {
-                                <TableRowCell>Loss</TableRowCell>
-                            }
-                            <TableRowCell>@matchReport.PlayerDeckCode</TableRowCell>
-                        </TableRow>
+                    <TableRow class="@bgColour">
+                        <TableRowCell>@timeSince</TableRowCell>
+                        <TableRowCell>@matchReport.OpponentName</TableRowCell>
+                        @if (matchReport.Result == true)
+                        {
+                            <TableRowCell>Win</TableRowCell>
+                        }
+                        else
+                        {
+                            <TableRowCell>Loss</TableRowCell>
+                        }
+                        <TableRowCell>@matchReport.PlayerDeckCode</TableRowCell>
+                        <TableRowCell>@matchReport.Type.ToString()</TableRowCell>
+                    </TableRow>
                     }
                 </TableBody>
             </Table>
@@ -110,10 +112,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        this.matchReportMetadata = await this.watcherDataStore.GetMatchReportMetadataAsync(CancellationToken.None);
-
-        this.RefreshNumOfPages(this.matchReportMetadata.TotalGames);
-
         await this.UpdateTableAsync(this.activePage);
     }
 

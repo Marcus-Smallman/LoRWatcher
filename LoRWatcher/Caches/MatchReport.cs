@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LoRWatcher.Stores.Documents;
+using System;
 
 namespace LoRWatcher.Caches
 {
@@ -13,7 +14,8 @@ namespace LoRWatcher.Caches
                 OpponentName = matchReport.OpponentName,
                 PlayerDeckCode = matchReport.PlayerDeckCode,
                 Result = matchReport.Result,
-                FinishTime = matchReport.FinishTime
+                FinishTime = matchReport.FinishTime,
+                Type = matchReport.Type
             };
         }
 
@@ -28,5 +30,7 @@ namespace LoRWatcher.Caches
         public bool Result { get; set; }
 
         public DateTimeOffset FinishTime { get; set; }
+
+        public GameType Type { get; set; }
     }
 }

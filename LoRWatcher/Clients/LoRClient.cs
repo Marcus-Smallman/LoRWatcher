@@ -100,7 +100,7 @@ namespace LoRWatcher.Clients
             }
             catch (Exception ex)
             {
-                this.logger.Error($"Error occurred getting positional rectangles: {ex.Message}");
+                this.logger.Error($"Error occurred getting expedition state: {ex.Message}");
             }
 
             return null;

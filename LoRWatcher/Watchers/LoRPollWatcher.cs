@@ -20,6 +20,8 @@ namespace LoRWatcher.Watchers
 
         private readonly IActiveGameCache activeGameCache;
 
+        private readonly IActiveExpeditionCache activeExpeditionCache;
+
         private readonly IGameStateCache gameStateCache;
 
         private readonly IWatcherDataStore watcherDataStore;
@@ -29,13 +31,15 @@ namespace LoRWatcher.Watchers
         public LoRPollWatcher(
             IGameClient loRClient,
             IActiveGameCache activeGameCache,
+            IActiveExpeditionCache activeExpeditionCache,
             IGameStateCache gameStateCache,
             IWatcherDataStore watcherDataStore,
             ILogger logger)
         {
             this.loRClient = loRClient;
-            this.gameStateCache = gameStateCache;
             this.activeGameCache = activeGameCache;
+            this.activeExpeditionCache = activeExpeditionCache;
+            this.gameStateCache = gameStateCache;
             this.watcherDataStore = watcherDataStore;
             this.logger = logger;
 
@@ -44,7 +48,7 @@ namespace LoRWatcher.Watchers
 
         private void SetDefaults()
         {
-            this.PollIntervalMS = 2500;
+            this.PollIntervalMS = 1000;
             this.IsClientActive = false;
         }
 
@@ -93,7 +97,7 @@ namespace LoRWatcher.Watchers
                 switch (cardPositions?.GameState)
                 {
                     case GameState.Menus:
-                        this.PollIntervalMS = 1000;
+                        this.PollIntervalMS = 500;
                         if (this.activeGameCache.IsEmpty == false)
                         {
                             this.logger.Debug("Getting match report");
@@ -108,8 +112,11 @@ namespace LoRWatcher.Watchers
                         }
                         else
                         {
-                            // TODO: Support expeditions type
-                            //var expeditionsState = await this.loRClient.GetExpeditionsStateAsync(cancellationToken);
+                            var expeditionsState = await this.loRClient.GetExpeditionsStateAsync(cancellationToken);
+                            if (expeditionsState.IsActive == true)
+                            {
+                                this.activeExpeditionCache.UpdateState(expeditionsState);
+                            }
 
                             this.logger.Debug("Waiting for active match");
                         }

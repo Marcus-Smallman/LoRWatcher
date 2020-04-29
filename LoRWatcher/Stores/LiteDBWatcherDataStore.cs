@@ -43,7 +43,8 @@ namespace LoRWatcher.Stores
                             PlayerName = matchReport.PlayerName,
                             OpponentName = matchReport.OpponentName,
                             Result = matchReport.Result,
-                            FinishTime = matchReport.FinishTime.UtcDateTime
+                            FinishTime = matchReport.FinishTime.UtcDateTime,
+                            Type = matchReport.Type
                         };
 
                         collection.Insert(doc);
@@ -90,7 +91,8 @@ namespace LoRWatcher.Stores
                                 PlayerName = matchReportDoc.PlayerName,
                                 OpponentName = matchReportDoc.OpponentName,
                                 Result = matchReportDoc.Result,
-                                FinishTime = matchReportDoc.FinishTime
+                                FinishTime = matchReportDoc.FinishTime,
+                                Type = matchReportDoc.Type
                             });
                         }
 
