@@ -1,6 +1,7 @@
 ﻿using LoRDeckCodes;
 using LoRWatcher.Clients;
 using LoRWatcher.Logger;
+using LoRWatcher.Utils;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace LoRWatcher.Caches
                 this.expeditionsState.Deck?.Any() == true)
             {
                 var cards = new List<CardCodeAndCount>();
-                foreach (var cardCode in this.expeditionsState.Deck.ToList())
+                foreach (var cardCode in this.expeditionsState.Deck)
                 {
                     var card = cards.Find(c => c.CardCode == cardCode);
                     if (card == null)
@@ -54,9 +55,11 @@ namespace LoRWatcher.Caches
                     }
                 }
 
+                // TODO: This comparer may not be needed.
+                cards.Sort(new CardComparer());
+
                 var deckCode = LoRDeckEncoder.GetCodeFromDeck(cards);
 
-                // TODO: Validate this actually works
                 this.logger.Debug($"Getting active expedition deck code: {deckCode}");
 
                 return deckCode;

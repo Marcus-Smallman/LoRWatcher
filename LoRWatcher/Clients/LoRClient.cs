@@ -41,6 +41,8 @@ namespace LoRWatcher.Clients
                         return staticDecklist;
                     }
 
+                    this.logger.Error($"Unsuccessful response getting static decklist|Status code: {result.StatusCode}|Content: {await result.Content.ReadAsStringAsync()}");
+
                     return null;
                 });
             }
@@ -62,11 +64,14 @@ namespace LoRWatcher.Clients
                     var result = await this.httpClient.SendAsync(request, cancellationToken);
                     if (result.IsSuccessStatusCode == true)
                     {
+                        // TODO: Support all ascii characters in deserialization
                         var content = await result.Content.ReadAsStringAsync();
                         var positionalRectangles = JsonConvert.DeserializeObject<PositionalRectangles>(content);
 
                         return positionalRectangles;
                     }
+
+                    this.logger.Error($"Unsuccessful response getting positional rectangles|Status code: {result.StatusCode}|Content: {await result.Content.ReadAsStringAsync()}");
 
                     return null;
                 });
@@ -95,6 +100,8 @@ namespace LoRWatcher.Clients
                         return expeditionsState;
                     }
 
+                    this.logger.Error($"Unsuccessful response getting expedition state|Status code: {result.StatusCode}|Content: {await result.Content.ReadAsStringAsync()}");
+
                     return null;
                 });
             }
@@ -121,6 +128,8 @@ namespace LoRWatcher.Clients
 
                         return gameResult;
                     }
+
+                    this.logger.Error($"Unsuccessful response getting game result|Status code: {result.StatusCode}|Content: {await result.Content.ReadAsStringAsync()}");
 
                     return null;
                 });

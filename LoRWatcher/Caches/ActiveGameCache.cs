@@ -1,9 +1,11 @@
-﻿using LoRWatcher.Clients;
+﻿using LoRDeckCodes;
+using LoRWatcher.Clients;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores.Documents;
 using LoRWatcher.Utils;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -76,21 +78,35 @@ namespace LoRWatcher.Caches
             }
 
             var activeDecklist = await this.loRClient.GetActiveDecklistAsync(cancellationToken);
-
-            var gameType = this.GetGameType(activeDecklist.DeckCode);
-
-            this.logger.Debug($"Active decklist: {JsonConvert.SerializeObject(activeDecklist)}");
-            this.currentMatch = new MatchReport
+            if (activeDecklist != null &&
+                activeDecklist.DeckCode != null)
             {
-                PlayerName = positionalRectangles.PlayerName,
-                PlayerDeckCode = activeDecklist.DeckCode,
-                OpponentName = positionalRectangles.OpponentName,
-                Type = gameType
-            };
+                this.logger.Debug($"Active decklist: {JsonConvert.SerializeObject(activeDecklist)}");
+
+                var gameType = this.GetGameType(activeDecklist.CardsInDeck);
+
+                this.currentMatch = new MatchReport
+                {
+                    PlayerName = positionalRectangles.PlayerName,
+                    PlayerDeckCode = activeDecklist.DeckCode,
+                    OpponentName = positionalRectangles.OpponentName,
+                    Type = gameType
+                };
+            }
         }
 
-        private GameType GetGameType(string activeDeckCode)
+        private GameType GetGameType(IDictionary<string, int> cardsInDeck)
         {
+            // TODO: Looks like there is an issue with the active decklist returned from the client being incorrect
+            // Currently working out the deckcode. This can be changed to use the deckcode returned from the client
+            // once fixed.
+            var cards = new List<CardCodeAndCount>();
+            foreach (var card in cardsInDeck)
+            {
+                cards.Add(new CardCodeAndCount { CardCode = card.Key, Count = card.Value });
+            }
+
+            var activeDeckCode = LoRDeckEncoder.GetCodeFromDeck(cards);
             if (this.activeExpeditionCache.GetDeckCode() == activeDeckCode)
             {
                 return GameType.Expedition;
