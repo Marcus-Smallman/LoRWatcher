@@ -5,18 +5,23 @@ using LoRWatcher.Utils;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LoRWatcher.Caches
 {
     public class ActiveExpeditionCache
         : IActiveExpeditionCache
     {
+        private readonly IGameClient gameClient;
+
         private readonly ILogger logger;
 
         private ExpeditionsState expeditionsState;
 
-        public ActiveExpeditionCache(ILogger logger)
+        public ActiveExpeditionCache(IGameClient gameClient, ILogger logger)
         {
+            this.gameClient = gameClient;
             this.logger = logger;
         }
 
@@ -36,7 +41,25 @@ namespace LoRWatcher.Caches
             }
         }
 
-        public string GetDeckCode()
+        public async Task<string> GetDeckCodeAsync(CancellationToken cancellationToken)
+        {
+            // There can be scenarios where the user starts the application in the middle of a game.
+            // If this is the case, we will not have stored any expedition state. Therefore, if the expedition
+            // state is null or empty, a call to the expedition state api is done. 
+            if (this.expeditionsState == null ||
+                this.expeditionsState.Deck?.Any() == false)
+            {
+                var expeditionsState = await this.gameClient.GetExpeditionsStateAsync(cancellationToken);
+                if (expeditionsState.IsActive == true)
+                {
+                    this.UpdateState(expeditionsState);
+                }
+            }
+
+            return this.GetDeckCode();
+        }
+
+        private string GetDeckCode()
         {
             if (this.expeditionsState != null &&
                 this.expeditionsState.Deck?.Any() == true)
@@ -55,12 +78,12 @@ namespace LoRWatcher.Caches
                     }
                 }
 
-                // TODO: This comparer may not be needed.
+                // TODO: This sort and comparer may not be needed.
                 cards.Sort(new CardComparer());
 
                 var deckCode = LoRDeckEncoder.GetCodeFromDeck(cards);
 
-                this.logger.Debug($"Getting active expedition deck code: {deckCode}");
+                this.logger.Debug($"Retrieved active expedition deck code: {deckCode}");
 
                 return deckCode;
             }

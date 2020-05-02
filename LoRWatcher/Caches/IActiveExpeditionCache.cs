@@ -8,6 +8,6 @@ namespace LoRWatcher.Caches
     {
         void UpdateState(ExpeditionsState expeditionsState);
 
-        string GetDeckCode();
+        Task<string> GetDeckCodeAsync(CancellationToken cancellationToken);
     }
 }

@@ -6,6 +6,7 @@ using LoRWatcher.Utils;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -79,35 +80,39 @@ namespace LoRWatcher.Caches
 
             var activeDecklist = await this.loRClient.GetActiveDecklistAsync(cancellationToken);
             if (activeDecklist != null &&
-                activeDecklist.DeckCode != null)
+                activeDecklist.DeckCode != null &&
+                activeDecklist.CardsInDeck.Any())
             {
                 this.logger.Debug($"Active decklist: {JsonConvert.SerializeObject(activeDecklist)}");
 
-                var gameType = this.GetGameType(activeDecklist.CardsInDeck);
+                // TODO: Looks like there is an issue with the active decklist returned from the client being incorrect
+                // This can be changed to use the deckcode returned from the client once fixed (02/05/20).
+                var cards = new List<CardCodeAndCount>();
+                foreach (var card in activeDecklist.CardsInDeck)
+                {
+                    cards.Add(new CardCodeAndCount { CardCode = card.Key, Count = card.Value });
+                }
+
+                var activeDeckCode = LoRDeckEncoder.GetCodeFromDeck(cards);
+
+                this.logger.Debug($"Retrieved active game deck code: {activeDeckCode}");
+
+                var gameType = await this.GetGameTypeAsync(activeDeckCode, cancellationToken);
 
                 this.currentMatch = new MatchReport
                 {
                     PlayerName = positionalRectangles.PlayerName,
-                    PlayerDeckCode = activeDecklist.DeckCode,
+                    PlayerDeckCode = activeDeckCode,
                     OpponentName = positionalRectangles.OpponentName,
                     Type = gameType
                 };
             }
         }
 
-        private GameType GetGameType(IDictionary<string, int> cardsInDeck)
+        private async Task<GameType> GetGameTypeAsync(string activeDeckCode, CancellationToken cancellationToken)
         {
-            // TODO: Looks like there is an issue with the active decklist returned from the client being incorrect
-            // Currently working out the deckcode. This can be changed to use the deckcode returned from the client
-            // once fixed.
-            var cards = new List<CardCodeAndCount>();
-            foreach (var card in cardsInDeck)
-            {
-                cards.Add(new CardCodeAndCount { CardCode = card.Key, Count = card.Value });
-            }
-
-            var activeDeckCode = LoRDeckEncoder.GetCodeFromDeck(cards);
-            if (this.activeExpeditionCache.GetDeckCode() == activeDeckCode)
+            var activeExpeditionDeckCode = await this.activeExpeditionCache.GetDeckCodeAsync(cancellationToken);
+            if (activeExpeditionDeckCode == activeDeckCode)
             {
                 return GameType.Expedition;
             }
