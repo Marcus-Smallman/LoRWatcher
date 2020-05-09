@@ -78,12 +78,13 @@ namespace LoRWatcher.Caches
                     }
                 }
 
-                // TODO: This sort and comparer may not be needed.
                 cards.Sort(new CardComparer());
 
                 var deckCode = LoRDeckEncoder.GetCodeFromDeck(cards);
 
                 this.logger.Debug($"Retrieved active expedition deck code: {deckCode}");
+
+                cards.Print(this.logger);
 
                 return deckCode;
             }

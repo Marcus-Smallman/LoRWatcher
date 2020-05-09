@@ -86,16 +86,20 @@ namespace LoRWatcher.Caches
                 this.logger.Debug($"Active decklist: {JsonConvert.SerializeObject(activeDecklist)}");
 
                 // TODO: Looks like there is an issue with the active decklist returned from the client being incorrect
-                // This can be changed to use the deckcode returned from the client once fixed (02/05/20).
+                // This can be changed to use the deck code returned from the client once fixed (02/05/20).
                 var cards = new List<CardCodeAndCount>();
                 foreach (var card in activeDecklist.CardsInDeck)
                 {
                     cards.Add(new CardCodeAndCount { CardCode = card.Key, Count = card.Value });
                 }
 
+                cards.Sort(new CardComparer());
+
                 var activeDeckCode = LoRDeckEncoder.GetCodeFromDeck(cards);
 
                 this.logger.Debug($"Retrieved active game deck code: {activeDeckCode}");
+
+                cards.Print(this.logger);
 
                 var gameType = await this.GetGameTypeAsync(activeDeckCode, cancellationToken);
 
@@ -111,6 +115,9 @@ namespace LoRWatcher.Caches
 
         private async Task<GameType> GetGameTypeAsync(string activeDeckCode, CancellationToken cancellationToken)
         {
+            // TODO: There could be an issue where by if the player is in a non expedition match, but the
+            // the active deck matches there active expedition deck, we will record it as a expedition match,
+            // when in fact is not.
             var activeExpeditionDeckCode = await this.activeExpeditionCache.GetDeckCodeAsync(cancellationToken);
             if (activeExpeditionDeckCode == activeDeckCode)
             {
