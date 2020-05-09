@@ -1,5 +1,6 @@
 ﻿using LoRWatcher.Stores.Documents;
 using System;
+using System.Collections.Generic;
 
 namespace LoRWatcher.Caches
 {
@@ -13,6 +14,7 @@ namespace LoRWatcher.Caches
                 PlayerName = matchReport.PlayerName,
                 OpponentName = matchReport.OpponentName,
                 PlayerDeckCode = matchReport.PlayerDeckCode,
+                Regions = matchReport.Regions,
                 Result = matchReport.Result,
                 FinishTime = matchReport.FinishTime,
                 Type = matchReport.Type
@@ -22,6 +24,8 @@ namespace LoRWatcher.Caches
         public string Id { get; set; }
 
         public string PlayerName { get; set; }
+
+        public IEnumerable<string> Regions { get; set; } 
 
         public string PlayerDeckCode { get; set; }
 

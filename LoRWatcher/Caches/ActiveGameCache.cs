@@ -106,8 +106,9 @@ namespace LoRWatcher.Caches
                 this.currentMatch = new MatchReport
                 {
                     PlayerName = positionalRectangles.PlayerName,
-                    PlayerDeckCode = activeDeckCode,
                     OpponentName = positionalRectangles.OpponentName,
+                    PlayerDeckCode = activeDeckCode,
+                    Regions = cards.GetRegions(),
                     Type = gameType
                 };
             }

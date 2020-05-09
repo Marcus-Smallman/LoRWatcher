@@ -32,7 +32,7 @@
                             <TableHeaderCell>Finish Time</TableHeaderCell>
                             <TableHeaderCell>Opponent Name</TableHeaderCell>
                             <TableHeaderCell>Result</TableHeaderCell>
-                            <!--<TableHeaderCell>Player Deck Code</TableHeaderCell>-->
+                            <TableHeaderCell>Region(s)</TableHeaderCell>
                             <TableHeaderCell>Type</TableHeaderCell>
                         </TableRow>
                     </TableHeader>
@@ -71,7 +71,7 @@
                             {
                                 <TableRowCell>Loss</TableRowCell>
                             }
-                            <!--<TableRowCell>@matchReport.PlayerDeckCode</TableRowCell>-->
+                            <TableRowCell>@string.Join(", ", matchReport.Regions ?? Enumerable.Empty<string>())</TableRowCell>
                             <TableRowCell>@matchReport.Type.ToString()</TableRowCell>
                         </TableRow>
                         }

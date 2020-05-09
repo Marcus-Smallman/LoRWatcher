@@ -42,6 +42,7 @@ namespace LoRWatcher.Stores
                             PlayerDeckCode = matchReport.PlayerDeckCode,
                             PlayerName = matchReport.PlayerName,
                             OpponentName = matchReport.OpponentName,
+                            Regions = matchReport.Regions,
                             Result = matchReport.Result,
                             FinishTime = matchReport.FinishTime.UtcDateTime,
                             Type = matchReport.Type
@@ -90,6 +91,7 @@ namespace LoRWatcher.Stores
                                 PlayerDeckCode = matchReportDoc.PlayerDeckCode,
                                 PlayerName = matchReportDoc.PlayerName,
                                 OpponentName = matchReportDoc.OpponentName,
+                                Regions = matchReportDoc.Regions,
                                 Result = matchReportDoc.Result,
                                 FinishTime = matchReportDoc.FinishTime,
                                 Type = matchReportDoc.Type

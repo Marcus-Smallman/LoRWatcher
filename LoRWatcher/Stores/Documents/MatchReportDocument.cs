@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace LoRWatcher.Stores.Documents
 {
@@ -9,6 +10,8 @@ namespace LoRWatcher.Stores.Documents
         public string PlayerName { get; set; }
 
         public string PlayerDeckCode { get; set; }
+
+        public IEnumerable<string> Regions { get; set;}
 
         public string OpponentName { get; set; }
 
