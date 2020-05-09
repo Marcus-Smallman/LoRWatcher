@@ -1,11 +1,150 @@
 ﻿@page "/"
 
+@using LoRWatcher.Stores
 @using LoRWatcher.Caches
+@using System.Threading;
+@inject IWatcherDataStore watcherDataStore
 
-@inject IGameStateCache gameStateCache
+<Container>
+    @if (matchReports == null &&
+    matchReportMetadata == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+    <Row Class="my-4">
+        <div Class="col-4">
+            <h1><b>@matchReports.First().PlayerName</b></h1>
+        </div>
+        <div Class="col-8">
+            <h4>Total Wins: @matchReportMetadata.TotalWins</h4>
+            <h4>Total Losses: @matchReportMetadata.TotalLosses</h4>
+        </div>
+    </Row>
+    <Row>
+        <div Class="col-12">
+            @if (matchReports != null)
+            {
+                <Table class="table table-hover">
+                    <TableHeader>
+                        <TableRow>
+                            <TableHeaderCell>Finish Time</TableHeaderCell>
+                            <TableHeaderCell>Opponent Name</TableHeaderCell>
+                            <TableHeaderCell>Result</TableHeaderCell>
+                            <!--<TableHeaderCell>Player Deck Code</TableHeaderCell>-->
+                            <TableHeaderCell>Type</TableHeaderCell>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        @foreach (var matchReport in matchReports)
+                        {
+                            var bgColour = matchReport.Result ? "text-primary" : "text-danger";
 
-<Container Fluid="true">
-    <h1>LoR Watcher</h1>
+                            var timeSince = string.Empty;
+                            TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(matchReport.FinishTime.UtcDateTime);
+                            if (timeSinceTime.TotalMinutes < 1)
+                            {
+                                timeSince = "< 1 minute ago";
+                            }
+                            else if (timeSinceTime.TotalHours < 1)
+                            {
+                                timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
+                            }
+                            else if (timeSinceTime.TotalDays < 1)
+                            {
+                                timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
+                            }
+                            else
+                            {
+                                timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
+                            }
 
-    Welcome to the LoR Watcher interface.
+                        <TableRow class="@bgColour">
+                            <TableRowCell>@timeSince</TableRowCell>
+                            <TableRowCell>@matchReport.OpponentName</TableRowCell>
+                            @if (matchReport.Result == true)
+                            {
+                                <TableRowCell>Win</TableRowCell>
+                            }
+                            else
+                            {
+                                <TableRowCell>Loss</TableRowCell>
+                            }
+                            <!--<TableRowCell>@matchReport.PlayerDeckCode</TableRowCell>-->
+                            <TableRowCell>@matchReport.Type.ToString()</TableRowCell>
+                        </TableRow>
+                        }
+                    </TableBody>
+                </Table>
+            }
+            <Pagination Alignment="Alignment.Center">
+                <PaginationItem>
+                    <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(this.activePage - 1))">
+                        <span aria-hidden="true">&laquo;</span>
+                    </PaginationLink>
+                </PaginationItem>
+                @for (var i = 1; i <= this.numOfPages; i++)
+                {
+                    var pageNum = i;
+                    <PaginationItem Active="pageNum == this.activePage">
+                        <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(pageNum))">
+                            @pageNum
+                        </PaginationLink>
+                    </PaginationItem>
+                }
+                <PaginationItem>
+                    <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(this.activePage + 1))">
+                        <span aria-hidden="true">&raquo;</span>
+                    </PaginationLink>
+                </PaginationItem>
+            </Pagination>
+        </div>
+    </Row>
+    }
 </Container>
+
+@code {
+    private MatchReportMetadata matchReportMetadata;
+
+    private IEnumerable<MatchReport> matchReports;
+
+    private int numOfPages { get; set; }
+
+    private int numOfRecords { get; set; } = 10;
+
+    private int activePage { get; set; } = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await this.UpdateTableAsync(this.activePage);
+    }
+
+    private async Task UpdateTableAsync(int pageNum)
+    {
+        this.matchReportMetadata = await this.watcherDataStore.GetMatchReportMetadataAsync(CancellationToken.None);
+
+        this.RefreshNumOfPages(this.matchReportMetadata.TotalGames);
+
+        if (pageNum > 0 &&
+            pageNum <= this.numOfPages)
+        {
+            this.activePage = pageNum;
+            var skip = this.numOfRecords * (this.activePage - 1);
+
+            this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(skip, this.numOfRecords, CancellationToken.None);
+        }
+    }
+
+    private void RefreshNumOfPages(int totalGames)
+    {
+        if (totalGames % this.numOfRecords == 0)
+        {
+            this.numOfPages = totalGames / this.numOfRecords;
+        }
+        else
+        {
+            this.numOfPages = (totalGames / this.numOfRecords) + 1;
+        }
+    }
+}
