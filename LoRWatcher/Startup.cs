@@ -7,6 +7,7 @@ using LoRWatcher.Clients;
 using LoRWatcher.Configuration;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores;
+using LoRWatcher.Tray;
 using LoRWatcher.Watchers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -45,6 +46,8 @@ namespace LoRWatcher
                 Address = this.Configuration["LoR:Address"],
                 Port = int.Parse(this.Configuration["LoR:Port"])
             });
+
+            services.AddSingleton<ITrayIcon, TrayIcon>();
 
             services.AddTransient<IGameClient, LoRClient>();
 
