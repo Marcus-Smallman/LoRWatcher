@@ -22,7 +22,7 @@ namespace LoRWatcher.Logger
             loggerSettings ??= new LoggerSettings
             {
                 WriteToFile = true,
-                CleanupPeriodMinutes = 4320 // 4320 minutes == 3 days
+                CleanupPeriodMinutes = 180 // 180 minutes == 3 hours
             };
 
             if (string.IsNullOrWhiteSpace(loggerSettings.FileDirectory) == true)
@@ -85,7 +85,10 @@ namespace LoRWatcher.Logger
                     {
                         File.Delete(oldLogFilePath);
                     }
+
                 }
+
+                this.cleanupTimeUtc = now.AddMinutes(30);
             }
         }
 
