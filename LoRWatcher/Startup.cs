@@ -30,7 +30,15 @@ namespace LoRWatcher
         {
             services.AddSingleton<HttpClient>();
 
-            services.AddSingleton<ILogger, ConsoleLogger>();
+            services.AddSingleton<ILogger>(s => new FileLogger
+            (
+                new LoggerSettings
+                {
+                    WriteToFile = bool.Parse(this.Configuration["LoggerSettings:WriteToFile"]),
+                    FileDirectory = this.Configuration["LoggerSettings:FileDirectory"],
+                    CleanupPeriodMinutes = double.Parse(this.Configuration["LoggerSettings:CleanupPeriodMinutes"])
+                }
+            ));
 
             services.AddSingleton<LoRWatcherConfiguration>(s => new LoRWatcherConfiguration
             {

@@ -9,7 +9,7 @@ namespace LoRWatcher.Utils
     {
         public static void Print(this List<CardCodeAndCount> cards, ILogger logger = null)
         {
-            logger ??= new ConsoleLogger();
+            logger ??= new FileLogger();
             foreach (var card in cards)
             {
                 logger.Debug($"\tCardCode: {card.CardCode}|Count: {card.Count}");
@@ -18,7 +18,7 @@ namespace LoRWatcher.Utils
 
         public static IEnumerable<string> GetRegions(this List<CardCodeAndCount> cards, ILogger logger = null)
         {
-            logger ??= new ConsoleLogger();
+            logger ??= new FileLogger();
 
             var regions = cards.Select(c => c.CardCode.Substring(2, 2)).Distinct();
 
