@@ -6,145 +6,181 @@
 @inject IWatcherDataStore watcherDataStore
 
 <Container>
-    @if (matchReports == null &&
-    matchReportMetadata == null)
+    @if (matchReports == null && matchReportMetadata == null)
     {
         <p><em>Loading...</em></p>
     }
     else
     {
-    <Row Class="my-4">
-        <div Class="col-4">
-            <h1><b>@matchReports.First().PlayerName</b></h1>
-        </div>
-        <div Class="col-8">
-            <h4>Total Wins: @matchReportMetadata.TotalWins</h4>
-            <h4>Total Losses: @matchReportMetadata.TotalLosses</h4>
-        </div>
-    </Row>
-    <Row>
-        <div Class="col-12">
-            @if (matchReports != null)
-            {
-                <Table class="table table-hover">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHeaderCell>Finish Time</TableHeaderCell>
-                            <TableHeaderCell>Opponent Name</TableHeaderCell>
-                            <TableHeaderCell>Result</TableHeaderCell>
-                            <TableHeaderCell>Region(s)</TableHeaderCell>
-                            <TableHeaderCell>Type</TableHeaderCell>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        @foreach (var matchReport in matchReports)
-                        {
-                            var bgColour = matchReport.Result ? "text-primary" : "text-danger";
-
-                            var timeSince = string.Empty;
-                            TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(matchReport.FinishTime.UtcDateTime);
-                            if (timeSinceTime.TotalMinutes < 1)
-                            {
-                                timeSince = "< 1 minute ago";
-                            }
-                            else if (timeSinceTime.TotalHours < 1)
-                            {
-                                timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
-                            }
-                            else if (timeSinceTime.TotalDays < 1)
-                            {
-                                timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
-                            }
-                            else
-                            {
-                                timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
-                            }
-
-                        <TableRow class="@bgColour">
-                            <TableRowCell>@timeSince</TableRowCell>
-                            <TableRowCell>@matchReport.OpponentName</TableRowCell>
-                            @if (matchReport.Result == true)
-                            {
-                                <TableRowCell>Win</TableRowCell>
-                            }
-                            else
-                            {
-                                <TableRowCell>Loss</TableRowCell>
-                            }
-                            <TableRowCell>@string.Join(", ", matchReport.Regions ?? Enumerable.Empty<string>())</TableRowCell>
-                            <TableRowCell>@matchReport.Type.ToString()</TableRowCell>
-                        </TableRow>
-                        }
-                    </TableBody>
-                </Table>
-            }
-            <Pagination Alignment="Alignment.Center">
-                <PaginationItem>
-                    <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(this.activePage - 1))">
-                        <span aria-hidden="true">&laquo;</span>
-                    </PaginationLink>
-                </PaginationItem>
-                @for (var i = 1; i <= this.numOfPages; i++)
-                {
-                    var pageNum = i;
-                    <PaginationItem Active="pageNum == this.activePage">
-                        <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(pageNum))">
-                            @pageNum
-                        </PaginationLink>
-                    </PaginationItem>
-                }
-                <PaginationItem>
-                    <PaginationLink Clicked="@(async (e) => await UpdateTableAsync(this.activePage + 1))">
-                        <span aria-hidden="true">&raquo;</span>
-                    </PaginationLink>
-                </PaginationItem>
-            </Pagination>
-        </div>
-    </Row>
+        <Row Class="my-4">
+            <div Class="col-4">
+                <h1><b>@matchReports.First().PlayerName</b></h1>
+            </div>
+            <div Class="col-8">
+                <Row>
+                    <div Class="col-4" Style="text-align: center">
+                        <div>
+                            <a Class="text-black-hint">Total Games:</a> @(matchReportMetadata.TotalGames)
+                        </div>
+                        <DoughnutChart @ref="winsLossesChart" TItem="int" />
+                        <div Style="padding-top: 10px">
+                            <a Class="text-black-hint">Win Rate:</a> @(this.GetWinRate())
+                        </div>
+                    </div>
+                    <div Class="col-4">
+                        <!-- Most used region(s). Highest win rate with region(s) exlcuding expeditions -->
+                    </div>
+                    <div Class="col-4">
+                        <!-- Expeditions completed. Total 7 win expeditions. -->
+                    </div>
+                </Row>
+            </div>
+        </Row>
+        <Row>
+            <div Class="col-12">
+                <DataGrid TItem="MatchReport"
+                          Data="@matchReports"
+                          ShowPager="@showPager"
+                          PageSize="@pageSize"
+                          ReadData="@OnReadData"
+                          TotalItems="@matchReportMetadata.TotalGames"
+                          @bind-SelectedRow="@selectedMatchReport"
+                          RowSelectable="@((matchReport) => this.RowSelected(matchReport))"
+                          Hoverable="true">
+                    <DataGridCommandColumn TItem="MatchReport" />
+                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
+                        <DisplayTemplate>
+                            @(this.GetTimeSince((context as MatchReport)?.FinishTime.UtcDateTime))
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name" />
+                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Result)" Caption="Result">
+                        <DisplayTemplate>
+                            @((context as MatchReport)?.Result == true ? "Won" : "Lost")
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Regions)" Caption="Region(s)">
+                        <DisplayTemplate>
+                            @(string.Join(", ",(context as MatchReport)?.Regions ?? Enumerable.Empty<string>()))
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Type)" Caption="Type" />
+                </DataGrid>
+            </div>
+        </Row>
     }
 </Container>
 
 @code {
-    private MatchReportMetadata matchReportMetadata;
+    private bool showPager = true;
+
+    private int pageSize = 10;
+
+    private MatchReport selectedMatchReport;
 
     private IEnumerable<MatchReport> matchReports;
 
-    private int numOfPages { get; set; }
+    private MatchReportMetadata matchReportMetadata;
 
-    private int numOfRecords { get; set; } = 10;
-
-    private int activePage { get; set; } = 1;
+    DoughnutChart<int> winsLossesChart;
 
     protected override async Task OnInitializedAsync()
     {
-        await this.UpdateTableAsync(this.activePage);
+        this.matchReportMetadata = await this.watcherDataStore.GetMatchReportMetadataAsync(CancellationToken.None);
+        this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(0, this.pageSize, CancellationToken.None);
     }
 
-    private async Task UpdateTableAsync(int pageNum)
+    private async Task OnReadData(DataGridReadDataEventArgs<MatchReport> e)
     {
+        // TODO: Support filtering and sorting
+        var skip = this.pageSize * (e.Page - 1);
+        this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(skip, this.pageSize, CancellationToken.None);
         this.matchReportMetadata = await this.watcherDataStore.GetMatchReportMetadataAsync(CancellationToken.None);
 
-        this.RefreshNumOfPages(this.matchReportMetadata.TotalGames);
+        StateHasChanged();
+    }
 
-        if (pageNum > 0 &&
-            pageNum <= this.numOfPages)
+    private bool RowSelected(MatchReport matchReport)
+    {
+        // TODO: Route to match report page.
+        return false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            this.activePage = pageNum;
-            var skip = this.numOfRecords * (this.activePage - 1);
-
-            this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(skip, this.numOfRecords, CancellationToken.None);
+            // TODO: This behaves very weird. Sometimes the graphs loads, and other times it doesn't.
+            // It I believe there are already issues with this, but further work to make this more
+            // reliable and stable needs to be done.
+            await HandleRedrawAsync();
         }
     }
 
-    private void RefreshNumOfPages(int totalGames)
+    private async Task HandleRedrawAsync()
     {
-        if (totalGames % this.numOfRecords == 0)
+        if (winsLossesChart != null)
         {
-            this.numOfPages = totalGames / this.numOfRecords;
+            await winsLossesChart.Clear();
+            await winsLossesChart.AddLabel(new string[] { "Wins", "Losses" });
+            await winsLossesChart.AddDataSet(new DoughnutChartDataset<int>
+            {
+                Label = "Wins and losses",
+                Data = new List<int> { this.matchReportMetadata.TotalWins, this.matchReportMetadata.TotalLosses },
+                BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
+                BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
+                BorderWidth = 1
+            });
+
+            await winsLossesChart.Update();
         }
-        else
+    }
+
+    private string GetTimeSince(DateTime? dateTime)
+    {
+        var timeSince = string.Empty;
+        if (dateTime.HasValue)
         {
-            this.numOfPages = (totalGames / this.numOfRecords) + 1;
+            TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(dateTime.Value);
+            if (timeSinceTime.TotalMinutes < 1)
+            {
+                timeSince = "< 1 minute ago";
+            }
+            else if (timeSinceTime.TotalHours < 1)
+            {
+                timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
+            }
+            else if (timeSinceTime.TotalDays < 1)
+            {
+                timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
+            }
+            else
+            {
+                timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
+            }
         }
+
+        return timeSince;
+    }
+
+    private string GetMatchReportCellClass(MatchReport matchReport)
+    {
+        return matchReport.Result ? "text-primary" : "text-danger";
+    }
+
+    private string GetWinRate()
+    {
+        var winRate = "0%";
+        if (this.matchReportMetadata != null &&
+            this.matchReportMetadata.TotalGames != 0 &&
+            this.matchReportMetadata.TotalWins != 0)
+        {
+            var rate = 100 / (double)this.matchReportMetadata.TotalGames;
+            rate *= (double)this.matchReportMetadata.TotalWins;
+
+            winRate = $"{Math.Round(rate, 0)}%";
+        }
+
+        return winRate;
     }
 }
