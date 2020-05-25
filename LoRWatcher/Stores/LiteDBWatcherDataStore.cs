@@ -14,6 +14,8 @@ namespace LoRWatcher.Stores
     public class LiteDBWatcherDataStore
         : IWatcherDataStore
     {
+        private const string CollectionName = "matchreports";
+
         private readonly IConnection<LiteDatabase> connection;
 
         private readonly ILogger logger;
@@ -34,7 +36,7 @@ namespace LoRWatcher.Stores
                 {
                     using (var connection = this.connection.GetConnection())
                     {
-                        var collection = connection.GetCollection<MatchReportDocument>("matchreports");
+                        var collection = connection.GetCollection<MatchReportDocument>(CollectionName);
 
                         var doc = new MatchReportDocument
                         {
@@ -75,7 +77,7 @@ namespace LoRWatcher.Stores
                 {
                     using (var connection = this.connection.GetConnection())
                     {
-                        var collection = connection.GetCollection<MatchReportDocument>("matchreports");
+                        var collection = connection.GetCollection<MatchReportDocument>(CollectionName);
 
                         var query = Query.All(nameof(MatchReportDocument.FinishTime), Query.Descending);
                         var matchReportDocs = collection.Find(query, skip, limit);
@@ -121,11 +123,58 @@ namespace LoRWatcher.Stores
                 {
                     using (var connection = this.connection.GetConnection())
                     {
-                        var collection = connection.GetCollection<MatchReportDocument>("matchreports");
+                        var collection = connection.GetCollection<MatchReportDocument>(CollectionName);
 
                         var totalGames = collection.Count();
                         var totalWins = collection.Count((doc) => doc.Result == true);
                         var totalLosses = totalGames - totalWins;
+
+                        // Retrieving all documents and the performing LINQ queries would be very
+                        // memory intensive, esecially if thousands of match reports have been stored.
+                        // Performing the following SQL queries directly into the DB reduces and
+                        // improves speed and in-memory usage.
+                        var regionsMetadataResult = connection.Execute($"SELECT FIRST(*.{nameof(MatchReportDocument.Regions)}) AS Regions," +                                                                                       // Get the first element from the regions array. As distinct does not work with arrays within arrays, this is fine.
+                                                                       $"DISTINCT(FILTER(*.{nameof(MatchReportDocument.Type)}=> @ != null)) AS TotalTypes, " +                                                                      // Get the game types that have been played with the respective regions.
+                                                                       $"COUNT(*.{nameof(MatchReportDocument.Type)}) AS TotalGames, " +                                                                                             // Get the total amount of game played.
+                                                                       $"COUNT(FILTER(* => @.{nameof(MatchReportDocument.Type)} = '{nameof(GameType.Normal)}')) AS NormalGames, " +                                                 // Get a count of all normal games that have been played.
+                                                                       $"COUNT(FILTER(* => @.{nameof(MatchReportDocument.Result)} = true AND @.{nameof(MatchReportDocument.Type)} = '{nameof(GameType.Normal)}')) AS NormalWins " + // Get a count of all the normal game wins.
+                                                                       $"FROM {CollectionName} " +                                                                                                                                  // Query documents against the match report collection.
+                                                                       $"GROUP BY $.{nameof(MatchReportDocument.Regions)}");                                                                                                        // Group by regions.
+                        var mostPlayedRegions = string.Empty;
+                        var mostPlayedRegionsCount = 0;
+                        var highestRegionsWinRate = string.Empty;
+                        var highestRegionsWinRatePercentage = 0;
+                        if (regionsMetadataResult.HasValues)
+                        {
+                            var highestNormalGames = 0;
+                            var highestWinRate = 0d;
+                            var regionsMetadata = regionsMetadataResult.ToEnumerable();
+                            foreach (var regionMetadata in regionsMetadata)
+                            {
+                                var regions = regionMetadata["Regions"].AsArray;
+                                var normalGames = regionMetadata["NormalGames"].AsInt32;
+                                if (regions?.Any() == true &&
+                                    normalGames > 0)
+                                {
+                                    // Calculate most played region
+                                    if (normalGames > highestNormalGames)
+                                    {
+                                        mostPlayedRegions = $"{string.Join(", ", regions.ToList()).Replace("\"", string.Empty)}";
+                                        mostPlayedRegionsCount = normalGames;
+                                        highestNormalGames = normalGames;
+                                    }
+
+                                    // Calculate highest region win rate
+                                    var normalWins = regionMetadata["NormalWins"].AsInt32;
+                                    var winRate = (double)(100 / normalGames) * normalWins;
+                                    if (winRate > highestWinRate)
+                                    {
+                                        highestRegionsWinRate = $"{string.Join(", ", regions.ToList()).Replace("\"", string.Empty)}";
+                                        highestRegionsWinRatePercentage = (int)Math.Round(winRate, 0);
+                                    }
+                                }
+                            }
+                        }
 
                         this.logger.Debug("Match report metadata retrieved");
 
@@ -133,9 +182,13 @@ namespace LoRWatcher.Stores
                         {
                             TotalGames = totalGames,
                             TotalWins = totalWins,
-                            TotalLosses = totalLosses
+                            TotalLosses = totalLosses,
+                            MostPlayedRegions = mostPlayedRegions,
+                            MostPlayedRegionsCount = mostPlayedRegionsCount,
+                            HighestWinRateRegions = highestRegionsWinRate,
+                            HighestWinRateRegionsPercentage = highestRegionsWinRatePercentage
                         };
-                        
+
                         return matchReportMetadata;
                     }
 
