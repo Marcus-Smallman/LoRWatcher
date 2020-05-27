@@ -1,7 +1,8 @@
 ﻿@page "/"
 
-@using LoRWatcher.Stores
 @using LoRWatcher.Caches
+@using LoRWatcher.Stores
+@using LoRWatcher.Utils 
 @using System.Threading;
 @inject IWatcherDataStore watcherDataStore
 
@@ -116,30 +117,25 @@
     {
         if (firstRender)
         {
-            // TODO: This behaves very weird. Sometimes the graphs loads, and other times it doesn't.
-            // It I believe there are already issues with this, but further work to make this more
-            // reliable and stable needs to be done.
-            await HandleRedrawAsync();
+            await HandleWinLossesChartRedrawAsync();
         }
     }
 
-    private async Task HandleRedrawAsync()
+    private async Task HandleWinLossesChartRedrawAsync()
     {
-        if (winsLossesChart != null)
+        await Retry.InvokeAsync(() => this.winsLossesChart != null, 100, int.MaxValue);
+        await winsLossesChart.Clear();
+        await winsLossesChart.AddLabel(new string[] { "Wins", "Losses" });
+        await winsLossesChart.AddDataSet(new DoughnutChartDataset<int>
         {
-            await winsLossesChart.Clear();
-            await winsLossesChart.AddLabel(new string[] { "Wins", "Losses" });
-            await winsLossesChart.AddDataSet(new DoughnutChartDataset<int>
-            {
-                Label = "Wins and losses",
-                Data = new List<int> { this.matchReportMetadata.TotalWins, this.matchReportMetadata.TotalLosses },
-                BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
-                BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
-                BorderWidth = 1
-            });
+            Label = "Wins and losses",
+            Data = new List<int> { this.matchReportMetadata.TotalWins, this.matchReportMetadata.TotalLosses },
+            BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
+            BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
+            BorderWidth = 1
+        });
 
-            await winsLossesChart.Update();
-        }
+        await winsLossesChart.Update();
     }
 
     private string GetTimeSince(DateTime? dateTime)
