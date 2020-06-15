@@ -67,6 +67,47 @@ namespace LoRWatcher.Stores
             });
         }
 
+        public async Task<MatchReport> GetMatchReportByIdAsync(string id, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<MatchReport>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<MatchReportDocument>(CollectionName);
+
+                        var matchReportDoc = collection.FindById(id);
+
+                        this.logger.Debug($"Match report with id '{id}' retrieved");
+
+                        var matchReport = new MatchReport
+                        {
+                            Id = matchReportDoc.Id,
+                            PlayerDeckCode = matchReportDoc.PlayerDeckCode,
+                            PlayerName = matchReportDoc.PlayerName,
+                            OpponentName = matchReportDoc.OpponentName,
+                            Regions = matchReportDoc.Regions,
+                            Result = matchReportDoc.Result,
+                            FinishTime = matchReportDoc.FinishTime,
+                            Type = matchReportDoc.Type
+                        };
+
+                        return matchReport;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving match report with id '{id}': {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
+
         public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken)
         {
             await Task.Yield();

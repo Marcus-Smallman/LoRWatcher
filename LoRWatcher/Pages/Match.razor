@@ -1,0 +1,52 @@
+﻿@page "/match/{id}"
+
+@using LoRWatcher.Caches
+@using LoRWatcher.Stores
+@using System.Threading;
+
+@inject IWatcherDataStore watcherDataStore
+
+<Container>
+    @if (matchReport == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <Row Class="my-4">
+            <div Class="col-4" Style="text-align: center">
+                <h1><b>@matchReport.PlayerName</b></h1>
+                <h2><b>V</b></h2>
+                <h1><b>@matchReport.OpponentName</b></h1>
+            </div>
+            <div Class="col-8">
+                <Row>
+                    <div Class="col-12">
+                        <a Class="text-black-hint">Result:</a> @(matchReport?.Result == true ? "Won" : "Lost")
+                        <br />
+                        <a Class="text-black-hint">Type:</a> @(matchReport?.Type)
+                        <br />
+                        <a Class="text-black-hint">Regions:</a> @(string.Join(", ", this.matchReport?.Regions ?? Enumerable.Empty<string>()))
+                        <br />
+                        <a Class="text-black-hint">DeckCode:</a> @(matchReport?.PlayerDeckCode)
+                    </div>
+                </Row>
+            </div>
+        </Row>
+    }
+</Container>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private MatchReport matchReport;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (this.Id != null)
+        {
+            this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
+        }
+    }
+}

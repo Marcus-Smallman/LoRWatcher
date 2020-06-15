@@ -2,9 +2,11 @@
 
 @using LoRWatcher.Caches
 @using LoRWatcher.Stores
-@using LoRWatcher.Utils 
+@using LoRWatcher.Utils
 @using System.Threading;
+
 @inject IWatcherDataStore watcherDataStore
+@inject NavigationManager navigationManager
 
 <Container>
     @if (matchReports == null && matchReportMetadata == null)
@@ -109,7 +111,8 @@
 
     private bool RowSelected(MatchReport matchReport)
     {
-        // TODO: Route to match report page.
+        this.navigationManager.NavigateTo($"/match/{matchReport.Id}");
+
         return false;
     }
 
@@ -123,7 +126,7 @@
 
     private async Task HandleWinLossesChartRedrawAsync()
     {
-        await Retry.InvokeAsync(() => this.winsLossesChart != null, 100, int.MaxValue);
+        await Retry.InvokeAsync(() => this.winsLossesChart != null, 500, int.MaxValue);
         await winsLossesChart.Clear();
         await winsLossesChart.AddLabel(new string[] { "Wins", "Losses" });
         await winsLossesChart.AddDataSet(new DoughnutChartDataset<int>
