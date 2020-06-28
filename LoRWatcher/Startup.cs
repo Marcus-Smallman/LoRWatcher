@@ -1,5 +1,5 @@
 ﻿using Blazorise;
-using Blazorise.Icons.Material;
+using Blazorise.Icons.FontAwesome;
 using Blazorise.Material;
 using LiteDB;
 using LoRWatcher.Caches;
@@ -71,7 +71,7 @@ namespace LoRWatcher
                     options.ChangeTextOnKeyPress = true;
                 })
                 .AddMaterialProviders()
-                .AddMaterialIcons();
+                .AddFontAwesomeIcons();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -92,7 +92,7 @@ namespace LoRWatcher
 
             app.ApplicationServices
                   .UseMaterialProviders()
-                  .UseMaterialIcons();
+                  .UseFontAwesomeIcons();
 
             app.UseEndpoints(endpoints =>
             {

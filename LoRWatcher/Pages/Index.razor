@@ -25,7 +25,7 @@
                         <div>
                             <a Class="text-black-hint">Total Games:</a> @(matchReportMetadata.TotalGames) <a Class="text-black-hint" Style="font-size: 10px"><b>@(matchReportMetadata.TotalWins)W @(matchReportMetadata.TotalLosses)L</b></a>
                         </div>
-                        <DoughnutChart @ref="winsLossesChart" TItem="int" />
+                        <DoughnutChart @ref="winsLossesChart" TItem="int" OptionsObject="@winsLossesChartOptions" />
                         <div Style="padding-top: 10px">
                             <a Class="text-black-hint">Win Rate:</a> @(this.GetWinRate())
                         </div>
@@ -70,7 +70,7 @@
                     </DataGridColumn>
                     <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Regions)" Caption="Region(s)">
                         <DisplayTemplate>
-                            @(string.Join(", ",(context as MatchReport)?.Regions ?? Enumerable.Empty<string>()))
+                            @(string.Join(", ", (context as MatchReport)?.Regions ?? Enumerable.Empty<string>()))
                         </DisplayTemplate>
                     </DataGridColumn>
                     <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Type)" Caption="Type" />
@@ -91,7 +91,21 @@
 
     private MatchReportMetadata matchReportMetadata;
 
-    DoughnutChart<int> winsLossesChart;
+    private DoughnutChart<int> winsLossesChart;
+
+    private object winsLossesChartOptions = new
+    {
+        Responsive = true,
+        Animation = new
+        {
+            Duration = 0
+        },
+        Hover = new 
+        {
+            AnimationDuration = 0
+        },
+        ResponsiveAnimationDuration = 0
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,7 +140,7 @@
 
     private async Task HandleWinLossesChartRedrawAsync()
     {
-        await Retry.InvokeAsync(() => this.winsLossesChart != null, 500, int.MaxValue);
+        await Retry.InvokeAsync(() => this.winsLossesChart != null, 1, int.MaxValue);
         await winsLossesChart.Clear();
         await winsLossesChart.AddLabel(new string[] { "Wins", "Losses" });
         await winsLossesChart.AddDataSet(new DoughnutChartDataset<int>
