@@ -10,17 +10,17 @@
     <Authors>Marcus Smallman</Authors>
     <PackageIcon>favicon.ico</PackageIcon>
     <PackageIconUrl />
-    <Version>0.0.5</Version>
+    <Version>0.0.6</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.1" />
-    <PackageReference Include="Blazorise.Material" Version="0.9.1" />
-    <PackageReference Include="Blazorise.Sidebar" Version="0.9.1" />
-    <PackageReference Include="Blazorise.DataGrid" Version="0.9.1" />
-    <PackageReference Include="Blazorise.Charts" Version="0.9.1" />
-    <PackageReference Include="LiteDB" Version="5.0.7" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.5" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.2" />
+    <PackageReference Include="Blazorise.Material" Version="0.9.2" />
+    <PackageReference Include="Blazorise.Sidebar" Version="0.9.2" />
+    <PackageReference Include="Blazorise.DataGrid" Version="0.9.2" />
+    <PackageReference Include="Blazorise.Charts" Version="0.9.2" />
+    <PackageReference Include="LiteDB" Version="5.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.10" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 

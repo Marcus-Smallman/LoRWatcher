@@ -8,9 +8,10 @@ namespace LoRWatcher.Caches
         {
             return gameState switch
             {
+                GameState.Startup => "Starting up",
                 GameState.Offline => "Offline",
                 GameState.Menus => "Menus",
-                GameState.InProgress => "In Progress",
+                GameState.InProgress => "In progress",
                 _ => "Unknown",
             };
         }

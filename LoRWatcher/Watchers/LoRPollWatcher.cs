@@ -93,6 +93,10 @@ namespace LoRWatcher.Watchers
                     var gameResult = await this.loRClient.GetGameResultAsync(cancellationToken);
                     this.GameId = gameResult.GameId;
                 }
+                else
+                {
+                    this.gameStateCache.SetGameState(GameState.Offline);
+                }
             }
             catch (Exception ex)
             {
@@ -148,7 +152,8 @@ namespace LoRWatcher.Watchers
             if (this.activeGameCache.IsEmpty == false)
             {
                 var gameResult = await this.loRClient.GetGameResultAsync(cancellationToken);
-                if (gameResult.GameId != this.GameId)
+                if (gameResult.GameId != this.GameId &&
+                    gameResult.GameId != -1)
                 {
                     this.logger.Debug("Getting match report");
 

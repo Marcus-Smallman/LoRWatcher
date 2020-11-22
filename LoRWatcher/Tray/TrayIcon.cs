@@ -70,6 +70,9 @@ namespace LoRWatcher.Tray
 
                     switch (gameState)
                     {
+                        case GameState.Startup:
+                            statusItem.Image = GetGameStateIcon(Color.Yellow);
+                            break;
                         case GameState.InProgress:
                             statusItem.Image = GetGameStateIcon(Color.Blue);
                             break;
