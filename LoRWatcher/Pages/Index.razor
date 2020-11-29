@@ -13,6 +13,14 @@
     {
         <p><em>Loading...</em></p>
     }
+    else if (matchReportMetadata.TotalGames <= 0)
+    {
+        <div Class="col-12">
+            <h2 class="text-black-hint" style="text-align: center; margin: 20px">
+                <b>No matches have been recored. <br /> Play some matches to start using the LoR Watcher.</b>
+            </h2>
+        </div>
+    }
     else
     {
         <Row Class="my-4">
