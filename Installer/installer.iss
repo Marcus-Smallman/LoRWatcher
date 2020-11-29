@@ -19,7 +19,7 @@ VersionInfoVersion={#Version}
 InfoBeforeFile=info.txt
 
 [Files]
-Source: "Publish\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "Publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{group}\LoR Watcher"; Filename: "{app}\LoR Watcher.exe"
