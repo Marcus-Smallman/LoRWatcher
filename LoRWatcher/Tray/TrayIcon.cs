@@ -36,6 +36,10 @@ namespace LoRWatcher.Tray
                 icon.Visible = true;
                 icon.ShowBalloonTip(2000, "LoR Watcher", "Running", ToolTipIcon.None);
 
+                var versionItem = new ToolStripMenuItem();
+                versionItem.Text = Application.ProductVersion;
+                versionItem.Enabled = false;
+
                 var statusItem = new ToolStripMenuItem();
 
                 var browserItem = new ToolStripMenuItem();
@@ -58,6 +62,8 @@ namespace LoRWatcher.Tray
                 });
 
                 var contextMenuStrip = new ContextMenuStrip();
+                contextMenuStrip.Items.Add(versionItem);
+                contextMenuStrip.Items.Add(new ToolStripSeparator());
                 contextMenuStrip.Items.Add(statusItem);
                 contextMenuStrip.Items.Add(new ToolStripSeparator());
                 contextMenuStrip.Items.AddRange(new[] { browserItem, exitItem });

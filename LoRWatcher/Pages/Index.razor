@@ -142,7 +142,7 @@
     {
         await Retry.InvokeAsync(() => this.winsLossesChart != null, 1, int.MaxValue);
         await winsLossesChart.Clear();
-        await winsLossesChart.AddLabel(new string[] { "Wins", "Losses" });
+        await winsLossesChart.AddLabels(new string[] { "Wins", "Losses" });
         await winsLossesChart.AddDataSet(new DoughnutChartDataset<int>
         {
             Label = "Wins and losses",
