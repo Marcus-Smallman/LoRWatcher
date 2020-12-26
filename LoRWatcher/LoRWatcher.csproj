@@ -10,7 +10,7 @@
     <PackageIcon>favicon.ico</PackageIcon>
     <PackageIconUrl />
     <PlatformTarget>x86</PlatformTarget>
-    <Version>0.0.7</Version>
+    <Version>0.0.8</Version>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
@@ -33,6 +33,9 @@
 
   <ItemGroup>
     <Content Update="wwwroot/**/*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets/**/*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
