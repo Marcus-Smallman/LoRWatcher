@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace LoRWatcher.Tray
@@ -25,9 +26,11 @@ namespace LoRWatcher.Tray
             this.logger = logger;
         }
 
-        public void Configure()
+        public void Configure(CancellationTokenSource tokenSource)
         {
             logger.Debug("Configuring tray icon");
+
+            Application.EnableVisualStyles();
 
             try
             {
@@ -35,6 +38,10 @@ namespace LoRWatcher.Tray
                 icon.Icon = new Icon("./wwwroot/favicon.ico");
                 icon.Visible = true;
                 icon.ShowBalloonTip(2000, "LoR Watcher", "Running", ToolTipIcon.None);
+
+                var versionItem = new ToolStripMenuItem();
+                versionItem.Text = Application.ProductVersion;
+                versionItem.Enabled = false;
 
                 var statusItem = new ToolStripMenuItem();
 
@@ -44,6 +51,15 @@ namespace LoRWatcher.Tray
                 {
                     var url = $"http://{configuration["Client:Address"]}:{configuration["Client:Port"]}";
                     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                });
+
+                var settingsItem = new ToolStripMenuItem();
+                settingsItem.Text = "Settings";
+                settingsItem.Click += new EventHandler((s, e) =>
+                {
+                    var configurationForm = new SettingsForm(configuration, tokenSource);
+
+                    configurationForm.Show();
                 });
 
                 var exitItem = new ToolStripMenuItem();
@@ -58,9 +74,11 @@ namespace LoRWatcher.Tray
                 });
 
                 var contextMenuStrip = new ContextMenuStrip();
+                contextMenuStrip.Items.Add(versionItem);
+                contextMenuStrip.Items.Add(new ToolStripSeparator());
                 contextMenuStrip.Items.Add(statusItem);
                 contextMenuStrip.Items.Add(new ToolStripSeparator());
-                contextMenuStrip.Items.AddRange(new[] { browserItem, exitItem });
+                contextMenuStrip.Items.AddRange(new[] { browserItem, settingsItem, exitItem });
 
                 icon.ContextMenuStrip = contextMenuStrip;
                 icon.Click += (s, e) =>

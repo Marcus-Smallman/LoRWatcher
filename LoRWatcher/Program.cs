@@ -5,6 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using LoRWatcher.Tray;
+using System.Threading;
+using System.Diagnostics;
+using System;
+using LoRWatcher.Logger;
 
 namespace LoRWatcher
 {
@@ -16,16 +20,40 @@ namespace LoRWatcher
 
             var trayIcon = host.Services.GetService<ITrayIcon>();
 
-            Task.Factory.StartNew(() => trayIcon.Configure());
+            var tokenSource = new CancellationTokenSource();
 
-            host.Run();
+            Task.Factory.StartNew(() => trayIcon.Configure(tokenSource));
+
+            try
+            {
+                host.RunAsync(tokenSource.Token).Wait();
+            }
+            catch
+            {
+            }
+
+            if (tokenSource.IsCancellationRequested == true)
+            {
+                try
+                {
+                    var process = Process.GetCurrentProcess();
+
+                    Process.Start(process.MainModule.FileName);
+                }
+                catch (Exception ex)
+                {
+                    var logger = new FileLogger();
+
+                    logger.Error($"Error occurred restarting Watcher: {ex.Message}");
+                }
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             var configuration = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                     .Build();
 
             return Host.CreateDefaultBuilder(args)

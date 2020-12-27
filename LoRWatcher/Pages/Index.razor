@@ -13,6 +13,14 @@
     {
         <p><em>Loading...</em></p>
     }
+    else if (matchReportMetadata.TotalGames <= 0)
+    {
+        <div Class="col-12">
+            <h2 class="text-black-hint" style="text-align: center; margin: 20px">
+                <b>No matches have been recored. <br /> Play some matches to start using the LoR Watcher.</b>
+            </h2>
+        </div>
+    }
     else
     {
         <Row Class="my-4">
@@ -31,12 +39,12 @@
                         </div>
                     </div>
                     <div Class="col-4" Style="margin: auto; text-align: center">
-                        <div>
+                        <!--<div>
                             <a Class="text-black-hint">Most Played Region(s):</a> @(matchReportMetadata.MostPlayedRegions) <a Class="text-black-hint" Style="font-size: 10px"><b>@(matchReportMetadata.MostPlayedRegionsCount)G</b></a>
-                        </div>
-                        <div Style="padding-top: 10px">
+                        </div>-->
+                        <!--<div Style="padding-top: 10px">
                             <a Class="text-black-hint">Highest Win Rate:</a> @(matchReportMetadata.HighestWinRateRegions) <a Class="text-black-hint" Style="font-size: 10px"><b>@(matchReportMetadata.HighestWinRateRegionsPercentage)%</b></a>
-                        </div>
+                        </div>-->
                         <!-- Most used region(s). Highest win rate with region(s) exlcuding expeditions -->
                     </div>
                     <div Class="col-4">
