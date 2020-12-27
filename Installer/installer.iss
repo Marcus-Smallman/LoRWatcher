@@ -14,7 +14,7 @@ UninstallDisplayName=LoR Watcher ({#Version})
 UninstallDisplayIcon={app}\LoR Watcher.exe
 Compression=lzma2
 SolidCompression=yes
-OutputBaseFilename=LoR Watcher Installer
+OutputBaseFilename=LoR Watcher Installer ({#Version})
 VersionInfoVersion={#Version}
 InfoBeforeFile=info.txt
 

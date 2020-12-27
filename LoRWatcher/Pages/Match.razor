@@ -38,6 +38,9 @@
             <div Class="col-5" Style="text-align: center">
                 <a Class="text-black-hint"><b>@(string.Join(", ", this.matchReport?.Regions ?? Enumerable.Empty<string>()))</b></a>
             </div>
+            <div Class="col-2" Style="text-align: center; display: flex">
+                <a Class="text-black-hint" Style="margin: auto">@(matchReport?.Result == true ? "Won" : "Lost")</a>
+            </div>
         </Row>
         <Divider Type="DividerType.TextContent" Text="@(matchReport?.Result == true ? "Won" : "Lost")" />
         @if (matchReport?.PlayerDeckCode != null)
@@ -50,14 +53,27 @@
                     <a Class="text-black-hint">Code: </a>@(matchReport.PlayerDeckCode)
                 </div>
             </Row>
-            <Row Class="my-4">
-                @foreach (var cardCodeAndCount in matchReport.PlayerDeckCode.GetCardsFromCode())
-                {
-                    <div Class="col-12" Style="margin: auto;">
-                        @cardCodeAndCount.Name | @cardCodeAndCount.Count
+            @if (cards != null &&
+                 activeCard != null)
+            {
+                <Row Class="my-4">
+                    <div Class="col-4" Style="margin: auto">
+                        @foreach (var card in cards)
+                        {
+                            <Row Style="padding: 5px">
+                                <Buttons>
+                                    <Button Active="@IsActive(card.CardCode)" Color="Color.Light" Disabled="true">@card.Cost</Button>
+                                    <Button Active="@IsActive(card.CardCode)" Color="Color.Light" Clicked="@((e) => SetActiveCard(card.CardCode))">@card.Name</Button>
+                                    <Button Active="@IsActive(card.CardCode)" Color="Color.Light" Disabled="true">@card.Count</Button>
+                                </Buttons>
+                            </Row>
+                        }
                     </div>
-                }
-            </Row>
+                    <div Class="col-8" Style="text-align: center">
+                        <img Style="width: 50%" src="@($"./assets/set{int.Parse(activeCard.CardCode.Substring(0, 2))}-en_us/en_us/img/cards/{activeCard.CardCode}.png")">
+                    </div>
+                </Row>
+            }
         }
         <!--<Row Class="my-4">
             <div Class="col-12" Style="margin: auto">
@@ -78,16 +94,33 @@
 
     private MatchReport matchReport;
 
+    private IEnumerable<CardData> cards;
+
+    private CardData activeCard;
+
     protected override async Task OnInitializedAsync()
     {
         if (this.Id != null)
         {
             this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
+            this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
+
+            this.activeCard = this.cards.FirstOrDefault();
         }
     }
 
     private void GoHome()
     {
         this.navigationManager.NavigateTo("");
+    }
+
+    private void SetActiveCard(string cardCode)
+    {
+        this.activeCard = cards.FirstOrDefault(c => c.CardCode == cardCode);
+    }
+
+    private bool IsActive(string cardCode)
+    {
+        return activeCard.CardCode == cardCode;
     }
 }

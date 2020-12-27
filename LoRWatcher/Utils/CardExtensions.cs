@@ -41,7 +41,7 @@ namespace LoRWatcher.Utils
             {
                 var allCardData = new List<CardData>();
 
-                var cardDataFilePaths = Directory.GetFiles(@$"{Directory.GetCurrentDirectory()}\Assets", "set*-en_us.json", SearchOption.AllDirectories);
+                var cardDataFilePaths = Directory.GetFiles(@$"{Directory.GetCurrentDirectory()}\wwwroot\assets", "set*-en_us.json", SearchOption.AllDirectories);
                 foreach (var cardDataFilePath in cardDataFilePaths)
                 {
                     var cardData = JsonConvert.DeserializeObject<IEnumerable<CardData>>(File.ReadAllText(cardDataFilePath));
@@ -52,6 +52,8 @@ namespace LoRWatcher.Utils
                 var cardCodeAndCounts = LoRDeckEncoder.GetDeckFromCode(deckCode);
                 foreach (var cardCodeAndCount in cardCodeAndCounts)
                 {
+                    int.TryParse(cardCodeAndCount.CardCode.Substring(0, 2), out int cardSet);
+
                     var card = allCardData.FirstOrDefault(c => c.CardCode == cardCodeAndCount.CardCode);
                     if (card != null)
                     {
@@ -74,7 +76,7 @@ namespace LoRWatcher.Utils
                             Subtypes = card.Subtypes,
                             Supertype = card.Supertype,
                             Rarity = card.Rarity,
-                            Collectible = card.Collectible,
+                            Collectible = card.Collectible
                         });
                     }
                 }
@@ -84,7 +86,7 @@ namespace LoRWatcher.Utils
                 logger.Error($"Error occurred getting card data from assets: {ex.Message}");
             }
 
-            return cards;
+            return cards.OrderBy(c => c.Cost);
         }
     }
 }
