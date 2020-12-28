@@ -31,21 +31,26 @@ namespace LoRWatcher
         {
             services.AddSingleton<HttpClient>();
 
-            services.AddSingleton<ILogger>(s => new FileLogger
-            (
-                new LoggerSettings
-                {
-                    WriteToFile = bool.Parse(this.Configuration["LoggerSettings:WriteToFile"]),
-                    FileDirectory = this.Configuration["LoggerSettings:FileDirectory"],
-                    CleanupPeriodMinutes = double.Parse(this.Configuration["LoggerSettings:CleanupPeriodMinutes"])
-                }
-            ));
-
-            services.AddSingleton<LoRWatcherConfiguration>(s => new LoRWatcherConfiguration
+            services.AddSingleton<LoRConfiguration>(s => new LoRConfiguration
             {
                 Address = this.Configuration["LoR:Address"],
                 Port = int.Parse(this.Configuration["LoR:Port"])
             });
+
+            services.AddSingleton<WatcherConfiguration>(s => new WatcherConfiguration(Program.GetConfigurationFilePath())
+            {
+                Address = this.Configuration["Client:Address"],
+                Port = int.Parse(this.Configuration["Client:Port"])
+            });
+
+            services.AddSingleton<LoggerSettings>(s => new LoggerSettings
+            {
+                WriteToFile = bool.Parse(this.Configuration["LoggerSettings:WriteToFile"]),
+                FileDirectory = this.Configuration["LoggerSettings:FileDirectory"],
+                CleanupPeriodMinutes = double.Parse(this.Configuration["LoggerSettings:CleanupPeriodMinutes"])
+            });
+
+            services.AddSingleton<ILogger>(s => new FileLogger(s.GetRequiredService<LoggerSettings>()));
 
             services.AddSingleton<ITrayIcon, TrayIcon>();
 

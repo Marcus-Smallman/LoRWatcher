@@ -97,7 +97,7 @@ namespace LoRWatcher.Tray
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(110, 23);
             this.textBox1.TabIndex = 4;
-            this.textBox1.Text = configuration["LoR:Address"];
+            this.textBox1.Text = lorConfiguration.Address;
             // 
             // textBox2
             // 
@@ -106,7 +106,7 @@ namespace LoRWatcher.Tray
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(110, 23);
             this.textBox2.TabIndex = 5;
-            this.textBox2.Text = configuration["LoR:Port"];
+            this.textBox2.Text = lorConfiguration.Port.ToString();
             // 
             // label5
             // 
@@ -125,7 +125,7 @@ namespace LoRWatcher.Tray
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(110, 23);
             this.textBox3.TabIndex = 7;
-            this.textBox3.Text = configuration["Client:Port"];
+            this.textBox3.Text = watcherConfiguration.Port.ToString();
             // 
             // label6
             // 
@@ -141,7 +141,7 @@ namespace LoRWatcher.Tray
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(88, 117);
+            this.label7.Location = new System.Drawing.Point(87, 117);
             this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(74, 15);
@@ -157,7 +157,7 @@ namespace LoRWatcher.Tray
             this.checkBox1.Size = new System.Drawing.Size(15, 14);
             this.checkBox1.TabIndex = 10;
             this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.Checked = bool.Parse(configuration["LoggerSettings:WriteToFile"]);
+            this.checkBox1.Checked = loggerSettings.WriteToFile;
             // 
             // textBox4
             // 
@@ -166,7 +166,7 @@ namespace LoRWatcher.Tray
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(110, 23);
             this.textBox4.TabIndex = 11;
-            this.textBox4.Text = configuration["LoggerSettings:FileDirectory"];
+            this.textBox4.Text = loggerSettings.FileDirectory;
             // 
             // textBox5
             // 
@@ -175,7 +175,7 @@ namespace LoRWatcher.Tray
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(110, 23);
             this.textBox5.TabIndex = 12;
-            this.textBox5.Text = configuration["LoggerSettings:CleanupPeriodMinutes"];
+            this.textBox5.Text = loggerSettings.CleanupPeriodMinutes.ToString();
             // 
             // label8
             // 
@@ -190,7 +190,7 @@ namespace LoRWatcher.Tray
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(25, 168);
+            this.label9.Location = new System.Drawing.Point(26, 168);
             this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(137, 15);

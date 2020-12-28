@@ -1,7 +1,9 @@
 ﻿using LoRWatcher.Caches;
 using LoRWatcher.Clients;
+using LoRWatcher.Configuration;
 using LoRWatcher.Logger;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -13,15 +15,15 @@ namespace LoRWatcher.Tray
     public class TrayIcon
         : ITrayIcon
     {
-        private readonly IConfiguration configuration;
+        private readonly IServiceProvider serviceProvider;
 
         private readonly IGameStateCache gameStateCache;
 
         private readonly ILogger logger;
 
-        public TrayIcon(IConfiguration configuration, IGameStateCache gameStateCache, ILogger logger)
+        public TrayIcon(IServiceProvider serviceProvider, IGameStateCache gameStateCache, ILogger logger)
         {
-            this.configuration = configuration;
+            this.serviceProvider = serviceProvider;
             this.gameStateCache = gameStateCache;
             this.logger = logger;
         }
@@ -49,7 +51,8 @@ namespace LoRWatcher.Tray
                 browserItem.Text = "Browser";
                 browserItem.Click += new EventHandler((s, e) =>
                 {
-                    var url = $"http://{configuration["Client:Address"]}:{configuration["Client:Port"]}";
+                    var watcherConfiguration = serviceProvider.GetRequiredService<WatcherConfiguration>();
+                    var url = $"http://{watcherConfiguration.Address}:{watcherConfiguration.Port}";
                     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                 });
 
@@ -57,7 +60,12 @@ namespace LoRWatcher.Tray
                 settingsItem.Text = "Settings";
                 settingsItem.Click += new EventHandler((s, e) =>
                 {
-                    var configurationForm = new SettingsForm(configuration, tokenSource);
+                    var configurationForm = new SettingsForm(
+                        serviceProvider.GetRequiredService<LoRConfiguration>(),
+                        serviceProvider.GetRequiredService<WatcherConfiguration>(),
+                        serviceProvider.GetRequiredService<LoggerSettings>(),
+                        tokenSource,
+                        icon);
 
                     configurationForm.Show();
                 });

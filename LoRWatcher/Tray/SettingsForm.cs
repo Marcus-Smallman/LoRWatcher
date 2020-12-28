@@ -1,4 +1,5 @@
-﻿using LoRWatcher.Logger;
+﻿using LoRWatcher.Configuration;
+using LoRWatcher.Logger;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -12,14 +13,28 @@ namespace LoRWatcher.Tray
 {
     public partial class SettingsForm : Form
     {
-        protected IConfiguration configuration;
+        protected LoRConfiguration lorConfiguration;
+
+        protected WatcherConfiguration watcherConfiguration;
+
+        protected LoggerSettings loggerSettings;
 
         protected CancellationTokenSource cancellationTokenSource;
 
-        public SettingsForm(IConfiguration configuration, CancellationTokenSource tokenSource)
+        protected NotifyIcon trayIcon;
+
+        public SettingsForm(
+            LoRConfiguration lorConfiguration,
+            WatcherConfiguration watcherConfiguration,
+            LoggerSettings loggerSettings,
+            CancellationTokenSource tokenSource,
+            NotifyIcon trayIcon)
         {
-            this.configuration = configuration;
+            this.lorConfiguration = lorConfiguration;
+            this.watcherConfiguration = watcherConfiguration;
+            this.loggerSettings = loggerSettings;
             this.cancellationTokenSource = tokenSource;
+            this.trayIcon = trayIcon;
 
             InitializeComponent();
 
@@ -45,8 +60,7 @@ namespace LoRWatcher.Tray
             {
                 try
                 {
-                    var configPath = $@"{Directory.GetCurrentDirectory()}\appsettings.json";
-                    var configJson = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(configPath));
+                    var configJson = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(watcherConfiguration.ConfigurationFilePath));
 
                     configJson["LoR"]["Address"] = this.textBox1.Text;
                     configJson["LoR"]["Port"] = int.Parse(this.textBox2.Text);
@@ -57,11 +71,12 @@ namespace LoRWatcher.Tray
                     configJson["LoggerSettings"]["FileDirectory"] = this.textBox4.Text;
                     configJson["LoggerSettings"]["CleanupPeriodMinutes"] = int.Parse(this.textBox5.Text);
 
-                    File.WriteAllText(configPath, JsonConvert.SerializeObject(configJson, Formatting.Indented));
+                    File.WriteAllText(watcherConfiguration.ConfigurationFilePath, JsonConvert.SerializeObject(configJson, Formatting.Indented));
 
                     var confirmResult = MessageBox.Show("Restart for changes to take affect", "Restart Watcher", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
                     if (confirmResult == DialogResult.Yes)
                     {
+                        this.trayIcon.Dispose();
                         this.cancellationTokenSource.Cancel();
 
                         this.Close();

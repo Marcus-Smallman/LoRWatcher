@@ -27,7 +27,7 @@ namespace LoRWatcher.Logger
 
             if (string.IsNullOrWhiteSpace(loggerSettings.FileDirectory) == true)
             {
-                loggerSettings.FileDirectory = @$"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\LoR Watcher";
+                loggerSettings.FileDirectory = @$"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\LoR Watcher\Logging";
             }
 
             if (loggerSettings.WriteToFile == true)

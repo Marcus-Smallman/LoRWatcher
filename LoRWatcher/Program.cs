@@ -1,14 +1,14 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Hosting;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using System.IO;
+﻿using LoRWatcher.Logger;
 using LoRWatcher.Tray;
-using System.Threading;
-using System.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
-using LoRWatcher.Logger;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LoRWatcher
 {
@@ -16,6 +16,8 @@ namespace LoRWatcher
     {
         public static void Main(string[] args)
         {
+            // TODO: Create default configuration if it does not exist from appsettings
+
             var host = CreateHostBuilder(args).Build();
 
             var trayIcon = host.Services.GetService<ITrayIcon>();
@@ -51,9 +53,15 @@ namespace LoRWatcher
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
+            var configurationFilePath = GetConfigurationFilePath();
+            if (string.IsNullOrEmpty(configurationFilePath) == true)
+            {
+                Environment.Exit(1);
+            }
+
             var configuration = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: true)
                     .Build();
 
             return Host.CreateDefaultBuilder(args)
@@ -63,6 +71,34 @@ namespace LoRWatcher
                     webBuilder.UseUrls($"http://{configuration["Client:Address"]}:{configuration["Client:Port"]}");
                     webBuilder.UseStartup<Startup>();
                 });
+        }
+
+        public static string GetConfigurationFilePath()
+        {
+            try
+            {
+                var configurationDirectory = $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\LoR Watcher\Configuration";
+                if (Directory.Exists(configurationDirectory) == false)
+                {
+                    Directory.CreateDirectory(configurationDirectory);
+                }
+
+                var configurationFilePath = @$"{configurationDirectory}\appsettings.json";
+                if (File.Exists(configurationFilePath) == false)
+                {
+                    File.Copy($@"{Directory.GetCurrentDirectory()}\appsettings.default.json", configurationFilePath, true);
+                }
+
+                return configurationFilePath;
+            }
+            catch (Exception ex)
+            {
+                var logger = new FileLogger();
+
+                logger.Error($"Error occurred getting configuration: {ex.Message}");
+            }
+
+            return null;
         }
     }
 }

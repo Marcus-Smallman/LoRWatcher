@@ -14,11 +14,11 @@ namespace LoRWatcher.Clients
     {
         private readonly HttpClient httpClient;
 
-        private readonly LoRWatcherConfiguration loRWatcherConfiguration;
+        private readonly LoRConfiguration loRWatcherConfiguration;
 
         private readonly ILogger logger;
 
-        public LoRClient(HttpClient httpClient, LoRWatcherConfiguration loRWatcherConfiguration, ILogger logger)
+        public LoRClient(HttpClient httpClient, LoRConfiguration loRWatcherConfiguration, ILogger logger)
         {
             this.httpClient = httpClient;
             this.loRWatcherConfiguration = loRWatcherConfiguration;
