@@ -16,8 +16,6 @@ namespace LoRWatcher
     {
         public static void Main(string[] args)
         {
-            // TODO: Create default configuration if it does not exist from appsettings
-
             var host = CreateHostBuilder(args).Build();
 
             var trayIcon = host.Services.GetService<ITrayIcon>();
