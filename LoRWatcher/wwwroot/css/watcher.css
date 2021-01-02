@@ -1,0 +1,22 @@
+﻿.watcher-tooltip {
+    text-decoration: none;
+    position: relative;
+}
+
+    .watcher-tooltip span {
+        display: none;
+    }
+
+        .watcher-tooltip span img {
+            max-height: 360px;
+            margin-top: -160px;
+            margin-left: 10px;
+            position: fixed;
+        }
+
+    .watcher-tooltip:hover span {
+        display: initial;
+        position: absolute;
+        z-index: 1000;
+        overflow: hidden;
+    }

@@ -53,24 +53,21 @@
                     <a Class="text-black-hint">Code: </a>@(matchReport.PlayerDeckCode)
                 </div>
             </Row>
-            @if (cards != null &&
-                 activeCard != null)
+            @if (cards != null)
             {
                 <Row Class="my-4">
-                    <div Class="col-4" Style="margin: auto">
+                    <div Class="col-12" Style="margin: auto">
                         @foreach (var card in cards)
                         {
-                            <Row Style="padding: 5px">
-                                <Buttons>
-                                    <Button Active="@IsActive(card.CardCode)" Color="Color.Light" Disabled="true">@card.Cost</Button>
-                                    <Button Active="@IsActive(card.CardCode)" Color="Color.Light" Clicked="@((e) => SetActiveCard(card.CardCode))">@card.Name</Button>
-                                    <Button Active="@IsActive(card.CardCode)" Color="Color.Light" Disabled="true">@card.Count</Button>
-                                </Buttons>
-                            </Row>
+                        <Row Style="padding: 2px">
+                            <a class="watcher-tooltip">
+                                @card.Cost @card.Name @card.Count
+                                <span>
+                                    <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
+                                </span>
+                            </a>
+                        </Row>
                         }
-                    </div>
-                    <div Class="col-8" Style="text-align: center">
-                        <img Style="width: 50%" src="@($"./assets/set{int.Parse(activeCard.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{activeCard.CardCode}.png")">
                     </div>
                 </Row>
             }
@@ -96,31 +93,17 @@
 
     private IEnumerable<CardData> cards;
 
-    private CardData activeCard;
-
     protected override async Task OnInitializedAsync()
     {
         if (this.Id != null)
         {
             this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
             this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
-
-            this.activeCard = this.cards.FirstOrDefault();
         }
     }
 
     private void GoHome()
     {
         this.navigationManager.NavigateTo("");
-    }
-
-    private void SetActiveCard(string cardCode)
-    {
-        this.activeCard = cards.FirstOrDefault(c => c.CardCode == cardCode);
-    }
-
-    private bool IsActive(string cardCode)
-    {
-        return activeCard.CardCode == cardCode;
     }
 }
