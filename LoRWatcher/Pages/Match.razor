@@ -38,7 +38,7 @@
             </div>
         </Row>
         <Row>
-            <div Class="col-5"/>
+            <div Class="col-5" />
             <div Class="col-2" Style="text-align: center; display: flex">
                 <a Class="text-black-hint" Style="margin: auto">@(matchReport?.Result == true ? "Won" : "Lost")</a>
             </div>
@@ -47,10 +47,10 @@
         @if (matchReport?.PlayerDeckCode != null)
         {
             <Row Class="my-4">
-                <div Class="col-2" Style="margin: auto">
+                <div Class="col-1" Style="margin: auto">
                     <h4 Class="text-black-hint" Style="margin: auto">Deck</h4>
                 </div>
-                <div Class="col-10" Style="margin: auto; text-align: right">
+                <div Class="col-11" Style="margin: auto; text-align: right">
                     @(matchReport.PlayerDeckCode)
                     <Tooltip Style="display: inline-block;" Text="Copy Code">
                         <Icon @onclick="async () => { await CopyCodeToClipboard(); }" Name="@("far fa-clipboard fa-lg")" />
@@ -78,7 +78,12 @@
                     <div Class="col-8">
                         <Row Class="my-4" Style="text-align: center; display: block;">
                             <h4>Mana</h4>
-                            <LineChart @ref="manaChart" TItem="int" />
+                            <Row>
+                                <div Class="col-2"/>
+                                <div Class="col-8">
+                                    <BarChart OptionsObject="@manaChartOptions" @ref="manaChart" TItem="int" />
+                                </div>
+                            </Row>
                         </Row>
                         <Row Class="my-4" Style="text-align: center; display: block;">
                             <h4>Regions</h4>
@@ -86,6 +91,7 @@
                         </Row>
                         <Row Class="my-4" Style="text-align: center; display: block;">
                             <h4>Types</h4>
+                            <!-- TODO: Filter by card type, check super type and update assets to latest -->
                         </Row>
                     </div>
                 </Row>
@@ -112,7 +118,7 @@
 
     private IEnumerable<CardData> cards;
 
-    LineChart<int> manaChart;
+    BarChart<int> manaChart;
 
     protected override async Task OnInitializedAsync()
     {
@@ -127,38 +133,57 @@
     {
         if (firstRender)
         {
-            await HandleRedraw();
+            await manaChart.Clear();
+
+            await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetManaChartDataset());
         }
     }
 
-    private async Task HandleRedraw()
+    object manaChartOptions = new
     {
-        await manaChart.Clear();
-
-        await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset());
-    }
-
-    LineChartDataset<int> GetLineChartDataset()
-    {
-        return new LineChartDataset<int>
+        AspectRatio = 2,
+        Tooltips = new
         {
-            Label = "# of randoms",
+            Enabled = false
+        },
+        Legend = new
+        {
+            Display = false
+        },
+        Animation = new
+        {
+            Duration = 0
+        },
+        ResponsiveAnimationDuration = 0
+    };
+
+    BarChartDataset<int> GetManaChartDataset()
+    {
+        return new BarChartDataset<int>
+        {
             Data = GetDeckMana(),
-            BackgroundColor = backgroundColors,
-            BorderColor = borderColors,
-            Fill = true,
-            PointRadius = 2,
-            BorderDash = new List<int> { }
+            BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8),
+            BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8),
+            BorderWidth = 1
         };
     }
 
     string[] Labels = { "0", "1", "2", "3", "4", "5", "6", "+" };
-    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
-    List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
 
     List<int> GetDeckMana()
     {
-        return new List<int> { r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble() };
+
+        return new List<int>
+{
+            this.cards.Count(c => c.Cost == 0),
+            this.cards.Count(c => c.Cost == 1),
+            this.cards.Count(c => c.Cost == 2),
+            this.cards.Count(c => c.Cost == 3),
+            this.cards.Count(c => c.Cost == 4),
+            this.cards.Count(c => c.Cost == 5),
+            this.cards.Count(c => c.Cost == 6),
+            this.cards.Count(c => c.Cost > 6),
+        };
     }
 
     private void GoHome()
