@@ -3,10 +3,13 @@
 @using LoRWatcher.Caches;
 @using LoRWatcher.Stores;
 @using LoRWatcher.Utils;
+@using LoRWatcher.Logger;
 @using System.Threading;
 
+@inject IJSRuntime JSRuntime
 @inject IWatcherDataStore watcherDataStore
 @inject NavigationManager navigationManager
+@inject ILogger logger;
 
 <Container>
     @if (matchReport == null)
@@ -35,9 +38,7 @@
             </div>
         </Row>
         <Row>
-            <div Class="col-5" Style="text-align: center">
-                <a Class="text-black-hint"><b>@(string.Join(", ", this.matchReport?.Regions ?? Enumerable.Empty<string>()))</b></a>
-            </div>
+            <div Class="col-5"/>
             <div Class="col-2" Style="text-align: center; display: flex">
                 <a Class="text-black-hint" Style="margin: auto">@(matchReport?.Result == true ? "Won" : "Lost")</a>
             </div>
@@ -50,24 +51,42 @@
                     <h4 Class="text-black-hint" Style="margin: auto">Deck</h4>
                 </div>
                 <div Class="col-10" Style="margin: auto; text-align: right">
-                    <a Class="text-black-hint">Code: </a>@(matchReport.PlayerDeckCode)
+                    @(matchReport.PlayerDeckCode)
+                    <Tooltip Style="display: inline-block;" Text="Copy Code">
+                        <Icon @onclick="async () => { await CopyCodeToClipboard(); }" Name="@("far fa-clipboard fa-lg")" />
+                    </Tooltip>
                 </div>
             </Row>
             @if (cards != null)
             {
                 <Row Class="my-4">
-                    <div Class="col-12" Style="margin: auto">
-                        @foreach (var card in cards)
-                        {
-                        <Row Style="padding: 2px">
-                            <a class="watcher-tooltip">
-                                @card.Cost @card.Name @card.Count
-                                <span>
-                                    <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
-                                </span>
-                            </a>
+                    <div Class="col-4" Style="margin: auto">
+                        <Row Style="display: block">
+                            @foreach (var card in cards)
+                            {
+                                <Row Style="padding: 2px; margin-left: 20px">
+                                    <a class="watcher-tooltip">
+                                        @card.Cost @card.Name @card.Count
+                                        <span>
+                                            <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
+                                        </span>
+                                    </a>
+                                </Row>
+                            }
                         </Row>
-                        }
+                    </div>
+                    <div Class="col-8">
+                        <Row Class="my-4" Style="text-align: center; display: block;">
+                            <h4>Mana</h4>
+                            <LineChart @ref="manaChart" TItem="int" />
+                        </Row>
+                        <Row Class="my-4" Style="text-align: center; display: block;">
+                            <h4>Regions</h4>
+                            <a Class="text-black-hint"><b>@(string.Join(", ", this.matchReport?.Regions ?? Enumerable.Empty<string>()))</b></a>
+                        </Row>
+                        <Row Class="my-4" Style="text-align: center; display: block;">
+                            <h4>Types</h4>
+                        </Row>
                     </div>
                 </Row>
             }
@@ -93,6 +112,8 @@
 
     private IEnumerable<CardData> cards;
 
+    LineChart<int> manaChart;
+
     protected override async Task OnInitializedAsync()
     {
         if (this.Id != null)
@@ -102,8 +123,59 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await HandleRedraw();
+        }
+    }
+
+    private async Task HandleRedraw()
+    {
+        await manaChart.Clear();
+
+        await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetLineChartDataset());
+    }
+
+    LineChartDataset<int> GetLineChartDataset()
+    {
+        return new LineChartDataset<int>
+        {
+            Label = "# of randoms",
+            Data = GetDeckMana(),
+            BackgroundColor = backgroundColors,
+            BorderColor = borderColors,
+            Fill = true,
+            PointRadius = 2,
+            BorderDash = new List<int> { }
+        };
+    }
+
+    string[] Labels = { "0", "1", "2", "3", "4", "5", "6", "+" };
+    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
+    List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
+
+    List<int> GetDeckMana()
+    {
+        return new List<int> { r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble() };
+    }
+
     private void GoHome()
     {
         this.navigationManager.NavigateTo("");
+    }
+
+    private async Task CopyCodeToClipboard()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", matchReport.PlayerDeckCode);
+            await JSRuntime.InvokeAsync<object>("Alert", "Deck code copied to clipboard");
+        }
+        catch (Exception ex)
+        {
+            logger.Debug($"Error occurred copying deck code to clipboard: {ex.Message}");
+        }
     }
 }
