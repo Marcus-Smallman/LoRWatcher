@@ -50,9 +50,9 @@
                 <div Class="col-1" Style="margin: auto">
                     <h4 Class="text-black-hint" Style="margin: auto">Deck</h4>
                 </div>
-                <div Class="col-11" Style="margin: auto; text-align: right">
-                    @(matchReport.PlayerDeckCode)
-                    <Tooltip Style="display: inline-block;" Text="Copy Code">
+                <div Class="col-11" Style="margin: auto; display: flex; padding-top: 5px;">
+                    <a Style="margin-left: auto;">@(matchReport.PlayerDeckCode)</a>
+                    <Tooltip Style="padding: 5px 5px 0px 5px; margin-top: -5px;" Text="Copy Code">
                         <Icon @onclick="async () => { await CopyCodeToClipboard(); }" Name="@("far fa-clipboard fa-lg")" />
                     </Tooltip>
                 </div>
@@ -60,10 +60,14 @@
             @if (cards != null)
             {
                 <Row Class="my-4">
-                    <div Class="col-4" Style="margin: auto">
+                    <div Class="col-2">
+                    </div>
+                    <div Class="col-5">
                         <Row Style="display: block">
                             @foreach (var card in cards)
                             {
+                                <!-- TODO: Improve the layout of the card and group by card type.
+                                           This grouping can probably utilise the some flex box stuff to make it as compact as possible -->
                                 <Row Style="padding: 2px; margin-left: 20px">
                                     <a class="watcher-tooltip">
                                         @card.Cost @card.Name @card.Count
@@ -75,23 +79,29 @@
                             }
                         </Row>
                     </div>
-                    <div Class="col-8">
-                        <Row Class="my-4" Style="text-align: center; display: block;">
-                            <h4>Mana</h4>
-                            <Row>
-                                <div Class="col-2"/>
-                                <div Class="col-8">
-                                    <BarChart OptionsObject="@manaChartOptions" @ref="manaChart" TItem="int" />
-                                </div>
+                    <div Class="col-3">
+                        <Row Class="my-4" Style="text-align: center; display: grid;">
+                            <Row Style="margin: auto">
+                                <h5 Class="text-black-hint">Regions</h5>
+                            </Row>
+                            <Row Style="margin: auto">
+                                @foreach (var region in this.cards?.Select(c => (c.Region, c.RegionRef)).Distinct().OrderBy(r => r.Region))
+                                {
+                                    <Tooltip Style="padding: 5px 5px 0px 5px; margin-top: -5px;" Text=@(region.Region)>
+                                        <img Style="max-height: 35px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{region.RegionRef.ToLower()}.png")">
+                                        <Badge Style="position: absolute; top: 30px; left: 25px; border: 1px grey solid; border-radius: 5px; font-size: smaller;" Color="Color.Light">
+                                            x@(cards.Count(c => c.Region.Equals(region.Region, StringComparison.OrdinalIgnoreCase)))
+                                        </Badge>
+                                    </Tooltip>
+                                }
                             </Row>
                         </Row>
                         <Row Class="my-4" Style="text-align: center; display: block;">
-                            <h4>Regions</h4>
-                            <a Class="text-black-hint"><b>@(string.Join(", ", this.matchReport?.Regions ?? Enumerable.Empty<string>()))</b></a>
-                        </Row>
-                        <Row Class="my-4" Style="text-align: center; display: block;">
-                            <h4>Types</h4>
-                            <!-- TODO: Filter by card type, check super type and update assets to latest -->
+                            <h5 Class="text-black-hint">Mana Cost</h5>
+                            <Row> <!-- TODO: Remove Y Axis numbers and provide count at the top of each column if possible
+                                             also remove grid lines as well if the above works -->
+                                <BarChart OptionsObject="@manaChartOptions" @ref="manaChart" TItem="int" />
+                            </Row>
                         </Row>
                     </div>
                 </Row>
@@ -107,8 +117,10 @@
                 @("<insert-timeline-here>")
             </div>
         </Row>-->
-    }
-</Container>
+        }
+    </Container>
+
+
 
 @code {
     [Parameter]

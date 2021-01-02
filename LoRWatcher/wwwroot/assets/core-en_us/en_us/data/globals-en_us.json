@@ -6,6 +6,11 @@
       "nameRef": "Allegiance"
     },
     {
+      "description": "Create a random Blade Fragment still needed to restore the blade. Once you’ve cast all 3, create the Blade of the Exile.",
+      "name": "Reforge",
+      "nameRef": "Reforge"
+    },
+    {
       "description": "Attacking with a support unit will buff the unit to its right.",
       "name": "Support",
       "nameRef": "Support"
@@ -21,6 +26,11 @@
       "nameRef": "Toss"
     },
     {
+      "description": "You behold something if you have it in play or hand.",
+      "name": "Behold",
+      "nameRef": "Behold"
+    },
+    {
       "description": "Get this effect when the round ends.",
       "name": "Round End",
       "nameRef": "RoundEnd"
@@ -29,6 +39,11 @@
       "description": "Get this effect when this unit attacks.",
       "name": "Attack",
       "nameRef": "Attack"
+    },
+    {
+      "description": "A unit is buffed when its Power or Health is increased or it gains a new keyword.",
+      "name": "Buffed",
+      "nameRef": "Buffed"
     },
     {
       "description": "Get this effect when a unit attempts to deal damage using its Power, either at the end of battle or with spells. Units with 0 Power can't strike.",
@@ -56,7 +71,7 @@
       "nameRef": "Everywhere"
     },
     {
-      "description": "If you don't have one, gain the attack token. (You can attack this round.)",
+      "description": "If you don't have one, gain the attack token. You can attack this round.",
       "name": "Rally",
       "nameRef": "Rally"
     },
@@ -78,6 +93,11 @@
       "nameRef": "Obliterate"
     },
     {
+      "description": " ",
+      "name": "Targon",
+      "nameRef": "MtTargon"
+    },
+    {
       "description": "A unit's spell-like effect that allows enemy reactions.",
       "name": "Skill",
       "nameRef": "Skill"
@@ -86,6 +106,11 @@
       "description": "While attacking, it strikes both before AND at the same time as its blocker.",
       "name": "Double Attack",
       "nameRef": "DoubleStrike"
+    },
+    {
+      "description": "Bonus if this is the FIRST card you play in a round.",
+      "name": "Daybreak",
+      "nameRef": "Daybreak"
     },
     {
       "description": "Lowest Power, with ties broken by lowest Health then lowest Cost",
@@ -133,9 +158,19 @@
       "nameRef": "Demacia"
     },
     {
+      "description": "Missing Translation",
+      "name": "Can block Elusives",
+      "nameRef": "BlockElusive"
+    },
+    {
       "description": " ",
       "name": "Shadow Isles",
       "nameRef": "ShadowIsles"
+    },
+    {
+      "description": "When I kill a unit, grant me +1|+1.",
+      "name": "Fury",
+      "nameRef": "Fury"
     },
     {
       "description": "Inflicts damage beyond what would kill the target(s) to the enemy Nexus.",
@@ -146,6 +181,11 @@
       "description": "When I'm summoned, refill 1 spell mana.",
       "name": "Attune",
       "nameRef": "Attune"
+    },
+    {
+      "description": "Landmarks take up a space on the board. They can't attack, block, or take damage.",
+      "name": "Landmark",
+      "nameRef": "LandmarkVisualOnly"
     },
     {
       "description": "Negates the next damage the unit would take. Lasts one round.",
@@ -213,7 +253,7 @@
       "nameRef": "Ionia"
     },
     {
-      "description": "Heals fully at the start of each round.",
+      "description": "Heals fully at the end of each round.",
       "name": "Regeneration",
       "nameRef": "Regeneration"
     },
@@ -223,9 +263,19 @@
       "nameRef": "Silenced"
     },
     {
+      "description": "Negates the next enemy spell or skill that would affect me.",
+      "name": "SpellShield",
+      "nameRef": "SpellShield"
+    },
+    {
       "description": "Damage this unit deals heals its Nexus that amount.",
       "name": "Lifesteal",
       "nameRef": "Lifesteal"
+    },
+    {
+      "description": "Bonus if this is NOT the first card you play in a round.",
+      "name": "Nightfall",
+      "nameRef": "Nightfall"
     },
     {
       "description": "You're Enlightened when you have 10 max mana.",
@@ -246,6 +296,16 @@
       "description": " ",
       "name": "Noxus",
       "nameRef": "Noxus"
+    },
+    {
+      "description": "Pick a Celestial card from among 3 to create in hand.",
+      "name": "Invoke",
+      "nameRef": "Invoke"
+    },
+    {
+      "description": "When you play a created card, grant me +1|+0.",
+      "name": "Augment",
+      "nameRef": "Augment"
     },
     {
       "description": "The first time only Scout units attack each round, ready your attack.",
@@ -271,6 +331,11 @@
       "description": " ",
       "name": "Bilgewater",
       "nameRef": "Bilgewater"
+    },
+    {
+      "description": "Draw a non-champion card from the bottom of the enemy deck",
+      "name": "Nab",
+      "nameRef": "Nab"
     },
     {
       "description": "Can choose which enemy unit blocks.",
@@ -300,44 +365,50 @@
   ],
   "regions": [
     {
+      "abbreviation": "MT",
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/regions/icon-targon.png",
+      "name": "Targon",
+      "nameRef": "Targon"
+    },
+    {
       "abbreviation": "NX",
-      "iconAbsolutePath": "http://dd.b.pvp.net/1_0_0/core/en_us/img/regions/icon-noxus.png",
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/regions/icon-noxus.png",
       "name": "Noxus",
       "nameRef": "Noxus"
     },
     {
       "abbreviation": "DE",
-      "iconAbsolutePath": "http://dd.b.pvp.net/1_0_0/core/en_us/img/regions/icon-demacia.png",
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/regions/icon-demacia.png",
       "name": "Demacia",
       "nameRef": "Demacia"
     },
     {
       "abbreviation": "FR",
-      "iconAbsolutePath": "http://dd.b.pvp.net/1_0_0/core/en_us/img/regions/icon-freljord.png",
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/regions/icon-freljord.png",
       "name": "Freljord",
       "nameRef": "Freljord"
     },
     {
       "abbreviation": "SI",
-      "iconAbsolutePath": "http://dd.b.pvp.net/1_0_0/core/en_us/img/regions/icon-shadowisles.png",
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/regions/icon-shadowisles.png",
       "name": "Shadow Isles",
       "nameRef": "ShadowIsles"
     },
     {
       "abbreviation": "IO",
-      "iconAbsolutePath": "http://dd.b.pvp.net/1_0_0/core/en_us/img/regions/icon-ionia.png",
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/regions/icon-ionia.png",
       "name": "Ionia",
       "nameRef": "Ionia"
     },
     {
       "abbreviation": "BW",
-      "iconAbsolutePath": "http://dd.b.pvp.net/1_0_0/core/en_us/img/regions/icon-bilgewater.png",
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/regions/icon-bilgewater.png",
       "name": "Bilgewater",
       "nameRef": "Bilgewater"
     },
     {
       "abbreviation": "PZ",
-      "iconAbsolutePath": "http://dd.b.pvp.net/1_0_0/core/en_us/img/regions/icon-piltoverzaun.png",
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/regions/icon-piltoverzaun.png",
       "name": "Piltover & Zaun",
       "nameRef": "PiltoverZaun"
     }
@@ -376,6 +447,23 @@
     {
       "name": "None",
       "nameRef": "None"
+    }
+  ],
+  "sets": [
+    {
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/sets/set3.png",
+      "name": "Call of the Mountain",
+      "nameRef": "Set3"
+    },
+    {
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/sets/set1.png",
+      "name": "Foundations",
+      "nameRef": "Set1"
+    },
+    {
+      "iconAbsolutePath": "http://dd.b.pvp.net/1_16_0/core/en_us/img/sets/set2.png",
+      "name": "Rising Tides",
+      "nameRef": "Set2"
     }
   ]
 }

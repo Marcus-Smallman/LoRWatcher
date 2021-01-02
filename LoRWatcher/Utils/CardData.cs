@@ -8,6 +8,8 @@ namespace LoRWatcher.Utils
     {
         public string Region { get; set; }
 
+        public string RegionRef { get; set; }
+
         public int Attack { get; set; }
 
         public int Cost { get; set; }
