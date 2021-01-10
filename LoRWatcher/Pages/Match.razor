@@ -98,8 +98,8 @@
                         </Row>
                         <Row Class="my-4" Style="text-align: center; display: block;">
                             <h5 Class="text-black-hint">Mana Cost</h5>
-                            <Row> <!-- TODO: Remove Y Axis numbers and provide count at the top of each column if possible
-                                             also remove grid lines as well if the above works -->
+                            <Row>
+                                <!-- TODO: When possible change card count from tooltip to value above bar -->
                                 <BarChart OptionsObject="@manaChartOptions" @ref="manaChart" TItem="int" />
                             </Row>
                         </Row>
@@ -117,8 +117,8 @@
                 @("<insert-timeline-here>")
             </div>
         </Row>-->
-        }
-    </Container>
+    }
+</Container>
 
 
 
@@ -146,7 +146,7 @@
         if (firstRender)
         {
             await manaChart.Clear();
-
+            
             await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetManaChartDataset());
         }
     }
@@ -156,11 +156,28 @@
         AspectRatio = 2,
         Tooltips = new
         {
-            Enabled = false
+            Enabled = true
         },
         Legend = new
         {
             Display = false
+        },
+        Scales = new
+        {
+            YAxes = new[]
+            {
+                new
+                {
+                    GridLines = new
+                    {
+                        Display = false
+                    },
+                    Ticks = new
+                    {
+                        Display = false
+                    }
+                }
+            }
         },
         Animation = new
         {
@@ -173,6 +190,7 @@
     {
         return new BarChartDataset<int>
         {
+            Label = "Card Count",
             Data = GetDeckMana(),
             BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8),
             BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8),
@@ -186,7 +204,7 @@
     {
 
         return new List<int>
-{
+        {
             this.cards.Count(c => c.Cost == 0),
             this.cards.Count(c => c.Cost == 1),
             this.cards.Count(c => c.Cost == 2),
