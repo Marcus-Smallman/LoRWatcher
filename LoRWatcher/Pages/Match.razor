@@ -65,22 +65,26 @@
                     <div Class="col-5" Style="display: flex; flex-wrap: wrap;">
                         @foreach (var type in this.GetCardTypes())
                         {
-                        <div Class="col-6" Style="text-align: center;">
-                            <h6 Class="text-black-hint" Style="margin-top: .5rem; font-weight: normal;">@(type)(s)</h6>
-                            <Row Style="display: block;">
-                                @foreach (var card in this.cards.Where(c => (c.Type == type && c.Supertype == string.Empty) || (c.Supertype == type)))
-                                {
-                                    <Row Style="padding: 2px;">
-                                        <a class="watcher-tooltip">
-                                            <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 0px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
-                                            <span>
-                                                <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
-                                            </span>
-                                        </a>
+                            var typedCards = this.cards.Where(c => (c.Type == type && c.Supertype == string.Empty) || (c.Supertype == type));
+                            if (typedCards.Any())
+                            {
+                                <div Class="col-6" Style="text-align: center;">
+                                    <h6 Class="text-black-hint" Style="margin-top: .5rem; font-weight: normal;">@(type)(s)</h6>
+                                    <Row Style="display: block;">
+                                        @foreach (var card in typedCards)
+                                        {
+                                            <Row Style="padding: 2px;">
+                                                <a class="watcher-tooltip">
+                                                    <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 0px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
+                                                    <span>
+                                                        <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
+                                                    </span>
+                                                </a>
+                                            </Row>
+                                        }
                                     </Row>
-                                }
-                            </Row>
-                        </div>
+                                </div>
+                            }
                         }
                     </div>
                     <div Class="col-3">
@@ -93,7 +97,7 @@
                                 {
                                     <Tooltip Style="padding: 5px 5px 0px 5px; margin-top: -5px;" Text=@(region.Region)>
                                         <img Style="max-height: 35px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{region.RegionRef.ToLower()}.png")">
-                                        <Badge Style="position: absolute; top: 30px; left: 25px; border: 1px grey solid; border-radius: 5px; font-size: smaller;" Color="Color.Light">
+                                        <Badge Style="position: absolute; top: 30px; left: 25px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
                                             x@(cards.Count(c => c.Region.Equals(region.Region, StringComparison.OrdinalIgnoreCase)))
                                         </Badge>
                                     </Tooltip>
