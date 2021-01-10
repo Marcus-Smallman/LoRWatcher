@@ -30,6 +30,30 @@ namespace LoRWatcher.Utils
             return regions;
         }
 
+        public static string GetTimeSince(this DateTime dateTime)
+        {
+            TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(dateTime);
+            string timeSince;
+            if (timeSinceTime.TotalMinutes < 1)
+            {
+                timeSince = "< 1 minute ago";
+            }
+            else if (timeSinceTime.TotalHours < 1)
+            {
+                timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
+            }
+            else if (timeSinceTime.TotalDays < 1)
+            {
+                timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
+            }
+            else
+            {
+                timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
+            }
+
+            return timeSince;
+        }
+
         public static IEnumerable<CardData> GetCardsFromCode(this string deckCode, ILogger logger = null)
         {
             logger ??= new FileLogger();
@@ -58,7 +82,7 @@ namespace LoRWatcher.Utils
                     if (card != null)
                     {
                         cards.Add(new CardData
-                        {  
+                        {
                             CardCode = cardCodeAndCount.CardCode,
                             Count = cardCodeAndCount.Count,
                             Name = card.Name,

@@ -67,7 +67,7 @@
                     <DataGridCommandColumn TItem="MatchReport" />
                     <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
                         <DisplayTemplate>
-                            @(this.GetTimeSince((context as MatchReport)?.FinishTime.UtcDateTime))
+                            @((context as MatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
                         </DisplayTemplate>
                     </DataGridColumn>
                     <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name" />
@@ -161,33 +161,6 @@
         });
 
         await winsLossesChart.Update();
-    }
-
-    private string GetTimeSince(DateTime? dateTime)
-    {
-        var timeSince = string.Empty;
-        if (dateTime.HasValue)
-        {
-            TimeSpan timeSinceTime = DateTime.UtcNow.Subtract(dateTime.Value);
-            if (timeSinceTime.TotalMinutes < 1)
-            {
-                timeSince = "< 1 minute ago";
-            }
-            else if (timeSinceTime.TotalHours < 1)
-            {
-                timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
-            }
-            else if (timeSinceTime.TotalDays < 1)
-            {
-                timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
-            }
-            else
-            {
-                timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
-            }
-        }
-
-        return timeSince;
     }
 
     private string GetMatchReportCellClass(MatchReport matchReport)

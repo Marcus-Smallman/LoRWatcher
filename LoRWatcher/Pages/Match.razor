@@ -48,7 +48,7 @@
         {
             <Row Class="my-4">
                 <div Class="col-1" Style="margin: auto">
-                    <h4 Class="text-black-hint" Style="margin: auto">Deck</h4>
+                    <h4 Class="text-black-hint" Style="margin: auto; width: 200px;">@(matchReport.FinishTime.UtcDateTime.GetTimeSince())</h4>
                 </div>
                 <div Class="col-11" Style="margin: auto; display: flex; padding-top: 5px;">
                     <a Style="margin-left: auto;">@(matchReport.PlayerDeckCode)</a>
@@ -68,9 +68,9 @@
                             {
                                 <!-- TODO: Improve the layout of the card and group by card type.
                                            This grouping can probably utilise the some flex box stuff to make it as compact as possible -->
-                                <Row Style="padding: 2px; margin-left: 20px">
+                                <Row Style="padding: 2px;">
                                     <a class="watcher-tooltip">
-                                        @card.Cost @card.Name @card.Count
+                                        <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 0px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
                                         <span>
                                             <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
                                         </span>

@@ -85,7 +85,6 @@ namespace LoRWatcher.Logger
                     {
                         File.Delete(oldLogFilePath);
                     }
-
                 }
 
                 this.cleanupTimeUtc = now.AddMinutes(30);

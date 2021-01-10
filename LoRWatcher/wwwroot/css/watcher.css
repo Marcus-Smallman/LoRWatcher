@@ -1,6 +1,6 @@
 ﻿.watcher-tooltip {
-    text-decoration: none;
     position: relative;
+    background-color: #f5f5f5;
 }
 
     .watcher-tooltip span {
@@ -18,5 +18,4 @@
         display: initial;
         position: absolute;
         z-index: 1000;
-        overflow: hidden;
     }
