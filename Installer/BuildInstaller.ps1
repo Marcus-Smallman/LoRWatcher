@@ -16,7 +16,7 @@ if (Test-Path Publish)
     Remove-Item Publish -Force -Recurse
 }
 
-dotnet publish ..\LoRWatcher\LoRWatcher.csproj --output Publish --configuration Release --runtime win-x86 --framework netcoreapp3.1 --self-contained
+dotnet publish ..\LoRWatcher\LoRWatcher.csproj --output Publish --configuration Release --runtime win-x86 --framework net5.0-windows --self-contained
 
 # Build Installer
 if (Test-Path Output)
