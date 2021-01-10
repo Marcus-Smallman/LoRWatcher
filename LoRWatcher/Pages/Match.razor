@@ -99,8 +99,13 @@
                         <Row Class="my-4" Style="text-align: center; display: block;">
                             <h5 Class="text-black-hint">Mana Cost</h5>
                             <Row>
-                                <!-- TODO: When possible change card count from tooltip to value above bar -->
-                                <BarChart OptionsObject="@manaChartOptions" @ref="manaChart" TItem="int" />
+                                <div Class="col-1" />
+                                <div Class="col-10">
+                                    <Row>
+                                        <!-- TODO: When possible change card count from tooltip to value above bar -->
+                                        <BarChart OptionsObject="@manaChartOptions" @ref="manaChart" TItem="int" />
+                                    </Row>
+                                </div>
                             </Row>
                         </Row>
                     </div>
@@ -117,54 +122,52 @@
                 @("<insert-timeline-here>")
             </div>
         </Row>-->
-    }
-</Container>
-
-
-
-@code {
-    [Parameter]
-    public string Id { get; set; }
-
-    private MatchReport matchReport;
-
-    private IEnumerable<CardData> cards;
-
-    BarChart<int> manaChart;
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (this.Id != null)
-        {
-            this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
-            this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
         }
-    }
+    </Container>
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+    @code {
+        [Parameter]
+        public string Id { get; set; }
+
+        private MatchReport matchReport;
+
+        private IEnumerable<CardData> cards;
+
+        private BarChart<int> manaChart;
+
+        protected override async Task OnInitializedAsync()
         {
-            await manaChart.Clear();
-            
-            await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetManaChartDataset());
+            if (this.Id != null)
+            {
+                this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
+                this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
+            }
         }
-    }
 
-    object manaChartOptions = new
-    {
-        AspectRatio = 2,
-        Tooltips = new
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            Enabled = true
-        },
-        Legend = new
+            if (firstRender)
+            {
+                await manaChart.Clear();
+
+                await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetManaChartDataset());
+            }
+        }
+
+        private object manaChartOptions = new
         {
-            Display = false
-        },
-        Scales = new
-        {
-            YAxes = new[]
+            AspectRatio = 2,
+            Tooltips = new
+            {
+                Enabled = true
+            },
+            Legend = new
+            {
+                Display = false
+            },
+            Scales = new
+            {
+                YAxes = new[]
             {
                 new
                 {
@@ -174,63 +177,64 @@
                     },
                     Ticks = new
                     {
-                        Display = false
+                        Display = false,
+                        BeginAtZero = true
                     }
                 }
             }
-        },
-        Animation = new
-        {
-            Duration = 0
-        },
-        ResponsiveAnimationDuration = 0
-    };
-
-    BarChartDataset<int> GetManaChartDataset()
-    {
-        return new BarChartDataset<int>
-        {
-            Label = "Card Count",
-            Data = GetDeckMana(),
-            BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8),
-            BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8),
-            BorderWidth = 1
+            },
+            Animation = new
+            {
+                Duration = 0
+            },
+            ResponsiveAnimationDuration = 0
         };
-    }
 
-    string[] Labels = { "0", "1", "2", "3", "4", "5", "6", "+" };
-
-    List<int> GetDeckMana()
-    {
-
-        return new List<int>
+        private BarChartDataset<int> GetManaChartDataset()
         {
-            this.cards.Count(c => c.Cost == 0),
-            this.cards.Count(c => c.Cost == 1),
-            this.cards.Count(c => c.Cost == 2),
-            this.cards.Count(c => c.Cost == 3),
-            this.cards.Count(c => c.Cost == 4),
-            this.cards.Count(c => c.Cost == 5),
-            this.cards.Count(c => c.Cost == 6),
-            this.cards.Count(c => c.Cost > 6),
+            return new BarChartDataset<int>
+            {
+                Label = "Card Count",
+                Data = GetDeckMana(),
+                BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8),
+                BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8),
+                BorderWidth = 1
+            };
+        }
+
+        private string[] Labels = { "0", "1", "2", "3", "4", "5", "6", "+" };
+
+        private List<int> GetDeckMana()
+        {
+
+            return new List<int>
+{
+            this.cards.Where(c => c.Cost == 0).Sum(c => c.Count),
+            this.cards.Where(c => c.Cost == 1).Sum(c => c.Count),
+            this.cards.Where(c => c.Cost == 2).Sum(c => c.Count),
+            this.cards.Where(c => c.Cost == 3).Sum(c => c.Count),
+            this.cards.Where(c => c.Cost == 4).Sum(c => c.Count),
+            this.cards.Where(c => c.Cost == 5).Sum(c => c.Count),
+            this.cards.Where(c => c.Cost == 6).Sum(c => c.Count),
+            this.cards.Where(c => c.Cost > 6).Sum(c => c.Count),
         };
-    }
-
-    private void GoHome()
-    {
-        this.navigationManager.NavigateTo("");
-    }
-
-    private async Task CopyCodeToClipboard()
-    {
-        try
-        {
-            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", matchReport.PlayerDeckCode);
-            await JSRuntime.InvokeAsync<object>("Alert", "Deck code copied to clipboard");
         }
-        catch (Exception ex)
+
+        private void GoHome()
         {
-            logger.Debug($"Error occurred copying deck code to clipboard: {ex.Message}");
+            this.navigationManager.NavigateTo("");
+        }
+
+        private async Task CopyCodeToClipboard()
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", matchReport.PlayerDeckCode);
+                await JSRuntime.InvokeAsync<object>("Alert", "Deck code copied to clipboard");
+            }
+            catch (Exception ex)
+            {
+                logger.Debug($"Error occurred copying deck code to clipboard: {ex.Message}");
+            }
         }
     }
-}
