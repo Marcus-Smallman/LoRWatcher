@@ -62,22 +62,26 @@
                 <Row Class="my-4">
                     <div Class="col-2">
                     </div>
-                    <div Class="col-5">
-                        <Row Style="display: block">
-                            @foreach (var card in cards)
-                            {
-                                <!-- TODO: Improve the layout of the card and group by card type.
-                                           This grouping can probably utilise the some flex box stuff to make it as compact as possible -->
-                                <Row Style="padding: 2px;">
-                                    <a class="watcher-tooltip">
-                                        <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 0px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
-                                        <span>
-                                            <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
-                                        </span>
-                                    </a>
-                                </Row>
-                            }
-                        </Row>
+                    <div Class="col-5" Style="display: flex; flex-wrap: wrap;">
+                        @foreach (var type in this.GetCardTypes())
+                        {
+                        <div Class="col-6" Style="text-align: center;">
+                            <h6 Class="text-black-hint" Style="margin-top: .5rem; font-weight: normal;">@(type)(s)</h6>
+                            <Row Style="display: block;">
+                                @foreach (var card in this.cards.Where(c => (c.Type == type && c.Supertype == string.Empty) || (c.Supertype == type)))
+                                {
+                                    <Row Style="padding: 2px;">
+                                        <a class="watcher-tooltip">
+                                            <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 0px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
+                                            <span>
+                                                <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
+                                            </span>
+                                        </a>
+                                    </Row>
+                                }
+                            </Row>
+                        </div>
+                        }
                     </div>
                     <div Class="col-3">
                         <Row Class="my-4" Style="text-align: center; display: grid;">
@@ -122,53 +126,53 @@
                 @("<insert-timeline-here>")
             </div>
         </Row>-->
-        }
-    </Container>
+    }
+</Container>
 
-    @code {
-        [Parameter]
-        public string Id { get; set; }
+@code {
+    [Parameter]
+    public string Id { get; set; }
 
-        private MatchReport matchReport;
+    private MatchReport matchReport;
 
-        private IEnumerable<CardData> cards;
+    private IEnumerable<CardData> cards;
 
-        private BarChart<int> manaChart;
+    private BarChart<int> manaChart;
 
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        if (this.Id != null)
         {
-            if (this.Id != null)
-            {
-                this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
-                this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
-            }
+            this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
+            this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
         }
+    }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            if (firstRender)
-            {
-                await manaChart.Clear();
+            await manaChart.Clear();
 
-                await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetManaChartDataset());
-            }
+            await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetManaChartDataset());
         }
+    }
 
-        private object manaChartOptions = new
+    private object manaChartOptions = new
+    {
+        AspectRatio = 2,
+        Tooltips = new
         {
-            AspectRatio = 2,
-            Tooltips = new
-            {
-                Enabled = true
-            },
-            Legend = new
-            {
-                Display = false
-            },
-            Scales = new
-            {
-                YAxes = new[]
-            {
+            Enabled = true
+        },
+        Legend = new
+        {
+            Display = false
+        },
+        Scales = new
+        {
+            YAxes = new[]
+        {
                 new
                 {
                     GridLines = new
@@ -182,32 +186,32 @@
                     }
                 }
             }
-            },
-            Animation = new
-            {
-                Duration = 0
-            },
-            ResponsiveAnimationDuration = 0
+        },
+        Animation = new
+        {
+            Duration = 0
+        },
+        ResponsiveAnimationDuration = 0
+    };
+
+    private BarChartDataset<int> GetManaChartDataset()
+    {
+        return new BarChartDataset<int>
+        {
+            Label = "Card Count",
+            Data = GetDeckMana(),
+            BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8),
+            BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8),
+            BorderWidth = 1
         };
+    }
 
-        private BarChartDataset<int> GetManaChartDataset()
-        {
-            return new BarChartDataset<int>
-            {
-                Label = "Card Count",
-                Data = GetDeckMana(),
-                BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8),
-                BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8),
-                BorderWidth = 1
-            };
-        }
+    private string[] Labels = { "0", "1", "2", "3", "4", "5", "6", "+" };
 
-        private string[] Labels = { "0", "1", "2", "3", "4", "5", "6", "+" };
+    private List<int> GetDeckMana()
+    {
 
-        private List<int> GetDeckMana()
-        {
-
-            return new List<int>
+        return new List<int>
 {
             this.cards.Where(c => c.Cost == 0).Sum(c => c.Count),
             this.cards.Where(c => c.Cost == 1).Sum(c => c.Count),
@@ -218,23 +222,57 @@
             this.cards.Where(c => c.Cost == 6).Sum(c => c.Count),
             this.cards.Where(c => c.Cost > 6).Sum(c => c.Count),
         };
-        }
+    }
 
-        private void GoHome()
-        {
-            this.navigationManager.NavigateTo("");
-        }
+    private void GoHome()
+    {
+        this.navigationManager.NavigateTo("");
+    }
 
-        private async Task CopyCodeToClipboard()
+    private async Task CopyCodeToClipboard()
+    {
+        try
         {
-            try
-            {
-                await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", matchReport.PlayerDeckCode);
-                await JSRuntime.InvokeAsync<object>("Alert", "Deck code copied to clipboard");
-            }
-            catch (Exception ex)
-            {
-                logger.Debug($"Error occurred copying deck code to clipboard: {ex.Message}");
-            }
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", matchReport.PlayerDeckCode);
+            await JSRuntime.InvokeAsync<object>("Alert", "Deck code copied to clipboard");
+        }
+        catch (Exception ex)
+        {
+            logger.Debug($"Error occurred copying deck code to clipboard: {ex.Message}");
         }
     }
+
+    private IEnumerable<string> GetCardTypes()
+    {
+        var cardTypes = Enumerable.Empty<string>();
+
+        var types = this.cards
+            .Select(c => c.Type)
+            .Where(s => s != string.Empty)
+            .Distinct();
+
+        var superTypes = this.cards
+            .Select(c => c.Supertype)
+            .Where(s => s != string.Empty)
+            .Distinct();
+
+        if (types != null &&
+            types.Any() == true)
+        {
+            if (superTypes != null &&
+                superTypes.Any() == true)
+            {
+                cardTypes = types.Concat(superTypes);
+            }
+            else
+            {
+                cardTypes = types;
+            }
+
+        }
+
+        return cardTypes
+            .Distinct()
+            .OrderByDescending(s => s);
+    }
+}
