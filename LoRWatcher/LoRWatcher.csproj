@@ -4,13 +4,13 @@
     <OutputType>WinExe</OutputType>
     <PackageId>LoR Watcher</PackageId>
     <AssemblyName>LoR Watcher</AssemblyName>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
     <Authors>Marcus Smallman</Authors>
     <PackageIcon>favicon.ico</PackageIcon>
     <PackageIconUrl />
     <PlatformTarget>x86</PlatformTarget>
-    <Version>0.0.8</Version>
+    <Version>0.1.0</Version>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 

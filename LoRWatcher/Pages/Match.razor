@@ -19,11 +19,8 @@
     else
     {
         <Row Class="my-4">
-            <div Class="col-6" Style="margin: auto">
+            <div Class="col-12" Style="margin: auto">
                 <Icon Class="text-black-hint" Style="cursor: pointer" @onclick="@((e) => { this.GoHome(); })" Name="@("fa-chevron-left fa-2x")" />
-            </div>
-            <div Class="col-6">
-                <h4 Class="text-black-hint" Style="text-align: right; margin: auto">@(matchReport?.Type)</h4>
             </div>
         </Row>
         <Row Class="@(matchReport?.Result == true ? "text-primary" : "text-danger")" Style="margin-top: 1.5rem!important;">
@@ -93,12 +90,32 @@
                                 <h5 Class="text-black-hint">Regions</h5>
                             </Row>
                             <Row Style="margin: auto">
-                                @foreach (var region in this.cards?.Select(c => (c.Region, c.RegionRef)).Distinct().OrderBy(r => r.Region))
+                                @foreach (var region in this.cards?.SelectMany(c =>
+                                {
+                                    // TODO: Finish multi region support!
+                                    var regions = c.Regions;
+                                    var regionsRef = c.RegionsRef;
+                                    if (regions == null)
+                                    {
+                                       regions = new[]
+                                       {
+                                           c.Region
+                                       };
+                                    }
+                                    if (regionsRef == null)
+                                    {
+                                       regionsRef = new[]
+                                       {
+                                           c.RegionRef
+                                       };
+                                    }
+                                    return (Region: c.Region ?? "Runeterra", RegionRef: c.RegionRef ?? "runeterra");
+                                }).Distinct().OrderBy(r => r.Region))
                                 {
                                     <Tooltip Style="padding: 5px 5px 0px 5px; margin-top: -5px;" Text=@(region.Region)>
                                         <img Style="max-height: 35px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{region.RegionRef.ToLower()}.png")">
                                         <Badge Style="position: absolute; top: 30px; left: 25px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
-                                            x@(cards.Count(c => c.Region.Equals(region.Region, StringComparison.OrdinalIgnoreCase)))
+                                            x@(cards.Count(c => (c.Region ?? "Runeterra").Equals(region.Region, StringComparison.OrdinalIgnoreCase)))
                                         </Badge>
                                     </Tooltip>
                                 }
@@ -148,6 +165,7 @@
         if (this.Id != null)
         {
             this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
+            // TODO: Card asset data has been updated so that region is now an array as you can have multi-region. Fix this!!
             this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
         }
     }

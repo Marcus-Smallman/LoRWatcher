@@ -10,6 +10,10 @@ namespace LoRWatcher.Utils
 
         public string RegionRef { get; set; }
 
+        public IEnumerable<string> Regions { get; set; }
+
+        public IEnumerable<string> RegionsRef { get; set; }
+
         public int Attack { get; set; }
 
         public int Cost { get; set; }

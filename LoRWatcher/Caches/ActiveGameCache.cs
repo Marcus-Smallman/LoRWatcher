@@ -17,18 +17,15 @@ namespace LoRWatcher.Caches
     {
         private readonly ILogger logger;
 
-        private readonly IActiveExpeditionCache activeExpeditionCache;
-
         private readonly IGameClient loRClient;
 
         private MatchReport currentMatch;
 
         public bool IsEmpty { get => currentMatch == null; }
 
-        public ActiveGameCache(IGameClient loRClient, IActiveExpeditionCache activeExpeditionCache, ILogger logger)
+        public ActiveGameCache(IGameClient loRClient, ILogger logger)
         {
             this.loRClient = loRClient;
-            this.activeExpeditionCache = activeExpeditionCache;
             this.logger = logger;
         }
 
@@ -62,7 +59,7 @@ namespace LoRWatcher.Caches
 
             if (matchReport == null)
             {
-                this.logger.Debug("No match to report");
+                this.logger.Info("No match to report");
             }
 
             return matchReport;
@@ -80,10 +77,9 @@ namespace LoRWatcher.Caches
 
             var activeDecklist = await this.loRClient.GetActiveDecklistAsync(cancellationToken);
             if (activeDecklist != null &&
-                activeDecklist.DeckCode != null &&
                 activeDecklist.CardsInDeck.Any())
             {
-                this.logger.Debug($"Active decklist: {JsonConvert.SerializeObject(activeDecklist)}");
+                this.logger.Info($"Active decklist: {JsonConvert.SerializeObject(activeDecklist)}");
 
                 // TODO: Looks like there is an issue with the active decklist returned from the client being incorrect
                 // This can be changed to use the deck code returned from the client once fixed (02/05/20).
@@ -97,35 +93,18 @@ namespace LoRWatcher.Caches
 
                 var activeDeckCode = LoRDeckEncoder.GetCodeFromDeck(cards);
 
-                this.logger.Debug($"Retrieved active game deck code: {activeDeckCode}");
+                this.logger.Info($"Retrieved active game deck code: {activeDeckCode}");
 
                 cards.Print(this.logger);
-
-                var gameType = await this.GetGameTypeAsync(activeDeckCode, cancellationToken);
 
                 this.currentMatch = new MatchReport
                 {
                     PlayerName = positionalRectangles.PlayerName,
                     OpponentName = positionalRectangles.OpponentName,
                     PlayerDeckCode = activeDeckCode,
-                    Regions = cards.GetRegions(),
-                    Type = gameType
+                    Regions = cards.GetRegions()
                 };
             }
-        }
-
-        private async Task<GameType> GetGameTypeAsync(string activeDeckCode, CancellationToken cancellationToken)
-        {
-            // TODO: There could be an issue where by if the player is in a non expedition match, but the
-            // the active deck matches there active expedition deck, we will record it as a expedition match,
-            // when in fact is not.
-            var activeExpeditionDeckCode = await this.activeExpeditionCache.GetDeckCodeAsync(cancellationToken);
-            if (activeExpeditionDeckCode == activeDeckCode)
-            {
-                return GameType.Expedition;
-            }
-
-            return GameType.Normal;
         }
     }
 }

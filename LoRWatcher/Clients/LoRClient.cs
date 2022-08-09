@@ -162,12 +162,12 @@ namespace LoRWatcher.Clients
                 }
                 catch (HttpRequestException ex)
                 {
-                    if (ex.Message != "No connection could be made because the target machine actively refused it.")
+                    if (ex.Message.StartsWith("No connection could be made because the target machine actively refused it.") == false)
                     {
                         throw;
                     }
 
-                    this.logger.Warning($"Game client not active");
+                    this.logger.Debug($"Game client not active");
                 }
             }
             catch (Exception ex)

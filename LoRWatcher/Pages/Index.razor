@@ -81,7 +81,6 @@
                             @(string.Join(", ", (context as MatchReport)?.Regions ?? Enumerable.Empty<string>()))
                         </DisplayTemplate>
                     </DataGridColumn>
-                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Type)" Caption="Type" />
                 </DataGrid>
             </div>
         </Row>

@@ -24,8 +24,6 @@ namespace LoRWatcher.Watchers
 
         private readonly IActiveGameCache activeGameCache;
 
-        private readonly IActiveExpeditionCache activeExpeditionCache;
-
         private readonly IGameStateCache gameStateCache;
 
         private readonly IWatcherDataStore watcherDataStore;
@@ -35,7 +33,6 @@ namespace LoRWatcher.Watchers
         public LoRPollWatcher(
             IGameClient loRClient,
             IActiveGameCache activeGameCache,
-            IActiveExpeditionCache activeExpeditionCache,
             IGameStateCache gameStateCache,
             IWatcherDataStore watcherDataStore,
             ILogger logger)
@@ -45,7 +42,6 @@ namespace LoRWatcher.Watchers
 
             this.loRClient = loRClient;
             this.activeGameCache = activeGameCache;
-            this.activeExpeditionCache = activeExpeditionCache;
             this.gameStateCache = gameStateCache;
             this.watcherDataStore = watcherDataStore;
             this.logger = logger;
@@ -92,6 +88,8 @@ namespace LoRWatcher.Watchers
                 {
                     var gameResult = await this.loRClient.GetGameResultAsync(cancellationToken);
                     this.GameId = gameResult.GameId;
+
+                    this.logger.Info($"Watcher is now active. Initial game id: {this.GameId}");
                 }
                 else
                 {
@@ -115,12 +113,6 @@ namespace LoRWatcher.Watchers
                     case GameState.Menus:
                         this.PollIntervalMilliseconds = 500;
                         this.CanUpdateActiveMatch = true;
-
-                        var expeditionsState = await this.loRClient.GetExpeditionsStateAsync(cancellationToken);
-                        if (expeditionsState.IsActive == true)
-                        {
-                            this.activeExpeditionCache.UpdateState(expeditionsState);
-                        }
 
                         this.logger.Debug("Waiting for active match");
                         break;
@@ -155,12 +147,12 @@ namespace LoRWatcher.Watchers
                 if (gameResult.GameId != this.GameId &&
                     gameResult.GameId != -1)
                 {
-                    this.logger.Debug("Getting match report");
+                    this.logger.Info("Getting match report");
 
                     var matchReport = await this.activeGameCache.GetMatchReportAsync(cancellationToken);
                     if (matchReport != null)
                     {
-                        this.logger.Debug("Reporting match");
+                        this.logger.Info("Reporting match");
 
                         await this.watcherDataStore.ReportGameAsync(matchReport, cancellationToken);
                     }

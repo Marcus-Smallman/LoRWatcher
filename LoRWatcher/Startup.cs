@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Net.Http;
 
 namespace LoRWatcher
@@ -43,9 +44,16 @@ namespace LoRWatcher
                 Port = int.Parse(this.Configuration["Client:Port"])
             });
 
+            var minimumLogLevel = LogLevel.Info;
+            if (Enum.TryParse<LogLevel>(this.Configuration["LoggerSettings:MinimumLogLevel"], out LogLevel configLogLevel) == true)
+            {
+                minimumLogLevel = configLogLevel;
+            }
+
             services.AddSingleton<LoggerSettings>(s => new LoggerSettings
             {
                 WriteToFile = bool.Parse(this.Configuration["LoggerSettings:WriteToFile"]),
+                MinimumLogLevel = minimumLogLevel,
                 FileDirectory = this.Configuration["LoggerSettings:FileDirectory"],
                 CleanupPeriodMinutes = double.Parse(this.Configuration["LoggerSettings:CleanupPeriodMinutes"])
             });
@@ -54,14 +62,13 @@ namespace LoRWatcher
 
             services.AddSingleton<ITrayIcon, TrayIcon>();
 
-            services.AddTransient<IGameClient, LoRClient>();
+            services.AddSingleton<IGameClient, LoRClient>();
 
-            services.AddTransient<IWatcherDataStore, LiteDBWatcherDataStore>();
+            services.AddSingleton<IWatcherDataStore, LiteDBWatcherDataStore>();
 
             services.AddSingleton<IConnection<LiteDatabase>, LiteDBConnection>();
 
             services.AddSingleton<IActiveGameCache, ActiveGameCache>();
-            services.AddSingleton<IActiveExpeditionCache, ActiveExpeditionCache>();
             services.AddSingleton<IGameStateCache, GameStateCache>();
 
             services.AddHostedService<LoRPollWatcher>();

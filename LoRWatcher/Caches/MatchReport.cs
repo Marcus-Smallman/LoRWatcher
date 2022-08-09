@@ -16,8 +16,7 @@ namespace LoRWatcher.Caches
                 PlayerDeckCode = matchReport.PlayerDeckCode,
                 Regions = matchReport.Regions,
                 Result = matchReport.Result,
-                FinishTime = matchReport.FinishTime,
-                Type = matchReport.Type
+                FinishTime = matchReport.FinishTime
             };
         }
 
@@ -34,7 +33,5 @@ namespace LoRWatcher.Caches
         public bool Result { get; set; }
 
         public DateTimeOffset FinishTime { get; set; }
-
-        public GameType Type { get; set; }
     }
 }

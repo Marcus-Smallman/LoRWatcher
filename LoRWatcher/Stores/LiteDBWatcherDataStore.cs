@@ -46,13 +46,12 @@ namespace LoRWatcher.Stores
                             OpponentName = matchReport.OpponentName,
                             Regions = matchReport.Regions,
                             Result = matchReport.Result,
-                            FinishTime = matchReport.FinishTime.UtcDateTime,
-                            Type = matchReport.Type
+                            FinishTime = matchReport.FinishTime.UtcDateTime
                         };
 
                         collection.Insert(doc);
 
-                        this.logger.Debug("Match report stored");
+                        this.logger.Info("Match report stored");
 
                         return true;
                     }
@@ -91,8 +90,7 @@ namespace LoRWatcher.Stores
                             OpponentName = matchReportDoc.OpponentName,
                             Regions = matchReportDoc.Regions,
                             Result = matchReportDoc.Result,
-                            FinishTime = matchReportDoc.FinishTime,
-                            Type = matchReportDoc.Type
+                            FinishTime = matchReportDoc.FinishTime
                         };
 
                         return matchReport;
@@ -136,8 +134,7 @@ namespace LoRWatcher.Stores
                                 OpponentName = matchReportDoc.OpponentName,
                                 Regions = matchReportDoc.Regions,
                                 Result = matchReportDoc.Result,
-                                FinishTime = matchReportDoc.FinishTime,
-                                Type = matchReportDoc.Type
+                                FinishTime = matchReportDoc.FinishTime
                             });
                         }
 

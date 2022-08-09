@@ -22,6 +22,7 @@ namespace LoRWatcher.Logger
             loggerSettings ??= new LoggerSettings
             {
                 WriteToFile = true,
+                MinimumLogLevel = LogLevel.Info,
                 CleanupPeriodMinutes = 180 // 180 minutes == 3 hours
             };
 
@@ -63,11 +64,20 @@ namespace LoRWatcher.Logger
 
         public void Log(LogLevel logLevel, string message)
         {
-            if (this.loggerSettings.WriteToFile == true)
+            var canBeLogged = false;
+            if (logLevel >= this.loggerSettings.MinimumLogLevel)
+            {
+                canBeLogged = true;
+            }
+
+            if (this.loggerSettings.WriteToFile == true &&
+                canBeLogged == true)
             {
                 this.CleanupLogs();
 
-                this.WriteLog($"|{DateTime.UtcNow.ToString("dd-MM-yyyy HH:mm:ss.fff")}|{logLevel.ToString()}|{message}|");
+                var logMessage = $"|{DateTime.UtcNow.ToString("dd-MM-yyyy HH:mm:ss.fff")}|{logLevel.ToString()}|{message}|";
+
+                this.WriteLog(logMessage);
             }
         }
 
