@@ -67,6 +67,7 @@ namespace LoRWatcher
                 {
                     webBuilder.UseConfiguration(configuration);
                     webBuilder.UseUrls($"http://{configuration["Client:Address"]}:{configuration["Client:Port"]}");
+                    webBuilder.UseSetting(WebHostDefaults.DetailedErrorsKey, "true");
                     webBuilder.UseStartup<Startup>();
                 });
         }

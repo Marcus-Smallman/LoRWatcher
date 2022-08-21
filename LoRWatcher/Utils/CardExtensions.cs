@@ -90,6 +90,8 @@ namespace LoRWatcher.Utils
                             LevelupDescription = card.LevelupDescription,
                             Region = card.Region,
                             RegionRef = card.RegionRef,
+                            Regions = card.Regions,
+                            RegionRefs = card.RegionRefs,
                             Cost = card.Cost,
                             Attack = card.Attack,
                             Health = card.Health,

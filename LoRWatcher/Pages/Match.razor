@@ -90,32 +90,60 @@
                                 <h5 Class="text-black-hint">Regions</h5>
                             </Row>
                             <Row Style="margin: auto">
-                                @foreach (var region in this.cards?.SelectMany(c =>
+                                <!-- TODO: Collate these into one method that can be used as this currently splits up the same regions whether the new structure is used or the old one.. -->
+                                <!--Print regions using the old structure-->
+                                @foreach (var region in this.cards
+                               ?.Where(c => string.IsNullOrWhiteSpace(c.Region) == false && string.IsNullOrWhiteSpace(c.RegionRef) == false)
+                               .Select(c => (c.Region, c.RegionRef))
+                               .Distinct()
+                               .OrderBy(r => r.Region))
                                 {
-                                    // TODO: Finish multi region support!
-                                    var regions = c.Regions;
-                                    var regionsRef = c.RegionsRef;
-                                    if (regions == null)
-                                    {
-                                       regions = new[]
-                                       {
-                                           c.Region
-                                       };
-                                    }
-                                    if (regionsRef == null)
-                                    {
-                                       regionsRef = new[]
-                                       {
-                                           c.RegionRef
-                                       };
-                                    }
-                                    return (Region: c.Region ?? "Runeterra", RegionRef: c.RegionRef ?? "runeterra");
-                                }).Distinct().OrderBy(r => r.Region))
-                                {
-                                    <Tooltip Style="padding: 5px 5px 0px 5px; margin-top: -5px;" Text=@(region.Region)>
+                                    <Tooltip Style="position: relative; padding: 5px 5px 0px 5px; margin-top: -5px;" Text=@(region.Region)>
                                         <img Style="max-height: 35px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{region.RegionRef.ToLower()}.png")">
-                                        <Badge Style="position: absolute; top: 30px; left: 25px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
-                                            x@(cards.Count(c => (c.Region ?? "Runeterra").Equals(region.Region, StringComparison.OrdinalIgnoreCase)))
+                                        <Badge Style="position: absolute; margin-top: 25px; margin-left: -15px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
+                                            x@(cards.Count(c => c.Region?.Equals(region.Region) ?? false))
+                                        </Badge>
+                                    </Tooltip>
+                                }
+                                <!--Print regions using the new structure-->
+                                @foreach (var regions in this.cards
+                               .Where(c =>
+                               {
+                                   if (string.IsNullOrWhiteSpace(c.Region) &&
+                                   string.IsNullOrWhiteSpace(c.RegionRef) &&
+                                   c.Regions != null &&
+                                   c.Regions.Any() &&
+                                   c.RegionRefs != null &&
+                                   c.RegionRefs.Any())
+                                   {
+                                       return true;
+                                   }
+
+                                   return false;
+                               })
+                               .Select(c => (c.Regions, c.RegionRefs))
+                               .DistinctBy(regions => string.Join(", ", regions.Regions))
+                               .OrderBy(regions => string.Join(", ", regions.Regions)))
+                                {
+                                    <Tooltip Style="position: relative; padding: 5px 5px 0px 5px; margin-top: -5px;" Text=@(string.Join(", ", regions.Regions))>
+                                        @foreach (var regionRefs in regions.RegionRefs)
+                                        {
+                                            <img Style="max-height: 35px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{regionRefs.ToLower()}.png")">
+                                        }
+                                        <Badge Style="position: absolute; margin-top: 25px; margin-left: -15px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
+                                            x@(cards.Count(c =>
+                            {
+                            if (c.Regions != null &&
+                            c.Regions.Any())
+                            {
+                            var cRegions = string.Join(", ", c.Regions);
+                            var dRegions = string.Join(", ", regions.Regions);
+
+                            return cRegions == dRegions;
+                            }
+
+                            return false;
+                            }))
                                         </Badge>
                                     </Tooltip>
                                 }
@@ -144,7 +172,7 @@
         </Row>
         <Row Class="my-4">
             <div Class="col-12" Style="margin: auto">
-                @("<insert-timeline-here>")
+        @("<insert-timeline-here>")
             </div>
         </Row>-->
     }
@@ -193,19 +221,16 @@
         },
         Scales = new
         {
-            YAxes = new[]
-        {
-                new
+            Y = new
+            {
+                Grid = new
                 {
-                    GridLines = new
-                    {
-                        Display = false
-                    },
-                    Ticks = new
-                    {
-                        Display = false,
-                        BeginAtZero = true
-                    }
+                    Display = false
+                },
+                Ticks = new
+                {
+                    Display = false,
+                    BeginAtZero = true
                 }
             }
         },
@@ -219,13 +244,13 @@
     private BarChartDataset<int> GetManaChartDataset()
     {
         return new BarChartDataset<int>
-        {
-            Label = "Card Count",
-            Data = GetDeckMana(),
-            BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8),
-            BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8),
-            BorderWidth = 1
-        };
+            {
+                Label = "Card Count",
+                Data = GetDeckMana(),
+                BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8).ToArray(),
+                BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8).ToArray(),
+                BorderWidth = 1
+            };
     }
 
     private string[] Labels = { "0", "1", "2", "3", "4", "5", "6", "+" };
@@ -248,7 +273,7 @@
 
     private void GoHome()
     {
-        this.navigationManager.NavigateTo("");
+        this.navigationManager.NavigateTo("", true);
     }
 
     private async Task CopyCodeToClipboard()
@@ -256,6 +281,8 @@
         try
         {
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", matchReport.PlayerDeckCode);
+
+            // TODO: Create custom pop up for this.
             await JSRuntime.InvokeAsync<object>("Alert", "Deck code copied to clipboard");
         }
         catch (Exception ex)

@@ -9,6 +9,7 @@
 @inject NavigationManager navigationManager
 
 <Container>
+    <!-- TODO: Flickers occur when loading homepage... this is possibly due to this if/else here and the data taking a short time to load in. This could be made smoother somehow. -->
     @if (matchReports == null && matchReportMetadata == null)
     {
         <p><em>Loading...</em></p>
@@ -33,7 +34,9 @@
                         <div>
                             <a Class="text-black-hint">Total Games:</a> @(matchReportMetadata.TotalGames) <a Class="text-black-hint" Style="font-size: 10px"><b>@(matchReportMetadata.TotalWins)W @(matchReportMetadata.TotalLosses)L</b></a>
                         </div>
-                        <DoughnutChart @ref="winsLossesChart" TItem="int" OptionsObject="@winsLossesChartOptions" />
+                        <div class="chart-container" style="height:100px">
+                            <DoughnutChart @ref="winsLossesChart" TItem="int" OptionsObject="@winsLossesChartOptions" />
+                        </div>
                         <div Style="padding-top: 10px">
                             <a Class="text-black-hint">Win Rate:</a> @(this.GetWinRate())
                         </div>
@@ -56,14 +59,14 @@
         <Row>
             <div Class="col-12">
                 <DataGrid TItem="MatchReport"
-                          Data="@matchReports"
-                          ShowPager="@showPager"
-                          PageSize="@pageSize"
-                          ReadData="@OnReadData"
-                          TotalItems="@matchReportMetadata.TotalGames"
-                          @bind-SelectedRow="@selectedMatchReport"
-                          RowSelectable="@((matchReport) => this.RowSelected(matchReport))"
-                          Hoverable="true">
+                      Data="@matchReports"
+                      ShowPager="@showPager"
+                      PageSize="@pageSize"
+                      ReadData="@OnReadData"
+                      TotalItems="@matchReportMetadata.TotalGames"
+                      @bind-SelectedRow="@selectedMatchReport"
+                      RowSelectable="@((matchReport) => this.RowSelected(matchReport.Item))"
+                      Hoverable="true">
                     <DataGridCommandColumn TItem="MatchReport" />
                     <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
                         <DisplayTemplate>
@@ -103,6 +106,7 @@
     private object winsLossesChartOptions = new
     {
         Responsive = true,
+        MaintainAspectRatio = false,
         Animation = new
         {
             Duration = 0
@@ -147,17 +151,18 @@
 
     private async Task HandleWinLossesChartRedrawAsync()
     {
+        // TODO: Fix this.. we shouldn't have to do a null check and wait here..
         await Retry.InvokeAsync(() => this.winsLossesChart != null, 1, int.MaxValue);
         await winsLossesChart.Clear();
         await winsLossesChart.AddLabels(new string[] { "Wins", "Losses" });
         await winsLossesChart.AddDataSet(new DoughnutChartDataset<int>
-        {
-            Label = "Wins and losses",
-            Data = new List<int> { this.matchReportMetadata.TotalWins, this.matchReportMetadata.TotalLosses },
-            BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
-            BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
-            BorderWidth = 1
-        });
+            {
+                Label = "Wins and losses",
+                Data = new List<int> { this.matchReportMetadata.TotalWins, this.matchReportMetadata.TotalLosses },
+                BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
+                BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
+                BorderWidth = 1
+            });
 
         await winsLossesChart.Update();
     }

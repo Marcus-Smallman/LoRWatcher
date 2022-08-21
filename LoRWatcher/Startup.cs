@@ -75,12 +75,12 @@ namespace LoRWatcher
 
             // Add razor.
             services.AddRazorPages();
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor().AddCircuitOptions(o => o.DetailedErrors = true);
 
             services
-                .AddBlazorise(options =>
+                .AddBlazorise(o =>
                 {
-                    options.ChangeTextOnKeyPress = true;
+                    o.Immediate = true;
                 })
                 .AddMaterialProviders()
                 .AddFontAwesomeIcons();
@@ -101,10 +101,6 @@ namespace LoRWatcher
             app.UseStaticFiles();
 
             app.UseRouting();
-
-            app.ApplicationServices
-                  .UseMaterialProviders()
-                  .UseFontAwesomeIcons();
 
             app.UseEndpoints(endpoints =>
             {
