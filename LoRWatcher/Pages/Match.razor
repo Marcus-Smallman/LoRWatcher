@@ -90,40 +90,7 @@
                                 <h5 Class="text-black-hint">Regions</h5>
                             </Row>
                             <Row Style="margin: auto">
-                                <!-- TODO: Collate these into one method that can be used as this currently splits up the same regions whether the new structure is used or the old one.. -->
-                                <!--Print regions using the old structure-->
-                                @foreach (var region in this.cards
-                               ?.Where(c => string.IsNullOrWhiteSpace(c.Region) == false && string.IsNullOrWhiteSpace(c.RegionRef) == false)
-                               .Select(c => (c.Region, c.RegionRef))
-                               .Distinct()
-                               .OrderBy(r => r.Region))
-                                {
-                                    <Tooltip Style="position: relative; padding: 5px 5px 0px 5px; margin-top: -5px;" Text=@(region.Region)>
-                                        <img Style="max-height: 35px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{region.RegionRef.ToLower()}.png")">
-                                        <Badge Style="position: absolute; margin-top: 25px; margin-left: -15px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
-                                            x@(cards.Count(c => c.Region?.Equals(region.Region) ?? false))
-                                        </Badge>
-                                    </Tooltip>
-                                }
-                                <!--Print regions using the new structure-->
-                                @foreach (var regions in this.cards
-                               .Where(c =>
-                               {
-                                   if (string.IsNullOrWhiteSpace(c.Region) &&
-                                   string.IsNullOrWhiteSpace(c.RegionRef) &&
-                                   c.Regions != null &&
-                                   c.Regions.Any() &&
-                                   c.RegionRefs != null &&
-                                   c.RegionRefs.Any())
-                                   {
-                                       return true;
-                                   }
-
-                                   return false;
-                               })
-                               .Select(c => (c.Regions, c.RegionRefs))
-                               .DistinctBy(regions => string.Join(", ", regions.Regions))
-                               .OrderBy(regions => string.Join(", ", regions.Regions)))
+                                @foreach (var regions in this.GetCardRegions())
                                 {
                                     <Tooltip Style="position: relative; padding: 5px 5px 0px 5px; margin-top: -5px;" Text=@(string.Join(", ", regions.Regions))>
                                         @foreach (var regionRefs in regions.RegionRefs)
@@ -131,19 +98,29 @@
                                             <img Style="max-height: 35px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{regionRefs.ToLower()}.png")">
                                         }
                                         <Badge Style="position: absolute; margin-top: 25px; margin-left: -15px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
-                                            x@(cards.Count(c =>
-                            {
-                            if (c.Regions != null &&
-                            c.Regions.Any())
-                            {
-                            var cRegions = string.Join(", ", c.Regions);
-                            var dRegions = string.Join(", ", regions.Regions);
+                                            x@(this.cards
+                                                .Select(c =>
+                                                {
+                                                    if (c.Regions != null &&
+                                                        c.Regions.Any())
+                                                    {
+                                                        var cRegions = string.Join(", ", c.Regions);
+                                                        var dRegions = string.Join(", ", regions.Regions);
 
-                            return cRegions == dRegions;
-                            }
+                                                        if (cRegions == dRegions)
+                                                        {
+                                                            return c.Count;
+                                                        }
+                                                    }
 
-                            return false;
-                            }))
+                                                    if (regions.Regions.SequenceEqual(new[] { c.Region }))
+                                                    {
+                                                        return c.Count;
+                                                    }
+
+                                                    return 0;
+                                                })
+                                                .Sum())
                                         </Badge>
                                     </Tooltip>
                                 }
@@ -259,7 +236,7 @@
     {
 
         return new List<int>
-{
+        {
             this.cards.Where(c => c.Cost == 0).Sum(c => c.Count),
             this.cards.Where(c => c.Cost == 1).Sum(c => c.Count),
             this.cards.Where(c => c.Cost == 2).Sum(c => c.Count),
@@ -289,6 +266,27 @@
         {
             logger.Debug($"Error occurred copying deck code to clipboard: {ex.Message}");
         }
+    }
+
+    private IEnumerable<(IEnumerable<string> Regions, IEnumerable<string> RegionRefs)> GetCardRegions()
+    {
+        return this.cards
+            ?.Select(c =>
+            {
+                if (string.IsNullOrWhiteSpace(c.Region) &&
+                    string.IsNullOrWhiteSpace(c.RegionRef) &&
+                    c.Regions != null &&
+                    c.Regions.Any() &&
+                    c.RegionRefs != null &&
+                    c.RegionRefs.Any())
+                {
+                    return (c.Regions, c.RegionRefs);
+                }
+
+                return (new[] { c.Region }, new[] { c.RegionRef });
+            })
+            .DistinctBy(regions => string.Join(", ", regions.Regions))
+            .OrderBy(regions => string.Join(", ", regions.Regions));
     }
 
     private IEnumerable<string> GetCardTypes()
