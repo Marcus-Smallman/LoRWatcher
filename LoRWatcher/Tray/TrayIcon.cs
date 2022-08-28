@@ -39,7 +39,6 @@ namespace LoRWatcher.Tray
                 var icon = new NotifyIcon();
                 icon.Icon = new Icon("./wwwroot/favicon.ico");
                 icon.Visible = true;
-                icon.ShowBalloonTip(2000, "LoR Watcher", "Running", ToolTipIcon.None);
 
                 var versionItem = new ToolStripMenuItem();
                 versionItem.Text = Application.ProductVersion;
