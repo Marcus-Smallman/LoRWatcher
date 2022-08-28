@@ -1,20 +1,25 @@
 ; TODO:
-; Clean up LoR Watcher DB if exists on uninstall
+; Clean up LoR Watcher DB if exists on uninstall, is user agrees
 ; Clean up LoR Watcher Logs if exists on uninstall
+; If uninstall is executed while LoR Watcher is running, ensure it is closed before continuing
+
+#define AppName "LoR Watcher"
+#define AppExeName "LoR Watcher.exe"
 
 [Setup]
-AppName=LoR Watcher
+AppName={#AppName}
 AppVersion={#Version}
 AppPublisher=Marcus Smallman
 AppPublisherURL=https://github.com/Marcus-Smallman/LoRWatcher
 WizardStyle=modern
-DefaultDirName={autopf}\LoR Watcher
-DefaultGroupName=LoR Watcher
-UninstallDisplayName=LoR Watcher {#Version}
-UninstallDisplayIcon={app}\LoR Watcher.exe
+DefaultDirName={autopf}\{#AppName}
+DefaultGroupName={#AppName}
+UninstallDisplayName={#AppName} {#Version}
+UninstallDisplayIcon={app}\{#AppExeName}
+CloseApplications=force
 Compression=lzma2
 SolidCompression=yes
-OutputBaseFilename=LoR Watcher Installer {#Version}
+OutputBaseFilename={#AppName} Installer {#Version}
 VersionInfoVersion={#Version}
 InfoBeforeFile=info.txt
 
@@ -23,17 +28,18 @@ Name: "{app}\wwwroot\assets"
 
 [Files]
 Source: "unzip.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
-Source: "{tmp}\core-en_us.zip"; DestDir: "{tmp}"; Flags: external
-Source: "{tmp}\set1-lite-en_us.zip"; DestDir: "{tmp}"; Flags: external
-Source: "{tmp}\set2-lite-en_us.zip"; DestDir: "{tmp}"; Flags: external
-Source: "{tmp}\set3-lite-en_us.zip"; DestDir: "{tmp}"; Flags: external
-Source: "{tmp}\set4-lite-en_us.zip"; DestDir: "{tmp}"; Flags: external
-Source: "{tmp}\set5-lite-en_us.zip"; DestDir: "{tmp}"; Flags: external
-Source: "{tmp}\set6-lite-en_us.zip"; DestDir: "{tmp}"; Flags: external
+Source: "UpdateHosts.ps1"; DestDir: "{tmp}"; Flags: deleteafterinstall
+Source: "{tmp}\core-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
+Source: "{tmp}\set1-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
+Source: "{tmp}\set2-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
+Source: "{tmp}\set3-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
+Source: "{tmp}\set4-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
+Source: "{tmp}\set5-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
+Source: "{tmp}\set6-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
 Source: "Publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 
 [Icons]
-Name: "{group}\LoR Watcher"; Filename: "{app}\LoR Watcher.exe"
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 
 [Run]
 Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\core-en_us.zip"" -d ""{app}\wwwroot\assets\core-en_us"""; Flags: runhidden
@@ -43,7 +49,8 @@ Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set3-lite-en_us.zip"" -d ""
 Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set4-lite-en_us.zip"" -d ""{app}\wwwroot\assets\set4-lite-en_us"""; Flags: runhidden
 Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set5-lite-en_us.zip"" -d ""{app}\wwwroot\assets\set5-lite-en_us"""; Flags: runhidden
 Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set6-lite-en_us.zip"" -d ""{app}\wwwroot\assets\set6-lite-en_us"""; Flags: runhidden
-Filename: {app}\LoR Watcher.exe; Description: Start the LoR Watcher; Flags: nowait postinstall skipifsilent
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{tmp}\UpdateHosts.ps1"""; Flags: runhidden
+Filename: {app}\{#AppExeName}; Description: Start the {#AppName}; Flags: nowait postinstall skipifsilent
 
 [Code]
 var
@@ -65,13 +72,13 @@ function NextButtonClick(CurPageID: Integer): Boolean;
 begin
   if CurPageID = wpReady then begin
     DownloadPage.Clear;
-    DownloadPage.Add('https://dd.b.pvp.net/1_0_0/core-en_us.zip', 'core-en_us.zip', '');
-    DownloadPage.Add('https://dd.b.pvp.net/1_0_0/set1-lite-en_us.zip', 'set1-lite-en_us.zip', '');
-    DownloadPage.Add('https://dd.b.pvp.net/1_0_0/set2-lite-en_us.zip', 'set2-lite-en_us.zip', '');
-    DownloadPage.Add('https://dd.b.pvp.net/1_8_0/set3-lite-en_us.zip', 'set3-lite-en_us.zip', '');
-    DownloadPage.Add('https://dd.b.pvp.net/2_3_0/set4-lite-en_us.zip', 'set4-lite-en_us.zip', '');
-    DownloadPage.Add('https://dd.b.pvp.net/2_14_0/set5-lite-en_us.zip', 'set5-lite-en_us.zip', '');
-    DownloadPage.Add('https://dd.b.pvp.net/3_8_0/set6-lite-en_us.zip', 'set6-lite-en_us.zip', '');
+    DownloadPage.Add('https://dd.b.pvp.net/latest/core-en_us.zip', 'core-en_us.zip', '');
+    DownloadPage.Add('https://dd.b.pvp.net/latest/set1-lite-en_us.zip', 'set1-lite-en_us.zip', '');
+    DownloadPage.Add('https://dd.b.pvp.net/latest/set2-lite-en_us.zip', 'set2-lite-en_us.zip', '');
+    DownloadPage.Add('https://dd.b.pvp.net/latest/set3-lite-en_us.zip', 'set3-lite-en_us.zip', '');
+    DownloadPage.Add('https://dd.b.pvp.net/latest/set4-lite-en_us.zip', 'set4-lite-en_us.zip', '');
+    DownloadPage.Add('https://dd.b.pvp.net/latest/set5-lite-en_us.zip', 'set5-lite-en_us.zip', '');
+    DownloadPage.Add('https://dd.b.pvp.net/latest/set6-lite-en_us.zip', 'set6-lite-en_us.zip', '');
     DownloadPage.Show;
     try
       try
