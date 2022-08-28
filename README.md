@@ -12,7 +12,7 @@ Once downloaded, run the installer. This installer will take a few minutes to fi
 
 Upon a successful install, you should now be able to run the LoR Watcher and access the UI to view your match history at 'http://lor.watcher'.
 
-> **NOTE**: This application does not currently retrieve any data from your Riot Games account. Therefore it will only store and retrieved games it has gathered.
+> **NOTE**: This application does not currently retrieve any data from your Riot Games account. Therefore it will only store and retrieve games it has gathered.
 
 ## Tray Icon
 There is also a useful tray icon that will appear to show that you have it running.  
