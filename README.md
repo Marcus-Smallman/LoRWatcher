@@ -5,7 +5,7 @@ which the LoR Watcher application hosts.
 
 # Install
 To install, go to the [Releases](https://github.com/Marcus-Smallman/LoRWatcher/releases) page and click on the latest release.
-You should then be able to click on the Installer executable (*e.g. LoR.Watcher.Installer.0.1.5.exe*).
+You should then be able to click on the Installer executable (*e.g. LoR.Watcher.Installer.0.1.6.exe*).
 The installer should then begin downloading.
 
 Once downloaded, run the installer. This installer will take a few minutes to finish as it has to download the LoR assets.
