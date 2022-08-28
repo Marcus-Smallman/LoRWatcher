@@ -12,7 +12,7 @@
 @inject ILogger logger;
 
 <Container>
-    @if (matchReport == null)
+    @if (this.matchReport == null)
     {
         <p><em>Loading...</em></p>
     }
@@ -43,15 +43,17 @@
         <Divider Type="DividerType.TextContent" Text="@(matchReport?.Result == true ? "Won" : "Lost")" />
         @if (matchReport?.PlayerDeckCode != null)
         {
-            <Row Class="my-4">
+            <Row>
+                <div Class="col-12" Style="margin: auto; display: flex;">
+                    <a Class="text-black-hint" Style="margin-left: auto;">Deck Code</a>
+                </div>
+            </Row>
+            <Row>
                 <div Class="col-1" Style="margin: auto">
                     <h4 Class="text-black-hint" Style="margin: auto; width: 200px;">@(matchReport.FinishTime.UtcDateTime.GetTimeSince())</h4>
                 </div>
                 <div Class="col-11" Style="margin: auto; display: flex; padding-top: 5px;">
                     <a Style="margin-left: auto;">@(matchReport.PlayerDeckCode)</a>
-                    <Tooltip Style="padding: 5px 5px 0px 5px; margin-top: -5px;" Text="Copy Code">
-                        <Icon @onclick="async () => { await CopyCodeToClipboard(); }" Name="@("far fa-clipboard fa-lg")" />
-                    </Tooltip>
                 </div>
             </Row>
             @if (cards != null)
@@ -170,7 +172,6 @@
         if (this.Id != null)
         {
             this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
-            // TODO: Card asset data has been updated so that region is now an array as you can have multi-region. Fix this!!
             this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
         }
     }
@@ -251,21 +252,6 @@
     private void GoHome()
     {
         this.navigationManager.NavigateTo("", true);
-    }
-
-    private async Task CopyCodeToClipboard()
-    {
-        try
-        {
-            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", matchReport.PlayerDeckCode);
-
-            // TODO: Create custom pop up for this.
-            await JSRuntime.InvokeAsync<object>("Alert", "Deck code copied to clipboard");
-        }
-        catch (Exception ex)
-        {
-            logger.Debug($"Error occurred copying deck code to clipboard: {ex.Message}");
-        }
     }
 
     private IEnumerable<(IEnumerable<string> Regions, IEnumerable<string> RegionRefs)> GetCardRegions()

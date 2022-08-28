@@ -10,7 +10,7 @@
 
 <Container>
     <!-- TODO: Flickers occur when loading homepage... this is possibly due to this if/else here and the data taking a short time to load in. This could be made smoother somehow. -->
-    @if (matchReports == null && matchReportMetadata == null)
+    @if (matchReports == null || matchReportMetadata == null)
     {
         <p><em>Loading...</em></p>
     }
