@@ -1,0 +1,79 @@
+﻿@namespace LoRWatcherComponents
+
+@using LoRWatcher.Stores
+@using System.Threading;
+
+
+<div Class="col-4" Style="text-align: center">
+    <div>
+        <a Class="text-black-hint">Total Games:</a> @(MatchReportMetadata.TotalGames) <a Class="text-black-hint" Style="font-size: 10px"><b>@(MatchReportMetadata.TotalWins)W @(MatchReportMetadata.TotalLosses)L</b></a>
+    </div>
+    <div class="chart-container" style="height:100px">
+        <DoughnutChart @ref="winsLossesChart" TItem="int" OptionsObject="@winsLossesChartOptions" />
+    </div>
+    <div Style="padding-top: 10px">
+        <a Class="text-black-hint">Win Rate:</a> @(this.GetWinRate())
+    </div>
+</div>
+
+@code {
+    private DoughnutChart<int> winsLossesChart;
+
+    private object winsLossesChartOptions = new
+    {
+        Responsive = true,
+        MaintainAspectRatio = false,
+        Animation = new
+        {
+            Duration = 0
+        },
+        Hover = new
+        {
+            AnimationDuration = 0
+        },
+        ResponsiveAnimationDuration = 0
+    };
+
+    [Parameter]
+    public MatchReportMetadata MatchReportMetadata { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await HandleWinLossesChartRedrawAsync();
+        }
+    }
+
+    private async Task HandleWinLossesChartRedrawAsync()
+    {
+        await winsLossesChart.Clear();
+        await winsLossesChart.AddLabelsDatasetsAndUpdate(
+            new string[] { "Wins", "Losses" },
+            new DoughnutChartDataset<int>
+                {
+                    Label = "Wins and losses",
+                    Data = new List<int> { this.MatchReportMetadata.TotalWins, this.MatchReportMetadata.TotalLosses },
+                    BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
+                    BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
+                    BorderWidth = 1
+                }
+        );
+    }
+
+    private string GetWinRate()
+    {
+        var winRate = "0%";
+        if (this.MatchReportMetadata != null &&
+            this.MatchReportMetadata.TotalGames != 0 &&
+            this.MatchReportMetadata.TotalWins != 0)
+        {
+            var rate = 100 / (double)this.MatchReportMetadata.TotalGames;
+            rate *= (double)this.MatchReportMetadata.TotalWins;
+
+            winRate = $"{Math.Round(rate, 0)}%";
+        }
+
+        return winRate;
+    }
+}

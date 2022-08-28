@@ -4,6 +4,7 @@
 @using LoRWatcher.Stores
 @using LoRWatcher.Utils
 @using System.Threading;
+@using LoRWatcherComponents
 
 @inject IWatcherDataStore watcherDataStore
 @inject NavigationManager navigationManager
@@ -30,17 +31,7 @@
             </div>
             <div Class="col-8">
                 <Row>
-                    <div Class="col-4" Style="text-align: center">
-                        <div>
-                            <a Class="text-black-hint">Total Games:</a> @(matchReportMetadata.TotalGames) <a Class="text-black-hint" Style="font-size: 10px"><b>@(matchReportMetadata.TotalWins)W @(matchReportMetadata.TotalLosses)L</b></a>
-                        </div>
-                        <div class="chart-container" style="height:100px">
-                            <DoughnutChart @ref="winsLossesChart" TItem="int" OptionsObject="@winsLossesChartOptions" />
-                        </div>
-                        <div Style="padding-top: 10px">
-                            <a Class="text-black-hint">Win Rate:</a> @(this.GetWinRate())
-                        </div>
-                    </div>
+                    <TotalStats MatchReportMetadata="this.matchReportMetadata" />
                     <div Class="col-4" Style="margin: auto; text-align: center">
                         <!--<div>
                             <a Class="text-black-hint">Most Played Region(s):</a> @(matchReportMetadata.MostPlayedRegions) <a Class="text-black-hint" Style="font-size: 10px"><b>@(matchReportMetadata.MostPlayedRegionsCount)G</b></a>
@@ -101,23 +92,6 @@
 
     private MatchReportMetadata matchReportMetadata;
 
-    private DoughnutChart<int> winsLossesChart;
-
-    private object winsLossesChartOptions = new
-    {
-        Responsive = true,
-        MaintainAspectRatio = false,
-        Animation = new
-        {
-            Duration = 0
-        },
-        Hover = new
-        {
-            AnimationDuration = 0
-        },
-        ResponsiveAnimationDuration = 0
-    };
-
     protected override async Task OnInitializedAsync()
     {
         this.matchReportMetadata = await this.watcherDataStore.GetMatchReportMetadataAsync(CancellationToken.None);
@@ -141,50 +115,8 @@
         return false;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await HandleWinLossesChartRedrawAsync();
-        }
-    }
-
-    private async Task HandleWinLossesChartRedrawAsync()
-    {
-        // TODO: Fix this.. we shouldn't have to do a null check and wait here..
-        await Retry.InvokeAsync(() => this.winsLossesChart != null, 1, int.MaxValue);
-        await winsLossesChart.Clear();
-        await winsLossesChart.AddLabels(new string[] { "Wins", "Losses" });
-        await winsLossesChart.AddDataSet(new DoughnutChartDataset<int>
-            {
-                Label = "Wins and losses",
-                Data = new List<int> { this.matchReportMetadata.TotalWins, this.matchReportMetadata.TotalLosses },
-                BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
-                BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
-                BorderWidth = 1
-            });
-
-        await winsLossesChart.Update();
-    }
-
     private string GetMatchReportCellClass(MatchReport matchReport)
     {
         return matchReport.Result ? "text-primary" : "text-danger";
-    }
-
-    private string GetWinRate()
-    {
-        var winRate = "0%";
-        if (this.matchReportMetadata != null &&
-            this.matchReportMetadata.TotalGames != 0 &&
-            this.matchReportMetadata.TotalWins != 0)
-        {
-            var rate = 100 / (double)this.matchReportMetadata.TotalGames;
-            rate *= (double)this.matchReportMetadata.TotalWins;
-
-            winRate = $"{Math.Round(rate, 0)}%";
-        }
-
-        return winRate;
     }
 }
