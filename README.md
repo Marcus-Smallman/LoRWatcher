@@ -5,14 +5,14 @@ which the LoR Watcher application hosts.
 
 # Install
 To install, go to the [Releases](https://github.com/Marcus-Smallman/LoRWatcher/releases) page and click on the latest release.
-You should then be able to click on the Installer executable (*e.g. LoR.Watcher.Installer.0.1.5.exe*).
+You should then be able to click on the Installer executable (*e.g. LoR.Watcher.Installer.0.1.6.exe*).
 The installer should then begin downloading.
 
 Once downloaded, run the installer. This installer will take a few minutes to finish as it has to download the LoR assets.
 
 Upon a successful install, you should now be able to run the LoR Watcher and access the UI to view your match history at 'http://lor.watcher'.
 
-> **NOTE**: This application does not currently retrieve any data from your Riot Games account. Therefore it will only store and retrieved games it has gathered.
+> **NOTE**: This application does not currently retrieve any data from your Riot Games account. Therefore it will only store and retrieve games it has gathered.
 
 ## Tray Icon
 There is also a useful tray icon that will appear to show that you have it running.  
@@ -30,7 +30,7 @@ and **In Progress** if you are currently playing a match*)
 # UI
 When you access the UI for the first time without playing a game, there will be no match history.  
 <img src="https://user-images.githubusercontent.com/10182314/187091200-142139ac-aa1d-4095-81cb-6c008afaafcf.png" width="800">  
-After playing a few games it will begin to be populated and you will start to see your match history with some overall stats.  
+After playing a few games you will start to see your match history with some overall stats.  
 <img src="https://user-images.githubusercontent.com/10182314/187091348-5e9bc63d-dca4-4219-8dfc-36afbf96e827.png" width="800">  
 You can then view the match you played by clicking on the record in the table.  
 <img src="https://user-images.githubusercontent.com/10182314/187091440-723f5d0b-9073-4ce7-a438-5a4e13a16766.png" width="800">  
