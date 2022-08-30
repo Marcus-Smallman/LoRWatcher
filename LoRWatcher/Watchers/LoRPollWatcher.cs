@@ -107,28 +107,31 @@ namespace LoRWatcher.Watchers
             try
             {
                 var cardPositions = await this.loRClient.GetCardPositionsAsync(cancellationToken);
-                this.gameStateCache.SetGameState(cardPositions?.GameState);
-                switch (cardPositions?.GameState)
+                if (cardPositions?.GameState != null)
                 {
-                    case GameState.Menus:
-                        this.PollIntervalMilliseconds = 500;
-                        this.CanUpdateActiveMatch = true;
+                    this.gameStateCache.SetGameState(cardPositions.GameState);
+                    switch (cardPositions.GameState)
+                    {
+                        case GameState.Menus:
+                            this.PollIntervalMilliseconds = 500;
+                            this.CanUpdateActiveMatch = true;
 
-                        this.logger.Debug("Waiting for active match");
-                        break;
-                    case GameState.InProgress:
-                        if (this.CanUpdateActiveMatch == true)
-                        {
-                            this.PollIntervalMilliseconds = 100;
+                            this.logger.Debug("Waiting for active match");
+                            break;
+                        case GameState.InProgress:
+                            if (this.CanUpdateActiveMatch == true)
+                            {
+                                this.PollIntervalMilliseconds = 100;
 
-                            this.logger.Debug("Updating active match");
+                                this.logger.Debug("Updating active match");
 
-                            await this.activeGameCache.UpdateActiveMatchAsync(cardPositions, cancellationToken);
-                        }
-                        break;
-                    default:
-                        this.SetDefaults();
-                        break;
+                                await this.activeGameCache.UpdateActiveMatchAsync(cardPositions, cancellationToken);
+                            }
+                            break;
+                        default:
+                            this.SetDefaults();
+                            break;
+                    }
                 }
 
                 await this.ReportMatchAsync(cancellationToken);
