@@ -36,6 +36,7 @@ Source: "{tmp}\set3-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall
 Source: "{tmp}\set4-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
 Source: "{tmp}\set5-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
 Source: "{tmp}\set6-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
+Source: "{tmp}\set6cde-lite-en_us.zip"; DestDir: "{tmp}"; Flags: deleteafterinstall external
 Source: "Publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 
 [Icons]
@@ -49,6 +50,7 @@ Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set3-lite-en_us.zip"" -d ""
 Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set4-lite-en_us.zip"" -d ""{app}\wwwroot\assets\set4-lite-en_us"""; Flags: runhidden
 Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set5-lite-en_us.zip"" -d ""{app}\wwwroot\assets\set5-lite-en_us"""; Flags: runhidden
 Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set6-lite-en_us.zip"" -d ""{app}\wwwroot\assets\set6-lite-en_us"""; Flags: runhidden
+Filename: "{tmp}\unzip.exe"; Parameters: "-o ""{tmp}\set6cde-lite-en_us.zip"" -d ""{app}\wwwroot\assets\set6cde-lite-en_us"""; Flags: runhidden
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{tmp}\UpdateHosts.ps1"""; Flags: runhidden
 Filename: {app}\{#AppExeName}; Description: Start the {#AppName}; Flags: nowait postinstall skipifsilent
 
@@ -79,6 +81,7 @@ begin
     DownloadPage.Add('https://dd.b.pvp.net/latest/set4-lite-en_us.zip', 'set4-lite-en_us.zip', '');
     DownloadPage.Add('https://dd.b.pvp.net/latest/set5-lite-en_us.zip', 'set5-lite-en_us.zip', '');
     DownloadPage.Add('https://dd.b.pvp.net/latest/set6-lite-en_us.zip', 'set6-lite-en_us.zip', '');
+    DownloadPage.Add('https://dd.b.pvp.net/latest/set6cde-lite-en_us.zip', 'set6cde-lite-en_us.zip', '');
     DownloadPage.Show;
     try
       try
