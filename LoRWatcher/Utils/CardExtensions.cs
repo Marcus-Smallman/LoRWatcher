@@ -76,8 +76,6 @@ namespace LoRWatcher.Utils
                 var cardCodeAndCounts = LoRDeckEncoder.GetDeckFromCode(deckCode);
                 foreach (var cardCodeAndCount in cardCodeAndCounts)
                 {
-                    int.TryParse(cardCodeAndCount.CardCode.Substring(0, 2), out int cardSet);
-
                     var card = allCardData.FirstOrDefault(c => c.CardCode == cardCodeAndCount.CardCode);
                     if (card != null)
                     {
@@ -103,7 +101,8 @@ namespace LoRWatcher.Utils
                             Subtypes = card.Subtypes,
                             Supertype = card.Supertype,
                             Rarity = card.Rarity,
-                            Collectible = card.Collectible
+                            Collectible = card.Collectible,
+                            Set = card.Set
                         });
                     }
                 }

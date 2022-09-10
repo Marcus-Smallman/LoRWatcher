@@ -76,7 +76,7 @@
                                                 <a class="watcher-tooltip">
                                                     <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 0px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
                                                     <span>
-                                                        <img src="@($"./assets/set{int.Parse(card.CardCode.Substring(0, 2))}-lite-en_us/en_us/img/cards/{card.CardCode}.png")">
+                                                        <img src="@(this.GetCardImagePath(card))">
                                                     </span>
                                                 </a>
                                             </Row>
@@ -307,5 +307,10 @@
         return cardTypes
             .Distinct()
             .OrderByDescending(s => s);
+    }
+
+    public string GetCardImagePath(CardData card)
+    {
+        return $"./assets/{card.Set.ToLower()}-lite-en_us/en_us/img/cards/{card.CardCode}.png";
     }
 }

@@ -43,5 +43,7 @@ namespace LoRWatcher.Utils
         public string Type { get; set; }
 
         public bool Collectible { get; set; }
+
+        public string Set { get; set; }
     }
 }
