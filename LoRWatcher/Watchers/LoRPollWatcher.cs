@@ -88,11 +88,14 @@ namespace LoRWatcher.Watchers
                 {
                     var gameResult = await this.loRClient.GetGameResultAsync(cancellationToken);
                     this.GameId = gameResult.GameId;
-
-                    this.logger.Info($"Watcher is now active. Initial game id: {this.GameId}");
                 }
                 else
                 {
+                    if (this.gameStateCache.GetGameState() != GameState.Offline)
+                    {
+                        this.logger.Info($"Watcher is now inactive.");
+                    }
+
                     this.gameStateCache.SetGameState(GameState.Offline);
                 }
             }
@@ -109,29 +112,37 @@ namespace LoRWatcher.Watchers
                 var cardPositions = await this.loRClient.GetCardPositionsAsync(cancellationToken);
                 if (cardPositions?.GameState != null)
                 {
-                    this.gameStateCache.SetGameState(cardPositions.GameState);
-                    switch (cardPositions.GameState)
+                    var currentCameState = this.gameStateCache.GetGameState();
+                    if (currentCameState == GameState.Offline ||
+                        currentCameState == GameState.Startup)
                     {
-                        case GameState.Menus:
-                            this.PollIntervalMilliseconds = 500;
-                            this.CanUpdateActiveMatch = true;
-
-                            this.logger.Debug("Waiting for active match");
-                            break;
-                        case GameState.InProgress:
-                            if (this.CanUpdateActiveMatch == true)
-                            {
-                                this.PollIntervalMilliseconds = 100;
-
-                                this.logger.Debug("Updating active match");
-
-                                await this.activeGameCache.UpdateActiveMatchAsync(cardPositions, cancellationToken);
-                            }
-                            break;
-                        default:
-                            this.SetDefaults();
-                            break;
+                        this.logger.Info($"Watcher is now active.");
                     }
+
+                    this.gameStateCache.SetGameState(cardPositions.GameState);
+                }
+
+                switch (cardPositions?.GameState)
+                {
+                    case GameState.Menus:
+                        this.PollIntervalMilliseconds = 500;
+                        this.CanUpdateActiveMatch = true;
+
+                        this.logger.Debug("Waiting for active match");
+                        break;
+                    case GameState.InProgress:
+                        if (this.CanUpdateActiveMatch == true)
+                        {
+                            this.PollIntervalMilliseconds = 100;
+
+                            this.logger.Debug("Updating active match");
+
+                            await this.activeGameCache.UpdateActiveMatchAsync(cardPositions, cancellationToken);
+                        }
+                        break;
+                    default:
+                        this.SetDefaults();
+                        break;
                 }
 
                 await this.ReportMatchAsync(cancellationToken);
@@ -146,6 +157,7 @@ namespace LoRWatcher.Watchers
         {
             if (this.activeGameCache.IsEmpty == false)
             {
+                // TODO: Handle the scenario where this is null.. This can be acheived by closing the client during a game.
                 var gameResult = await this.loRClient.GetGameResultAsync(cancellationToken);
                 if (gameResult.GameId != this.GameId &&
                     gameResult.GameId != -1)

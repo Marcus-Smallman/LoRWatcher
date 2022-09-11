@@ -31,7 +31,7 @@
                 <h4 Style="margin: auto"><b>V</b></h4>
             </div>
             <div Class="col-5" Style="text-align: center">
-                <h1 Style="margin: auto"><b>@matchReport.OpponentName</b></h1>
+                <h1 Style="margin: auto"><b>@(this.matchReport.OpponentName.GetCardNameOpponentName())</b></h1>
             </div>
         </Row>
         <Row>
@@ -172,7 +172,7 @@
         if (this.Id != null)
         {
             this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
-            this.cards = matchReport?.PlayerDeckCode.GetCardsFromCode();
+            this.cards = this.matchReport?.PlayerDeckCode.GetCardsFromCode();
         }
     }
 

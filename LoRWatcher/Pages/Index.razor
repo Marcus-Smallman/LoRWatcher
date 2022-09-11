@@ -64,7 +64,11 @@
                             @((context as MatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
                         </DisplayTemplate>
                     </DataGridColumn>
-                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name" />
+                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name">
+                        <DisplayTemplate>
+                            @((context as MatchReport)?.OpponentName.GetCardNameOpponentName())
+                        </DisplayTemplate>
+                    </DataGridColumn>
                     <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Result)" Caption="Result">
                         <DisplayTemplate>
                             @((context as MatchReport)?.Result == true ? "Won" : "Lost")

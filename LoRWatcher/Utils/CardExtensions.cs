@@ -40,18 +40,70 @@ namespace LoRWatcher.Utils
             }
             else if (timeSinceTime.TotalHours < 1)
             {
-                timeSince = string.Format("{0} minute(s) ago", (int)timeSinceTime.TotalMinutes);
+                if (timeSinceTime.TotalMinutes < 2)
+                {
+                    timeSince = string.Format("{0} minute ago", (int)timeSinceTime.TotalMinutes);
+                }
+                else
+                {
+                    timeSince = string.Format("{0} minutes ago", (int)timeSinceTime.TotalMinutes);
+                }
             }
             else if (timeSinceTime.TotalDays < 1)
             {
-                timeSince = string.Format("{0} hour(s) ago", (int)timeSinceTime.TotalHours);
+                if (timeSinceTime.TotalHours < 2)
+                {
+                    timeSince = string.Format("{0} hour ago", (int)timeSinceTime.TotalHours);
+                }
+                else
+                {
+                    timeSince = string.Format("{0} hours ago", (int)timeSinceTime.TotalHours);
+                }
             }
             else
             {
-                timeSince = string.Format("{0} day(s) ago", (int)timeSinceTime.TotalDays);
+                if (timeSinceTime.TotalDays < 2)
+                {
+                    timeSince = string.Format("{0} day ago", (int)timeSinceTime.TotalDays);
+                }
+                else
+                {
+                    timeSince = string.Format("{0} days ago", (int)timeSinceTime.TotalDays);
+                }
             }
 
             return timeSince;
+        }
+
+        private static List<CardData> CardData;
+
+        public static List<CardData> GetCardData(ILogger logger = null)
+        {
+            if (CardData != null)
+            {
+                return CardData;
+            }
+
+            var allCardData = new List<CardData>();
+
+            try
+            {
+                var cardDataFilePaths = Directory.GetFiles(@$"{Directory.GetCurrentDirectory()}\wwwroot\assets", "set*-en_us.json", SearchOption.AllDirectories);
+                foreach (var cardDataFilePath in cardDataFilePaths)
+                {
+                    var cardData = JsonConvert.DeserializeObject<IEnumerable<CardData>>(File.ReadAllText(cardDataFilePath));
+
+                    allCardData.AddRange(cardData);
+                }
+
+                CardData = allCardData;
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"Error occurred getting card data from assets: {ex.Message}");
+            }
+
+            return CardData;
         }
 
         public static IEnumerable<CardData> GetCardsFromCode(this string deckCode, ILogger logger = null)
@@ -63,15 +115,7 @@ namespace LoRWatcher.Utils
             // Gather all card data to map to current deck.
             try
             {
-                var allCardData = new List<CardData>();
-
-                var cardDataFilePaths = Directory.GetFiles(@$"{Directory.GetCurrentDirectory()}\wwwroot\assets", "set*-en_us.json", SearchOption.AllDirectories);
-                foreach (var cardDataFilePath in cardDataFilePaths)
-                {
-                    var cardData = JsonConvert.DeserializeObject<IEnumerable<CardData>>(File.ReadAllText(cardDataFilePath));
-
-                    allCardData.AddRange(cardData);
-                }
+                var allCardData = GetCardData();
 
                 var cardCodeAndCounts = LoRDeckEncoder.GetDeckFromCode(deckCode);
                 foreach (var cardCodeAndCount in cardCodeAndCounts)
@@ -109,10 +153,48 @@ namespace LoRWatcher.Utils
             }
             catch (Exception ex)
             {
-                logger.Error($"Error occurred getting card data from assets: {ex.Message}");
+                logger.Error($"Error occurred getting cards from deckcode: {ex.Message}");
             }
 
             return cards.OrderBy(c => c.Cost);
+        }
+
+        public static string GetCardNameOpponentName(this string opponentName, ILogger logger = null)
+        {
+            logger ??= new FileLogger();
+
+            var name = opponentName;
+
+            if (string.IsNullOrEmpty(name) == false)
+            {
+                try
+                {
+                    if (opponentName.StartsWith("card_", StringComparison.OrdinalIgnoreCase) == true &&
+                        opponentName.EndsWith("_name", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        var opponentNameArr = opponentName.Split('_');
+                        if (opponentNameArr.Length >= 3 &&
+                            string.IsNullOrEmpty(opponentNameArr[1]) == false)
+                        {
+                            var cardCode = opponentNameArr[1];
+
+                            var allCardData = GetCardData();
+
+                            var opponentCardData = allCardData.FirstOrDefault(c => c.CardCode.Equals(cardCode, StringComparison.OrdinalIgnoreCase) == true);
+                            if (opponentCardData != null)
+                            {
+                                name = opponentCardData.Name;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Error($"Error occurred getting card name from opponent name: {ex.Message}");
+                }
+            }
+
+            return name;
         }
     }
 }
