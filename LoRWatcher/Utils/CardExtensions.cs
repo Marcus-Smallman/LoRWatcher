@@ -1,4 +1,5 @@
 ﻿using LoRDeckCodes;
+using LoRWatcher.Caches;
 using LoRWatcher.Logger;
 using Newtonsoft.Json;
 using System;
@@ -195,6 +196,34 @@ namespace LoRWatcher.Utils
             }
 
             return name;
+        }
+
+        public static bool CardEquals(this Snapshot currentSnapshot, Snapshot otherSnapshot)
+        {
+            if (currentSnapshot.Rectangles.Count() !=
+                otherSnapshot.Rectangles.Count())
+            {
+                return false;
+            }
+
+            foreach (var rectangle in currentSnapshot.Rectangles.ToArray())
+            {
+                if (otherSnapshot.Rectangles.Any(r =>
+                {
+                    return r.CardId == rectangle.CardId &&
+                           r.CardCode == rectangle.CardCode &&
+                           r.Width == rectangle.Width &&
+                           r.Height == rectangle.Height &&
+                           r.TopLeftX == rectangle.TopLeftX &&
+                           r.TopLeftY == rectangle.TopLeftY &&
+                           r.LocalPlayer == rectangle.LocalPlayer;
+                }) == false)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

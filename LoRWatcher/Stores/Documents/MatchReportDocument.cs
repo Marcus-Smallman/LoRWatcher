@@ -17,6 +17,8 @@ namespace LoRWatcher.Stores.Documents
 
         public bool Result { get; set; }
 
+        public SortedList<string, SnapshotDocument> Snapshots { get; set; }
+
         public DateTime FinishTime { get; set; }
 
         public GameType Type { get; set; }

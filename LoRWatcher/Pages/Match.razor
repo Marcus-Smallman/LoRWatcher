@@ -101,28 +101,28 @@
                                         }
                                         <Badge Style="position: absolute; margin-top: 25px; margin-left: -15px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
                                             x@(this.cards
-                                                .Select(c =>
-                                                {
-                                                    if (c.Regions != null &&
-                                                        c.Regions.Any())
-                                                    {
-                                                        var cRegions = string.Join(", ", c.Regions);
-                                                        var dRegions = string.Join(", ", regions.Regions);
+                            .Select(c =>
+                            {
+                            if (c.Regions != null &&
+                            c.Regions.Any())
+                            {
+                            var cRegions = string.Join(", ", c.Regions);
+                            var dRegions = string.Join(", ", regions.Regions);
 
-                                                        if (cRegions == dRegions)
-                                                        {
-                                                            return c.Count;
-                                                        }
-                                                    }
+                            if (cRegions == dRegions)
+                            {
+                            return c.Count;
+                            }
+                            }
 
-                                                    if (regions.Regions.SequenceEqual(new[] { c.Region }))
-                                                    {
-                                                        return c.Count;
-                                                    }
+                            if (regions.Regions.SequenceEqual(new[] { c.Region }))
+                            {
+                            return c.Count;
+                            }
 
-                                                    return 0;
-                                                })
-                                                .Sum())
+                            return 0;
+                            })
+                            .Sum())
                                         </Badge>
                                     </Tooltip>
                                 }
@@ -144,18 +144,63 @@
                 </Row>
             }
         }
-        <!--<Row Class="my-4">
-            <div Class="col-12" Style="margin: auto">
-                <h4 Class="text-black-hint" Style="margin: auto">Timeline</h4>
-            </div>
-        </Row>
-        <Row Class="my-4">
-            <div Class="col-12" Style="margin: auto">
-        @("<insert-timeline-here>")
-            </div>
-        </Row>-->
+        @if (this.matchReport.Snapshots?.Any() == true)
+        {
+            <Divider />
+            <Row>
+                <div Class="col-12" Style="text-align: center; display: flex">
+                    <h4 Class="text-black-hint" Style="margin: auto">Replay</h4>
+                </div>
+            </Row>
+            <Row>
+                <div Class="col-12" Style="margin: auto; display: flex; margin-top: -23px;">
+                    <a Class="text-black-hint" Style="margin-left: auto;">Game Time</a>
+                </div>
+            </Row>
+            <Row>
+                <div Class="col-12" Style="margin: auto; display: flex; padding-top: 5px;">
+                    <!-- TODO: Make this human readable. -->
+                    <a Style="margin-left: auto;">@(this.GetGameTime())</a>
+                </div>
+            </Row>
+            <Row Class="my-4">
+                <div Style="flex: 1; overflow-x: scroll; display: flex;">
+                    @foreach (var snapshot in this.matchReport.Snapshots)
+                    {
+                        <Tooltip Style="display: flex; min-height: min-content;" Text="@(snapshot.Key)">
+                            <a onclick="@(async () => await ShowModal(snapshot))" ElementId="snapshot" Style="width: 10px; height: 10px; border-style: solid; border-color: red; border-width: 1px"> </a>
+                        </Tooltip>
+                    }
+                </div>
+            </Row>
+
+        }
     }
 </Container>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        @if (this.currentSnapshot.Value != null)
+        {
+            <ModalHeader>
+                <ModalTitle>@(this.currentSnapshot.Key)</ModalTitle>
+                <CloseButton />
+            </ModalHeader>
+            <ModalBody>
+                @foreach (var rectangle in this.currentSnapshot.Value.Rectangles)
+                {
+                    <Field>
+                        <FieldLabel>@rectangle.CardCode</FieldLabel>
+                    </Field>
+                }
+            </ModalBody>
+            <ModalFooter Style="justify-content: normal">
+                <Button Color="Color.Primary" Clicked="@MovePrevious">Previous</Button>
+                <Button Style="margin-left: auto;" Color="Color.Primary" Clicked="@MoveNext">Next</Button>
+            </ModalFooter>
+        }
+    </ModalContent>
+</Modal>
 
 @code {
     [Parameter]
@@ -166,6 +211,45 @@
     private IEnumerable<CardData> cards;
 
     private BarChart<int> manaChart;
+
+    private Modal modalRef;
+
+    private KeyValuePair<string, Snapshot> currentSnapshot;
+
+    private Task ShowModal(KeyValuePair<string, Snapshot> snapshot)
+    {
+        this.currentSnapshot = snapshot;
+
+        return modalRef.Show();
+    }
+
+    private Task MoveNext()
+    {
+        var index = this.matchReport.Snapshots.IndexOfKey(this.currentSnapshot.Key);
+        if (index < this.matchReport.Snapshots.Count - 1)
+        {
+            var nextKey = this.matchReport.Snapshots.Keys[index + 1];
+            var nextSnapshot = this.matchReport.Snapshots[nextKey];
+
+            this.currentSnapshot = new KeyValuePair<string, Snapshot>(nextKey.ToString(), nextSnapshot);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task MovePrevious()
+    {
+        var index = this.matchReport.Snapshots.IndexOfKey(this.currentSnapshot.Key);
+        if (index > 0)
+        {
+            var previousKey = this.matchReport.Snapshots.Keys[index - 1];
+            var previousSnapshot = this.matchReport.Snapshots[previousKey];
+
+            this.currentSnapshot = new KeyValuePair<string, Snapshot>(previousKey.ToString(), previousSnapshot);
+        }
+
+        return Task.CompletedTask;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -312,5 +396,13 @@
     public string GetCardImagePath(CardData card)
     {
         return $"./assets/{card.Set.ToLower()}-lite-en_us/en_us/img/cards/{card.CardCode}.png";
+    }
+
+    public TimeSpan GetGameTime()
+    {
+        var startKey = this.matchReport.Snapshots.Keys[0];
+        var endKey = this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Keys.Count - 1];
+
+        return DateTimeOffset.Parse(endKey) - DateTimeOffset.Parse(startKey);
     }
 }

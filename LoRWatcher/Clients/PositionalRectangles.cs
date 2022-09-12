@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 
 namespace LoRWatcher.Clients
@@ -16,5 +17,7 @@ namespace LoRWatcher.Clients
         public Screen Screen { get; set; }
 
         public IEnumerable<CardPosition> Rectangles { get; set; }
+
+        public DateTimeOffset RetrievedTimeUtc { get; set; }
     }
 }

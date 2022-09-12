@@ -3,6 +3,7 @@ using LoRWatcher.Caches;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores.Documents;
 using LoRWatcher.Utils;
+using Mapster;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,6 +46,7 @@ namespace LoRWatcher.Stores
                             PlayerName = matchReport.PlayerName,
                             OpponentName = matchReport.OpponentName,
                             Regions = matchReport.Regions,
+                            Snapshots = matchReport.Snapshots.Adapt<SortedList<string, SnapshotDocument>>(),
                             Result = matchReport.Result,
                             FinishTime = matchReport.FinishTime.UtcDateTime
                         };
@@ -89,6 +91,7 @@ namespace LoRWatcher.Stores
                             PlayerName = matchReportDoc.PlayerName,
                             OpponentName = matchReportDoc.OpponentName,
                             Regions = matchReportDoc.Regions,
+                            Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                             Result = matchReportDoc.Result,
                             FinishTime = matchReportDoc.FinishTime
                         };
@@ -133,6 +136,7 @@ namespace LoRWatcher.Stores
                                 PlayerName = matchReportDoc.PlayerName,
                                 OpponentName = matchReportDoc.OpponentName,
                                 Regions = matchReportDoc.Regions,
+                                Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                                 Result = matchReportDoc.Result,
                                 FinishTime = matchReportDoc.FinishTime
                             });

@@ -67,6 +67,7 @@ namespace LoRWatcher.Clients
                         // TODO: Support all ascii characters in deserialization
                         var content = await result.Content.ReadAsStringAsync();
                         var positionalRectangles = JsonConvert.DeserializeObject<PositionalRectangles>(content);
+                        positionalRectangles.RetrievedTimeUtc = DateTimeOffset.UtcNow;
 
                         return positionalRectangles;
                     }

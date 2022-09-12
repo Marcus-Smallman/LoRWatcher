@@ -2,7 +2,7 @@
 {
     public class CardPosition
     {
-        public int CardId { get; set; }
+        public long CardId { get; set; }
 
         public string CardCode { get; set; }
 
@@ -13,5 +13,7 @@
         public int Width { get; set; }
 
         public int Height { get; set; }
+
+        public bool LocalPlayer { get; set; }
     }
 }
