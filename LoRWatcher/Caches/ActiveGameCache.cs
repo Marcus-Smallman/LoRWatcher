@@ -89,7 +89,7 @@ namespace LoRWatcher.Caches
                         }
                     }
 
-                    this.currentMatch.Snapshots.Add(positionalRectangles.RetrievedTimeUtc.ToString(), currentSnapshot);
+                    this.currentMatch.Snapshots.Add(positionalRectangles.RetrievedTimeUtc.ToString("o"), currentSnapshot);
                 }
                 catch (Exception ex)
                 {

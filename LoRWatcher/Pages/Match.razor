@@ -160,14 +160,14 @@
             <Row>
                 <div Class="col-12" Style="margin: auto; display: flex; padding-top: 5px;">
                     <!-- TODO: Make this human readable. -->
-                    <a Style="margin-left: auto;">@(this.GetGameTime())</a>
+                    <a Style="margin-left: auto;">@(this.GetGameTime().ToString("hh':'mm':'ss'.'ff"))</a>
                 </div>
             </Row>
             <Row Class="my-4">
                 <div Style="flex: 1; overflow-x: scroll; display: flex;">
                     @foreach (var snapshot in this.matchReport.Snapshots)
                     {
-                        <Tooltip Style="display: flex; min-height: min-content;" Text="@(snapshot.Key)">
+                        <Tooltip Style="display: flex; min-height: min-content;" Text="@(DateTimeOffset.Parse(snapshot.Key).DateTime.ToString())">
                             <a onclick="@(async () => await ShowModal(snapshot))" ElementId="snapshot" Style="width: 10px; height: 10px; border-style: solid; border-color: red; border-width: 1px"> </a>
                         </Tooltip>
                     }
@@ -179,12 +179,29 @@
 </Container>
 
 <Modal @ref="modalRef">
-    <ModalContent Centered>
+    <ModalContent tabindex="0" @onkeydown="@MoveSnapshot" Centered>
         @if (this.currentSnapshot.Value != null)
         {
-            <ModalHeader>
-                <ModalTitle>@(this.currentSnapshot.Key)</ModalTitle>
-                <CloseButton />
+            <ModalHeader Style="display: block;">
+                <div Class="col-12">
+                    <Row>
+                        <h4 Class="text-black-hint" Style="margin: auto; padding-left: 12.56px;">@(DateTimeOffset.Parse(this.currentSnapshot.Key).DateTime.ToShortDateString())</h4>
+                        <CloseButton />
+                    </Row>
+                </div>
+                <div Class="col-12">
+                    <Row>
+                        <a Class="text-black-hint">Start Time</a>
+                        <a Class="text-black-hint" Style="margin-left: auto;">End Time</a>
+                    </Row>
+                </div>
+                <div Class="col-12">
+                    <Row>
+                        <a>@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[0]).DateTime.ToString("HH:mm:ss.ff"))</a>
+                        <a Style="margin-left: auto;">@(this.GetCurrentTime(this.currentSnapshot.Key).ToString("hh':'mm':'ss'.'ff"))</a>
+                        <a Style="margin-left: auto;">@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Keys.Count-1]).DateTime.ToString("HH:mm:ss.ff"))</a>
+                    </Row>
+                </div>
             </ModalHeader>
             <ModalBody>
                 @foreach (var rectangle in this.currentSnapshot.Value.Rectangles)
@@ -223,7 +240,7 @@
         return modalRef.Show();
     }
 
-    private Task MoveNext()
+    private void Next()
     {
         var index = this.matchReport.Snapshots.IndexOfKey(this.currentSnapshot.Key);
         if (index < this.matchReport.Snapshots.Count - 1)
@@ -231,13 +248,18 @@
             var nextKey = this.matchReport.Snapshots.Keys[index + 1];
             var nextSnapshot = this.matchReport.Snapshots[nextKey];
 
-            this.currentSnapshot = new KeyValuePair<string, Snapshot>(nextKey.ToString(), nextSnapshot);
+            this.currentSnapshot = new KeyValuePair<string, Snapshot>(nextKey, nextSnapshot);
         }
+    }
+
+    private Task MoveNext()
+    {
+        Next();
 
         return Task.CompletedTask;
     }
 
-    private Task MovePrevious()
+    private void Previous()
     {
         var index = this.matchReport.Snapshots.IndexOfKey(this.currentSnapshot.Key);
         if (index > 0)
@@ -245,7 +267,26 @@
             var previousKey = this.matchReport.Snapshots.Keys[index - 1];
             var previousSnapshot = this.matchReport.Snapshots[previousKey];
 
-            this.currentSnapshot = new KeyValuePair<string, Snapshot>(previousKey.ToString(), previousSnapshot);
+            this.currentSnapshot = new KeyValuePair<string, Snapshot>(previousKey, previousSnapshot);
+        }
+    }
+
+    private Task MovePrevious()
+    {
+        Previous();
+
+        return Task.CompletedTask;
+    }
+
+    private Task MoveSnapshot(KeyboardEventArgs e)
+    {
+        if (e.Code == "ArrowLeft")
+        {
+            Previous();
+        }
+        else if (e.Code == "ArrowRight")
+        {
+            Next();
         }
 
         return Task.CompletedTask;
@@ -404,5 +445,12 @@
         var endKey = this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Keys.Count - 1];
 
         return DateTimeOffset.Parse(endKey) - DateTimeOffset.Parse(startKey);
+    }
+
+    public TimeSpan GetCurrentTime(string currentKey)
+    {
+        var startKey = this.matchReport.Snapshots.Keys[0];
+
+        return DateTimeOffset.Parse(currentKey) - DateTimeOffset.Parse(startKey);
     }
 }
