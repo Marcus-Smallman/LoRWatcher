@@ -179,7 +179,7 @@
 </Container>
 
 <Modal @ref="modalRef">
-    <ModalContent tabindex="0" @onkeydown="@MoveSnapshot" Centered>
+    <ModalContent Size="ModalSize.Large" tabindex="0" @onkeydown="@MoveSnapshot" Centered>
         @if (this.currentSnapshot.Value != null)
         {
             <ModalHeader Style="display: block;">
@@ -204,11 +204,30 @@
                 </div>
             </ModalHeader>
             <ModalBody>
-                @foreach (var rectangle in this.currentSnapshot.Value.Rectangles)
-                {
-                    <Field>
-                        <FieldLabel>@rectangle.CardCode</FieldLabel>
-                    </Field>
+                @{
+                    var aspectRatio = ((double)this.currentSnapshot.Value.ScreenHeight / (double)this.currentSnapshot.Value.ScreenWidth);
+                    var aspectRatioPercentage = aspectRatio * 100;
+                    <div Style="outline:none; position: relative; padding-bottom: @(aspectRatioPercentage)%;" tabindex="0" @ref="replayControls">
+                        <div Style="width: 100%; height: 100%; position: absolute; border-style: solid; border-color: red; border-width: 1px">
+                            @foreach (var rectangle in this.currentSnapshot.Value.Rectangles)
+                            {
+                                var width = ((double)100 / (double)this.currentSnapshot.Value.ScreenWidth) * rectangle.Width;
+                                var height = ((double)100 / (double)this.currentSnapshot.Value.ScreenHeight) * rectangle.Height;
+                                var topLeftX = ((double)100 / (double)this.currentSnapshot.Value.ScreenWidth) * rectangle.TopLeftX;
+                                var topLeftY = aspectRatioPercentage - ((((double)100 / (double)this.currentSnapshot.Value.ScreenHeight) * rectangle.TopLeftY) * aspectRatio);
+
+                                <div Style="width: @(width)%; height: @(height)%; margin-left: @(topLeftX)%; margin-top: @(topLeftY)%; position: absolute; border-style: solid; border-color: red; border-width: 1px">
+                                    <Field>
+                                        <FieldLabel>@rectangle.CardCode</FieldLabel>
+                                        <FieldLabel>@rectangle.Width</FieldLabel>
+                                        <FieldLabel>@rectangle.Height</FieldLabel>
+                                        <FieldLabel>@rectangle.TopLeftX</FieldLabel>
+                                        <FieldLabel>@rectangle.TopLeftY</FieldLabel>
+                                    </Field>
+                                </div>
+                            }
+                        </div>
+                    </div>
                 }
             </ModalBody>
             <ModalFooter Style="justify-content: normal">
@@ -231,13 +250,17 @@
 
     private Modal modalRef;
 
+    private ElementReference replayControls;
+
     private KeyValuePair<string, Snapshot> currentSnapshot;
 
-    private Task ShowModal(KeyValuePair<string, Snapshot> snapshot)
+    private async Task ShowModal(KeyValuePair<string, Snapshot> snapshot)
     {
         this.currentSnapshot = snapshot;
 
-        return modalRef.Show();
+        await modalRef.Show();
+
+        await replayControls.FocusAsync();
     }
 
     private void Next()
