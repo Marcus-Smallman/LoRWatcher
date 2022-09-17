@@ -73,10 +73,10 @@
                                         @foreach (var card in typedCards)
                                         {
                                             <Row Style="padding: 2px;">
-                                                <a class="watcher-tooltip">
+                                                <a Class="watcher-tooltip" Style="background-color: #f5f5f5;">
                                                     <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 0px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
                                                     <span>
-                                                        <img src="@(this.GetCardImagePath(card))">
+                                                        <img src="@(this.GetCardImagePath(card.Set, card.CardCode))">
                                                     </span>
                                                 </a>
                                             </Row>
@@ -208,22 +208,35 @@
                     var aspectRatio = ((double)this.currentSnapshot.Value.ScreenHeight / (double)this.currentSnapshot.Value.ScreenWidth);
                     var aspectRatioPercentage = aspectRatio * 100;
                     <div Style="outline:none; position: relative; padding-bottom: @(aspectRatioPercentage)%;" tabindex="0" @ref="replayControls">
-                        <div Style="width: 100%; height: 100%; position: absolute; border-style: solid; border-color: red; border-width: 1px">
-                            @foreach (var rectangle in this.currentSnapshot.Value.Rectangles)
+                        <div Style="width: 100%; height: 100%; position: absolute;">
+                            <img Style="width: 100%; height: 100%; position: absolute; border-radius: 2px; border-style: solid; border-color: gray; border-width: 1px;" Src="./images/board-default.png">
+                            @foreach (var rectangle in this.currentSnapshot.Value.Rectangles.OrderBy(r => r.Height))
                             {
                                 var width = ((double)100 / (double)this.currentSnapshot.Value.ScreenWidth) * rectangle.Width;
                                 var height = ((double)100 / (double)this.currentSnapshot.Value.ScreenHeight) * rectangle.Height;
                                 var topLeftX = ((double)100 / (double)this.currentSnapshot.Value.ScreenWidth) * rectangle.TopLeftX;
                                 var topLeftY = aspectRatioPercentage - ((((double)100 / (double)this.currentSnapshot.Value.ScreenHeight) * rectangle.TopLeftY) * aspectRatio);
 
-                                <div Style="width: @(width)%; height: @(height)%; margin-left: @(topLeftX)%; margin-top: @(topLeftY)%; position: absolute; border-style: solid; border-color: red; border-width: 1px">
-                                    <Field>
-                                        <FieldLabel>@rectangle.CardCode</FieldLabel>
-                                        <FieldLabel>@rectangle.Width</FieldLabel>
-                                        <FieldLabel>@rectangle.Height</FieldLabel>
-                                        <FieldLabel>@rectangle.TopLeftX</FieldLabel>
-                                        <FieldLabel>@rectangle.TopLeftY</FieldLabel>
-                                    </Field>
+                                <div Style="width: @(width)%; height: @(height)%; margin-left: @(topLeftX)%; margin-top: @(topLeftY)%; position: absolute; border-style: solid; border-color: @(rectangle.LocalPlayer ? "rgba(156, 39, 176, 1)" : "rgba(244, 67, 54, 1)"); border-width: 1px; border-radius: 2px; background-color: @(rectangle.LocalPlayer ? "rgba(156, 39, 176, 0.5)" : "rgba(244, 67, 54, 0.5)"); word-break: break-word;">
+                                    @{
+                                        var card = CardExtensions.GetCardData().FirstOrDefault(c => c.CardCode.Equals(rectangle.CardCode, StringComparison.OrdinalIgnoreCase) == true);
+                                        if (card != null)
+                                        {
+                                            <a class="watcher-tooltip">
+                                                <img Style="width: 100%; height: 100%; object-fit: contain;" Src="@(this.GetCardImagePath(card.Set, card.CardCode))">
+                                                <span>
+                                                    <img src="@(this.GetCardImagePath(card.Set, card.CardCode))">
+                                                </span>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            if (rectangle.CardCode != "face")
+                                            {
+                                                <p Style="text-align: center; color: rgba(255,255,255, 0.8)">@rectangle.CardCode</p>
+                                            }
+                                        }
+                                    }
                                 </div>
                             }
                         </div>
@@ -457,9 +470,9 @@
             .OrderByDescending(s => s);
     }
 
-    public string GetCardImagePath(CardData card)
+    public string GetCardImagePath(string set, string cardCode)
     {
-        return $"./assets/{card.Set.ToLower()}-lite-en_us/en_us/img/cards/{card.CardCode}.png";
+        return $"./assets/{set.ToLower()}-lite-en_us/en_us/img/cards/{cardCode}.png";
     }
 
     public TimeSpan GetGameTime()
