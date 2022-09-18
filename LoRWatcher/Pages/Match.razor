@@ -185,7 +185,7 @@
             <ModalHeader Style="display: block;">
                 <div Class="col-12">
                     <Row>
-                        <h4 Class="text-black-hint" Style="margin: auto; padding-left: 12.56px;">@(DateTimeOffset.Parse(this.currentSnapshot.Key).DateTime.ToShortDateString())</h4>
+                        <h4 Class="text-black-hint" Style="margin: auto; padding-left: 12.56px; z-index: 1; background-color: rgba(255,255,255,0.5); border-radius: 2px;">@(DateTimeOffset.Parse(this.currentSnapshot.Key).DateTime.ToShortDateString())</h4>
                         <CloseButton />
                     </Row>
                 </div>
@@ -198,12 +198,12 @@
                 <div Class="col-12">
                     <Row>
                         <a>@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[0]).DateTime.ToString("HH:mm:ss.ff"))</a>
-                        <a Style="margin-left: auto;">@(this.GetCurrentTime(this.currentSnapshot.Key).ToString("hh':'mm':'ss'.'ff"))</a>
+                        <a Style="margin-left: auto; z-index: 1; background-color: rgba(255,255,255,0.5); border-radius: 2px;">@(this.GetCurrentTime(this.currentSnapshot.Key).ToString("hh':'mm':'ss'.'ff"))</a>
                         <a Style="margin-left: auto;">@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Keys.Count-1]).DateTime.ToString("HH:mm:ss.ff"))</a>
                     </Row>
                 </div>
             </ModalHeader>
-            <ModalBody>
+            <ModalBody Style="padding: 0rem 1.5rem 6.5rem 1.5rem;">
                 @{
                     var aspectRatio = ((double)this.currentSnapshot.Value.ScreenHeight / (double)this.currentSnapshot.Value.ScreenWidth);
                     var aspectRatioPercentage = aspectRatio * 100;
