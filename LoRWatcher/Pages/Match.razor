@@ -5,6 +5,7 @@
 @using LoRWatcher.Utils;
 @using LoRWatcher.Logger;
 @using System.Threading;
+@using System.Diagnostics
 
 @inject IJSRuntime JSRuntime
 @inject IWatcherDataStore watcherDataStore
@@ -73,8 +74,8 @@
                                         @foreach (var card in typedCards)
                                         {
                                             <Row Style="padding: 2px;">
-                                                <a Class="watcher-tooltip" Style="background-color: #f5f5f5;">
-                                                    <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 0px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
+                                                <a Class="watcher-tooltip" Style="background-color: #f5f5f5; border-radius: 0px 2px 2px 0px">
+                                                    <Badge Style="display: inline-block; position: initial; border: 1px #1a6fb3 solid; border-radius: 2px 0px 0px 2px;" Color="Color.Info">@(card.Cost)</Badge> @card.Name <Badge Style="display: inline-block; position: initial;" Color="Color.Light">x@(card.Count)</Badge>
                                                     <span>
                                                         <img src="@(this.GetCardImagePath(card.Set, card.CardCode))">
                                                     </span>
@@ -159,33 +160,37 @@
             </Row>
             <Row>
                 <div Class="col-12" Style="margin: auto; display: flex; padding-top: 5px;">
-                    <!-- TODO: Make this human readable. -->
                     <a Style="margin-left: auto;">@(this.GetGameTime().ToString("hh':'mm':'ss'.'ff"))</a>
                 </div>
             </Row>
-            <Row Class="my-4">
-                <div Style="flex: 1; overflow-x: scroll; display: flex;">
+            <Row>
+                <div Style="flex: 1; overflow-x: auto; display: flex; padding: 1.5rem;">
                     @foreach (var snapshot in this.matchReport.Snapshots)
                     {
-                        <Tooltip Style="display: flex; min-height: min-content;" Text="@(DateTimeOffset.Parse(snapshot.Key).DateTime.ToString())">
-                            <a onclick="@(async () => await ShowModal(snapshot))" ElementId="snapshot" Style="width: 10px; height: 10px; border-style: solid; border-color: red; border-width: 1px"> </a>
+                        <Tooltip Style="display: flex; min-height: min-content;" Text="@(DateTimeOffset.Parse(snapshot.Key).DateTime.ToString("HH:mm:ss.ff"))">
+                            <a onclick="@(async () => await ShowModal(snapshot))" Style="cursor: pointer; width: 10px; height: 10px; border-style: solid; border-color: rgba(0,0,0,0.75); border-width: 1px; border-radius: 2px"> </a>
                         </Tooltip>
+                        <div Style="display: flex; min-height: min-content;">
+                            @if (snapshot.Key != this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Count - 1])
+                            {
+                                <hr style="border: none; border-top: 1px dotted rgba(0,0,0,0.5); height: 1px; width: @(GetReplayLineWidth(snapshot.Key))px; margin: auto; margin-top: 5px;">
+                            }
+                        </div>
                     }
                 </div>
             </Row>
-
         }
     }
 </Container>
 
-<Modal @ref="modalRef">
+<Modal @bind-Visible="@modalVisible" @ref="modalRef">
     <ModalContent Size="ModalSize.Large" tabindex="0" @onkeydown="@MoveSnapshot" Centered>
         @if (this.currentSnapshot.Value != null)
         {
             <ModalHeader Style="display: block;">
                 <div Class="col-12">
                     <Row>
-                        <h4 Class="text-black-hint" Style="margin: auto; padding-left: 12.56px; z-index: 1; background-color: rgba(255,255,255,0.5); border-radius: 2px;">@(DateTimeOffset.Parse(this.currentSnapshot.Key).DateTime.ToShortDateString())</h4>
+                        <h4 Class="text-black-hint" Style="margin: auto; padding-left: 12.56px; z-index: 1; background-color: rgba(255,255,255,0.75); border-radius: 2px;">@(DateTimeOffset.Parse(this.currentSnapshot.Key).DateTime.ToShortDateString())</h4>
                         <CloseButton />
                     </Row>
                 </div>
@@ -198,12 +203,12 @@
                 <div Class="col-12">
                     <Row>
                         <a>@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[0]).DateTime.ToString("HH:mm:ss.ff"))</a>
-                        <a Style="margin-left: auto; z-index: 1; background-color: rgba(255,255,255,0.5); border-radius: 2px;">@(this.GetCurrentTime(this.currentSnapshot.Key).ToString("hh':'mm':'ss'.'ff"))</a>
+                        <a Style="margin-left: auto; z-index: 1; background-color: rgba(255,255,255,0.75); border-radius: 2px;">@(this.GetCurrentTime(this.currentSnapshot.Key).ToString("hh':'mm':'ss'.'ff"))</a>
                         <a Style="margin-left: auto;">@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Keys.Count-1]).DateTime.ToString("HH:mm:ss.ff"))</a>
                     </Row>
                 </div>
             </ModalHeader>
-            <ModalBody Style="padding: 0rem 1.5rem 6.5rem 1.5rem;">
+            <ModalBody Style="padding: 0rem 1.5rem 5rem 1.5rem;">
                 @{
                     var aspectRatio = ((double)this.currentSnapshot.Value.ScreenHeight / (double)this.currentSnapshot.Value.ScreenWidth);
                     var aspectRatioPercentage = aspectRatio * 100;
@@ -243,9 +248,35 @@
                     </div>
                 }
             </ModalBody>
-            <ModalFooter Style="justify-content: normal">
-                <Button Color="Color.Primary" Clicked="@MovePrevious">Previous</Button>
-                <Button Style="margin-left: auto;" Color="Color.Primary" Clicked="@MoveNext">Next</Button>
+            <ModalFooter Style="justify-content: normal; display: block">
+                <div Class="col-12">
+                    <Row Style="padding-right: 0.5rem;">
+                        <div Style="margin: auto;">
+                            <b><p Class="text-black-hint" Style="font-size: 18px; height: 20px; margin: auto; z-index: 1; background-color: rgba(255,255,255,0.75); border-radius: 2px 2px 0px 0px;">@(this.Speed)x</p></b>
+                        </div>
+                    </Row>
+                </div>
+                <div Class="col-12">
+                    <Row Style="padding-right: 0.5rem;">
+                        <div Class="col-3" Style="justify-content: left;">
+                            <Button Disabled="@DisablePrevious()" Color="Color.Primary" Clicked="@MovePrevious">Previous</Button>
+                        </div>
+                        <Div Class="col-6" Style="display: grid;">
+                            <div Style="margin: auto;">
+                                <Button Style="background-color: rgba(255,255,255,0.75)" Clicked="@MoveStart"><Icon Name="@("fa-step-backward")" /></Button>
+                                <Button Style="background-color: rgba(255,255,255,0.75)" Clicked="@ReduceSpeed"><Icon Name="@("fa-backward")" /></Button>
+                                <Button Style="background-color: rgba(255,255,255,0.75)" Clicked="@PlayPause"><Icon Name="@(this.IsPlaying ? "fa-pause" : "fa-play")" /></Button>
+                                <Button Style="background-color: rgba(255,255,255,0.75)" Clicked="@IncreaseSpeed"><Icon Name="@("fa-forward")" /></Button>
+                                <Button Style="background-color: rgba(255,255,255,0.75)" Clicked="@MoveEnd"><Icon Name="@("fa-step-forward")" /></Button>
+                            </div>
+                        </Div>
+                        <div Class="col-3" Style="display: grid; justify-content: right;">
+                            <div Style="margin: auto;">
+                                <Button Disabled="@DisableNext()" Color="Color.Primary" Clicked="@MoveNext">Next</Button>
+                            </div>
+                        </div>
+                    </Row>
+                </div>
             </ModalFooter>
         }
     </ModalContent>
@@ -263,6 +294,8 @@
 
     private Modal modalRef;
 
+    private bool modalVisible;
+
     private ElementReference replayControls;
 
     private KeyValuePair<string, Snapshot> currentSnapshot;
@@ -270,10 +303,155 @@
     private async Task ShowModal(KeyValuePair<string, Snapshot> snapshot)
     {
         this.currentSnapshot = snapshot;
+        this.Speed = 1;
+        this.IsPlaying = false;
 
         await modalRef.Show();
 
         await replayControls.FocusAsync();
+
+
+#pragma warning disable 4014
+        Task.Factory.StartNew(async () =>
+        {
+            while (this.modalVisible == true)
+            {
+                var delayMS = ((double)1 / (double)Math.Abs(this.Speed)) * 1000;
+
+                await Task.Delay(TimeSpan.FromMilliseconds(delayMS));
+
+                if (this.IsPlaying == true)
+                {
+                    if (this.Speed > 0)
+                    {
+                        this.Next();
+                    }
+                    else
+                    {
+                        this.Previous();
+                    }
+
+                    InvokeAsync(StateHasChanged);
+                }
+            }
+        });
+#pragma warning restore 4014
+    }
+
+    private double GetReplayLineWidth(string snapshotKey)
+    {
+        if (this.matchReport.Snapshots.Count <= 1)
+        {
+            return 0;
+        }
+
+        var lastIndex = this.matchReport.Snapshots.IndexOfKey(this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Count - 1]);
+        var index = this.matchReport.Snapshots.IndexOfKey(snapshotKey);
+        if (index != lastIndex)
+        {
+            var nextKey = this.matchReport.Snapshots.Keys[index + 1];
+            var timeDifference = DateTimeOffset.Parse(nextKey) - DateTimeOffset.Parse(snapshotKey);
+            var width = timeDifference.TotalMilliseconds / 200; // e.g. 1000ms / 200 = 5px
+
+            return Math.Round(width, 2);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    private bool DisablePrevious()
+    {
+        if (this.matchReport.Snapshots.IndexOfKey(this.currentSnapshot.Key) == 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool DisableNext()
+    {
+        if (this.matchReport.Snapshots.IndexOfKey(this.currentSnapshot.Key) == (this.matchReport.Snapshots.Count - 1))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsPlaying;
+
+    private int Speed = 1;
+
+    private void MoveStart()
+    {
+        var startKey = this.matchReport.Snapshots.Keys[0];
+        var startSnapshot = this.matchReport.Snapshots[startKey];
+
+        this.currentSnapshot = new KeyValuePair<string, Snapshot>(startKey, startSnapshot);
+    }
+
+    private void ReduceSpeed()
+    {
+        if (this.Speed > 1)
+        {
+            this.Speed = this.Speed / 2;
+        }
+        else if (this.Speed == 1)
+        {
+            this.Speed = -1;
+        }
+        else
+        {
+            var nextSpeed = this.Speed * 2;
+            if (nextSpeed >= -32)
+            {
+                this.Speed = nextSpeed;
+            }
+        }
+    }
+
+    private void PlayPause()
+    {
+        this.IsPlaying = this.IsPlaying == false;
+    }
+
+    private void IncreaseSpeed()
+    {
+        if (this.Speed < -1)
+        {
+            this.Speed = this.Speed / 2;
+        }
+        else if (this.Speed == -1)
+        {
+            this.Speed = 1;
+        }
+        else
+        {
+            var nextSpeed = this.Speed * 2;
+            if (nextSpeed <= 32)
+            {
+                this.Speed = nextSpeed;
+            }
+        }
+    }
+
+    private void MoveEnd()
+    {
+        var endKey = this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Keys.Count - 1];
+        var endSnapshot = this.matchReport.Snapshots[endKey];
+
+        this.currentSnapshot = new KeyValuePair<string, Snapshot>(endKey, endSnapshot);
+    }
+
+
+    private Task MoveNext()
+    {
+        Next();
+
+        return Task.CompletedTask;
     }
 
     private void Next()
@@ -286,13 +464,6 @@
 
             this.currentSnapshot = new KeyValuePair<string, Snapshot>(nextKey, nextSnapshot);
         }
-    }
-
-    private Task MoveNext()
-    {
-        Next();
-
-        return Task.CompletedTask;
     }
 
     private void Previous()
@@ -316,13 +487,17 @@
 
     private Task MoveSnapshot(KeyboardEventArgs e)
     {
-        if (e.Code == "ArrowLeft")
+        if (e.Code == "ArrowLeft" && e.Type == "keydown")
         {
             Previous();
         }
-        else if (e.Code == "ArrowRight")
+        else if (e.Code == "ArrowRight" && e.Type == "keydown")
         {
             Next();
+        }
+        else if (e.Code == "Space" && e.Type == "keydown")
+        {
+            PlayPause();
         }
 
         return Task.CompletedTask;
@@ -332,7 +507,9 @@
     {
         if (this.Id != null)
         {
+            var stopwatch = Stopwatch.StartNew();
             this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
+            var elapsed = stopwatch.Elapsed;
             this.cards = this.matchReport?.PlayerDeckCode.GetCardsFromCode();
         }
     }
@@ -346,6 +523,7 @@
             await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetManaChartDataset());
         }
     }
+
 
     private object manaChartOptions = new
     {

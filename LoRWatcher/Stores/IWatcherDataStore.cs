@@ -14,5 +14,7 @@ namespace LoRWatcher.Stores
         Task<IEnumerable<MatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken);
 
         Task<MatchReportMetadata> GetMatchReportMetadataAsync(CancellationToken cancellationToken);
+
+        Task<MatchReportMetadata> GetMatchReportMetadataV2Async(CancellationToken cancellationToken);
     }
 }

@@ -243,5 +243,74 @@ namespace LoRWatcher.Stores
                 }
             });
         }
+
+        public async Task<MatchReportMetadata> GetMatchReportMetadataV2Async(CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<MatchReportMetadata>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<MatchReportDocument>(CollectionName);
+
+                        var allDocs = collection.FindAll().ToArray();
+
+                        var mostPlayedRegions = string.Empty;
+                        var mostPlayedRegionsCount = 0;
+                        var highestRegionsWinRate = string.Empty;
+                        var highestRegionsWinRatePercentage = 0;
+                        if (allDocs.Any())
+                        {
+                            var groupedRegions = allDocs
+                                .GroupBy(doc => string.Join(",", doc.Regions.OrderBy(r => r)))
+                                .ToArray();
+
+                            var mostPlayed = groupedRegions
+                                .OrderByDescending(group => group.Count())
+                                .First();
+
+                            mostPlayedRegions = mostPlayed.Key;
+                            mostPlayedRegionsCount = mostPlayed.Count();
+
+                            var mostWon = groupedRegions
+                                .OrderByDescending(group => group.Where(doc => doc.Result == true).Count())
+                                .First();
+
+                            highestRegionsWinRate = mostWon.Key;
+                            highestRegionsWinRatePercentage = (int)Math.Round(((double)100 / (double)mostWon.Count()) * mostWon.Where(doc => doc.Result == true).Count(), 0);
+                        }
+
+                        this.logger.Debug("Match report metadata retrieved");
+
+                        var totalGames = allDocs.Count();
+                        var totalWins = allDocs.Where(doc => doc.Result == true).Count();
+
+                        var matchReportMetadata = new MatchReportMetadata
+                        {
+                            PlayerName = allDocs.First().PlayerName,
+                            TotalGames = totalGames,
+                            TotalWins = totalWins,
+                            TotalLosses = totalGames - totalWins,
+                            MostPlayedRegions = mostPlayedRegions,
+                            MostPlayedRegionsCount = mostPlayedRegionsCount,
+                            HighestWinRateRegions = highestRegionsWinRate,
+                            HighestWinRateRegionsPercentage = highestRegionsWinRatePercentage
+                        };
+
+                        return matchReportMetadata;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving match report metadata: {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
     }
 }
