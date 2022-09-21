@@ -1,13 +1,15 @@
 ﻿@page "/"
 
+@using LoRWatcherComponents
 @using LoRWatcher.Caches
+@using LoRWatcher.Events
 @using LoRWatcher.Stores
 @using LoRWatcher.Utils
 @using System.Threading;
-@using LoRWatcherComponents
 @using System.Diagnostics
 
 @inject IWatcherDataStore watcherDataStore
+@inject IWatcherEventHandler watcherEventHandler
 
 <Container>
     <!-- TODO: Flickers occur when loading homepage... this is possibly due to this if/else here and the data taking a short time to load in. This could be made smoother somehow. -->
@@ -56,16 +58,38 @@
 </Container>
 
 @code {
+    private const string Source = "Home";
+
     private MatchReportMetadata matchReportMetadata;
 
     private IEnumerable<MatchReport> matchReports;
 
     protected override async Task OnInitializedAsync()
     {
+        this.RegisterEvents();
+
+        await this.UpdateDataAsync();
+    }
+
+    private void RegisterEvents()
+    {
+        this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, async () =>
+        {
+            await this.UpdateDataAsync();
+
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        });
+    }
+
+    private async Task UpdateDataAsync()
+    {
         var stopwatch = Stopwatch.StartNew();
         var metadataTask = Task.Run(async () =>
         {
-            this.matchReportMetadata = await this.watcherDataStore.GetMatchReportMetadataV2Async(CancellationToken.None);
+            this.matchReportMetadata = await this.watcherDataStore.GetMatchReportsMetadataV2Async(CancellationToken.None);
         });
 
         var matchesTask = Task.Run(async () =>

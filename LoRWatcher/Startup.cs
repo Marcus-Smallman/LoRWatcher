@@ -5,7 +5,9 @@ using LiteDB;
 using LoRWatcher.Caches;
 using LoRWatcher.Clients;
 using LoRWatcher.Configuration;
+using LoRWatcher.Events;
 using LoRWatcher.Logger;
+using LoRWatcher.Services;
 using LoRWatcher.Stores;
 using LoRWatcher.Tray;
 using LoRWatcher.Watchers;
@@ -64,7 +66,9 @@ namespace LoRWatcher
 
             services.AddSingleton<IGameClient, LoRClient>();
 
+            services.AddSingleton<IWatcherService, WatcherService>();
             services.AddSingleton<IWatcherDataStore, LiteDBWatcherDataStore>();
+            services.AddSingleton<IWatcherEventHandler, WatcherEventHandler>();
 
             services.AddSingleton<IConnection<LiteDatabase>, LiteDBConnection>();
 

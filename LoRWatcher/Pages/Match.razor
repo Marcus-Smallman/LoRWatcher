@@ -167,7 +167,7 @@
                 <div Style="flex: 1; overflow-x: auto; display: flex; padding: 1.5rem;">
                     @foreach (var snapshot in this.matchReport.Snapshots)
                     {
-                        <Tooltip Style="display: flex; min-height: min-content;" Text="@(DateTimeOffset.Parse(snapshot.Key).DateTime.ToString("HH:mm:ss.ff"))">
+                        <Tooltip Style="display: flex; min-height: min-content;" Text="@(DateTimeOffset.Parse(snapshot.Key).DateTime.ToLocalTime().ToString("HH:mm:ss.ff"))">
                             <a onclick="@(async () => await ShowModal(snapshot))" Style="cursor: pointer; width: 10px; height: 10px; border-style: solid; border-color: rgba(0,0,0,0.75); border-width: 1px; border-radius: 2px"> </a>
                         </Tooltip>
                         <div Style="display: flex; min-height: min-content;">
@@ -202,9 +202,9 @@
                 </div>
                 <div Class="col-12">
                     <Row>
-                        <a>@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[0]).DateTime.ToString("HH:mm:ss.ff"))</a>
+                        <a>@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[0]).DateTime.ToLocalTime().ToString("HH:mm:ss.ff"))</a>
                         <a Style="margin-left: auto; z-index: 1; background-color: rgba(255,255,255,0.75); border-radius: 2px;">@(this.GetCurrentTime(this.currentSnapshot.Key).ToString("hh':'mm':'ss'.'ff"))</a>
-                        <a Style="margin-left: auto;">@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Keys.Count-1]).DateTime.ToString("HH:mm:ss.ff"))</a>
+                        <a Style="margin-left: auto;">@(DateTimeOffset.Parse(this.matchReport.Snapshots.Keys[this.matchReport.Snapshots.Keys.Count-1]).DateTime.ToLocalTime().ToString("HH:mm:ss.ff"))</a>
                     </Row>
                 </div>
             </ModalHeader>

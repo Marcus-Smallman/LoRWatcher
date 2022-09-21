@@ -1,6 +1,7 @@
 ﻿@namespace LoRWatcherComponents
 
 @using LoRWatcher.Caches;
+@using LoRWatcher.Events
 @using LoRWatcher.Pages
 @using LoRWatcher.Stores;
 @using LoRWatcher.Utils;
@@ -8,6 +9,7 @@
 @using System.Diagnostics;
 
 @inject IWatcherDataStore watcherDataStore
+@inject IWatcherEventHandler watcherEventHandler
 @inject NavigationManager navigationManager
 
 @if (matchReports != null)
@@ -52,25 +54,43 @@
     [Parameter]
     public IEnumerable<MatchReport> InitialMatchReports { get; set; }
 
+    private const string Source = "MatchGrid";
+
     private bool showPager = true;
 
     private MatchReport selectedMatchReport;
 
     private IEnumerable<MatchReport> matchReports;
 
+    private int skip;
 
     protected override void OnInitialized()
     {
+        this.RegisterEvents();
+
         var stopwatch = Stopwatch.StartNew();
         this.matchReports = this.InitialMatchReports;
         var elapsed = stopwatch.Elapsed;
     }
 
+    private void RegisterEvents()
+    {
+        this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, async () =>
+        {
+            this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        });
+    }
+
     private async Task OnReadData(DataGridReadDataEventArgs<MatchReport> e)
     {
         // TODO: Support filtering and sorting
-        var skip = RazorConstants.PageSize * (e.Page - 1);
-        this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(skip, RazorConstants.PageSize, CancellationToken.None);
+        this.skip = RazorConstants.PageSize * (e.Page - 1);
+        this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
 
         StateHasChanged();
     }

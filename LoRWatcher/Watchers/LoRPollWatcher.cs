@@ -1,5 +1,6 @@
 ﻿using LoRWatcher.Caches;
 using LoRWatcher.Clients;
+using LoRWatcher.Events;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores;
 using Microsoft.Extensions.Hosting;
@@ -28,6 +29,8 @@ namespace LoRWatcher.Watchers
 
         private readonly IWatcherDataStore watcherDataStore;
 
+        private readonly IWatcherEventHandler watcherEventHandler; 
+
         private readonly ILogger logger;
 
         public LoRPollWatcher(
@@ -35,6 +38,7 @@ namespace LoRWatcher.Watchers
             IActiveGameCache activeGameCache,
             IGameStateCache gameStateCache,
             IWatcherDataStore watcherDataStore,
+            IWatcherEventHandler watcherEventHandler,
             ILogger logger)
         {
             this.GameId = null;
@@ -44,6 +48,7 @@ namespace LoRWatcher.Watchers
             this.activeGameCache = activeGameCache;
             this.gameStateCache = gameStateCache;
             this.watcherDataStore = watcherDataStore;
+            this.watcherEventHandler = watcherEventHandler;
             this.logger = logger;
 
             this.SetDefaults();
@@ -170,6 +175,9 @@ namespace LoRWatcher.Watchers
                         this.logger.Info("Reporting match");
 
                         await this.watcherDataStore.ReportGameAsync(matchReport, cancellationToken);
+                        await this.watcherDataStore.UpdateMatchReportsMetadataAsync(matchReport, cancellationToken);
+
+                        this.watcherEventHandler.InvokeEvent(WatcherEvents.GameFinished);
                     }
 
                     this.GameId = gameResult.GameId;

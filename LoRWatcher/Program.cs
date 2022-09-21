@@ -1,4 +1,5 @@
 ﻿using LoRWatcher.Logger;
+using LoRWatcher.Services;
 using LoRWatcher.Tray;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,15 +22,31 @@ namespace LoRWatcher
             var trayIcon = host.Services.GetService<ITrayIcon>();
 
             var tokenSource = new CancellationTokenSource();
+            var logger = new FileLogger();
 
             Task.Factory.StartNew(() => trayIcon.Configure(tokenSource));
+            Task.Factory.StartNew(async () =>
+            {
+                try
+                {
+                    var store = host.Services.GetRequiredService<IWatcherService>();
+
+                    await store.InitialiseMetadataAsync(CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error($"Error initialising store: {ex.Message}");
+                }
+            });
 
             try
             {
+
                 host.RunAsync(tokenSource.Token).Wait();
             }
-            catch
+            catch (Exception ex)
             {
+                logger.Error($"Error occurred during host execution: {ex.Message}");
             }
 
             if (tokenSource.IsCancellationRequested == true)
@@ -42,8 +59,6 @@ namespace LoRWatcher
                 }
                 catch (Exception ex)
                 {
-                    var logger = new FileLogger();
-
                     logger.Error($"Error occurred restarting Watcher: {ex.Message}");
                 }
             }
