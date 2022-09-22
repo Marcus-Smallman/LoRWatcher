@@ -38,6 +38,6 @@ You can then view the match you played by clicking on the record in the table.
 ## Basic Replay
 
 Basic replay is feature that can be veiwed by going to one of your matches and scrolling to the bottom of the page. You will then be presented with a timeline of various snapshots of your match.
-<img src="https://user-images.githubusercontent.com/10182314/191859367-befc8f53-11f0-420d-a056-af8fe36d3dc3.png" width="800">
+<img src="https://user-images.githubusercontent.com/10182314/191859367-befc8f53-11f0-420d-a056-af8fe36d3dc3.png" width="800">  
 You can then click on any one of these snapshot to see the status of your match at that time. 
-<img src="https://user-images.githubusercontent.com/10182314/191859241-c82316a8-5108-4d40-bbf5-89d00f3d9cfa.png" width="800">
+<img src="https://user-images.githubusercontent.com/10182314/191859241-c82316a8-5108-4d40-bbf5-89d00f3d9cfa.png" width="800">  
