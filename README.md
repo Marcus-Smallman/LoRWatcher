@@ -3,6 +3,12 @@
 The LoR Watcher is a downloadable Windows application that tracks your Legends of Runeterra games. The games can be viewed in the browser at 'http://lor.watcher'
 which the LoR Watcher application hosts.
 
+##### Table of Contents  
+[Install](#install)  
+&nbsp;&nbsp;[Tray Icon](#tray-icon)  
+[UI](#ui)  
+&nbsp;&nbsp;[Basic Replay](#basic-replay)  
+
 # Install
 To install, go to the [Releases](https://github.com/Marcus-Smallman/LoRWatcher/releases) page and click on the latest release.
 You should then be able to click on the Installer executable (*e.g. LoR.Watcher.Installer.0.1.6.exe*).
