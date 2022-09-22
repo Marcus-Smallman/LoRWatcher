@@ -35,3 +35,9 @@ After playing a few games you will start to see your match history with some ove
 You can then view the match you played by clicking on the record in the table.  
 <img src="https://user-images.githubusercontent.com/10182314/187091440-723f5d0b-9073-4ce7-a438-5a4e13a16766.png" width="800">  
 
+## Basic Replay
+
+Basic replay is feature that can be veiwed by going to one of your matches and scrolling to the bottom of the page. You will then be presented with a timeline of various snapshots of your match.
+<img src="https://user-images.githubusercontent.com/10182314/191859367-befc8f53-11f0-420d-a056-af8fe36d3dc3.png" width="800">
+You can then click on any one of these snapshot to see the status of your match at that time. 
+<img src="https://user-images.githubusercontent.com/10182314/191859241-c82316a8-5108-4d40-bbf5-89d00f3d9cfa.png" width="800">
