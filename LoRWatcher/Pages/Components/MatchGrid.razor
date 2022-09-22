@@ -1,0 +1,109 @@
+﻿@namespace LoRWatcherComponents
+
+@using LoRWatcher.Caches;
+@using LoRWatcher.Events
+@using LoRWatcher.Pages
+@using LoRWatcher.Stores;
+@using LoRWatcher.Utils;
+@using System.Threading;
+@using System.Diagnostics;
+
+@inject IWatcherDataStore watcherDataStore
+@inject IWatcherEventHandler watcherEventHandler
+@inject NavigationManager navigationManager
+
+@if (matchReports != null)
+{
+    <DataGrid TItem="MatchReport"
+          Data="@matchReports"
+          ShowPager="@showPager"
+          PageSize="@RazorConstants.PageSize"
+          ReadData="@OnReadData"
+          TotalItems="@TotalGames"
+          @bind-SelectedRow="@selectedMatchReport"
+          RowSelectable="@((matchReport) => this.RowSelected(matchReport.Item))"
+          Hoverable="true">
+        <DataGridCommandColumn TItem="MatchReport" />
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
+            <DisplayTemplate>
+                @((context as MatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name">
+            <DisplayTemplate>
+                @((context as MatchReport)?.OpponentName.GetCardNameOpponentName())
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Result)" Caption="Result">
+            <DisplayTemplate>
+                @((context as MatchReport)?.Result == true ? "Won" : "Lost")
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Regions)" Caption="Region(s)">
+            <DisplayTemplate>
+                @(string.Join(", ", (context as MatchReport)?.Regions ?? Enumerable.Empty<string>()))
+            </DisplayTemplate>
+        </DataGridColumn>
+    </DataGrid>
+}
+
+@code {
+    [Parameter]
+    public int TotalGames { get; set; }
+
+    [Parameter]
+    public IEnumerable<MatchReport> InitialMatchReports { get; set; }
+
+    private const string Source = "MatchGrid";
+
+    private bool showPager = true;
+
+    private MatchReport selectedMatchReport;
+
+    private IEnumerable<MatchReport> matchReports;
+
+    private int skip;
+
+    protected override void OnInitialized()
+    {
+        this.RegisterEvents();
+
+        var stopwatch = Stopwatch.StartNew();
+        this.matchReports = this.InitialMatchReports;
+        var elapsed = stopwatch.Elapsed;
+    }
+
+    private void RegisterEvents()
+    {
+        this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, async () =>
+        {
+            this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        });
+    }
+
+    private async Task OnReadData(DataGridReadDataEventArgs<MatchReport> e)
+    {
+        // TODO: Support filtering and sorting
+        this.skip = RazorConstants.PageSize * (e.Page - 1);
+        this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+
+        StateHasChanged();
+    }
+
+    private bool RowSelected(MatchReport matchReport)
+    {
+        this.navigationManager.NavigateTo($"/match/{matchReport.Id}");
+
+        return false;
+    }
+
+    private string GetMatchReportCellClass(MatchReport matchReport)
+    {
+        return matchReport.Result ? "text-primary" : "text-danger";
+    }
+}

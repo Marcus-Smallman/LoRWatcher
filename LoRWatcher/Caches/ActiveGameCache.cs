@@ -71,7 +71,31 @@ namespace LoRWatcher.Caches
 
             if (this.currentMatch != null)
             {
-                // Update match data
+                try
+                {
+                    var currentSnapshot = new Snapshot
+                    {
+                        ScreenWidth = positionalRectangles.Screen.ScreenWidth,
+                        ScreenHeight = positionalRectangles.Screen.ScreenHeight,
+                        Rectangles = positionalRectangles.Rectangles
+                    };
+
+                    if (this.currentMatch.Snapshots.Count > 0)
+                    {
+                        var lastSnapshot = this.currentMatch.Snapshots[this.currentMatch.Snapshots.Keys[this.currentMatch.Snapshots.Keys.Count - 1]];
+                        if (currentSnapshot.CardEquals(lastSnapshot) == true)
+                        {
+                            return;
+                        }
+                    }
+
+                    this.currentMatch.Snapshots.Add(positionalRectangles.RetrievedTimeUtc.ToString("o"), currentSnapshot);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred adding snapshot: {ex.Message}");
+                }
+
                 return;
             }
 
@@ -102,7 +126,8 @@ namespace LoRWatcher.Caches
                     PlayerName = positionalRectangles.PlayerName,
                     OpponentName = positionalRectangles.OpponentName,
                     PlayerDeckCode = activeDeckCode,
-                    Regions = cards.GetRegions()
+                    Regions = cards.GetRegions(),
+                    Snapshots = new SortedList<string, Snapshot>()
                 };
             }
         }

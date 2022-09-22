@@ -1,17 +1,19 @@
 ﻿@page "/"
 
+@using LoRWatcherComponents
 @using LoRWatcher.Caches
+@using LoRWatcher.Events
 @using LoRWatcher.Stores
 @using LoRWatcher.Utils
 @using System.Threading;
-@using LoRWatcherComponents
+@using System.Diagnostics
 
 @inject IWatcherDataStore watcherDataStore
-@inject NavigationManager navigationManager
+@inject IWatcherEventHandler watcherEventHandler
 
 <Container>
     <!-- TODO: Flickers occur when loading homepage... this is possibly due to this if/else here and the data taking a short time to load in. This could be made smoother somehow. -->
-    @if (matchReports == null || matchReportMetadata == null)
+    @if (this.matchReportMetadata == null || this.matchReports == null)
     {
         <p><em>Loading...</em></p>
     }
@@ -27,17 +29,17 @@
     {
         <Row Class="my-4">
             <div Class="col-4">
-                <h1><b>@matchReports.First().PlayerName</b></h1>
+                <h1><b>@this.matchReportMetadata.PlayerName</b></h1>
             </div>
             <div Class="col-8">
                 <Row>
                     <TotalStats MatchReportMetadata="this.matchReportMetadata" />
                     <div Class="col-4" Style="margin: auto; text-align: center">
                         <!--<div>
-                            <a Class="text-black-hint">Most Played Region(s):</a> @(matchReportMetadata.MostPlayedRegions) <a Class="text-black-hint" Style="font-size: 10px"><b>@(matchReportMetadata.MostPlayedRegionsCount)G</b></a>
+                            <a Class="text-black-hint">Most Played Region(s):</a> @(this.matchReportMetadata.MostPlayedRegions) <a Class="text-black-hint" Style="font-size: 10px"><b>@(this.matchReportMetadata.MostPlayedRegionsCount)G</b></a>
                         </div>-->
                         <!--<div Style="padding-top: 10px">
-                            <a Class="text-black-hint">Highest Win Rate:</a> @(matchReportMetadata.HighestWinRateRegions) <a Class="text-black-hint" Style="font-size: 10px"><b>@(matchReportMetadata.HighestWinRateRegionsPercentage)%</b></a>
+                            <a Class="text-black-hint">Highest Win Rate:</a> @(this.matchReportMetadata.HighestWinRateRegions) <a Class="text-black-hint" Style="font-size: 10px"><b>@(this.matchReportMetadata.HighestWinRateRegionsPercentage)%</b></a>
                         </div>-->
                         <!-- Most used region(s). Highest win rate with region(s) exlcuding expeditions -->
                     </div>
@@ -49,78 +51,59 @@
         </Row>
         <Row>
             <div Class="col-12">
-                <DataGrid TItem="MatchReport"
-                      Data="@matchReports"
-                      ShowPager="@showPager"
-                      PageSize="@pageSize"
-                      ReadData="@OnReadData"
-                      TotalItems="@matchReportMetadata.TotalGames"
-                      @bind-SelectedRow="@selectedMatchReport"
-                      RowSelectable="@((matchReport) => this.RowSelected(matchReport.Item))"
-                      Hoverable="true">
-                    <DataGridCommandColumn TItem="MatchReport" />
-                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
-                        <DisplayTemplate>
-                            @((context as MatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
-                        </DisplayTemplate>
-                    </DataGridColumn>
-                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name">
-                        <DisplayTemplate>
-                            @((context as MatchReport)?.OpponentName.GetCardNameOpponentName())
-                        </DisplayTemplate>
-                    </DataGridColumn>
-                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Result)" Caption="Result">
-                        <DisplayTemplate>
-                            @((context as MatchReport)?.Result == true ? "Won" : "Lost")
-                        </DisplayTemplate>
-                    </DataGridColumn>
-                    <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Regions)" Caption="Region(s)">
-                        <DisplayTemplate>
-                            @(string.Join(", ", (context as MatchReport)?.Regions ?? Enumerable.Empty<string>()))
-                        </DisplayTemplate>
-                    </DataGridColumn>
-                </DataGrid>
+                <MatchGrid TotalGames="@this.matchReportMetadata.TotalGames" InitialMatchReports="@this.matchReports" />
             </div>
         </Row>
     }
 </Container>
 
 @code {
-    private bool showPager = true;
-
-    private int pageSize = 10;
-
-    private MatchReport selectedMatchReport;
-
-    private IEnumerable<MatchReport> matchReports;
+    private const string Source = "Home";
 
     private MatchReportMetadata matchReportMetadata;
 
+    private IEnumerable<MatchReport> matchReports;
+
     protected override async Task OnInitializedAsync()
     {
-        this.matchReportMetadata = await this.watcherDataStore.GetMatchReportMetadataAsync(CancellationToken.None);
-        this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(0, this.pageSize, CancellationToken.None);
+        this.RegisterEvents();
+
+        await this.UpdateDataAsync();
     }
 
-    private async Task OnReadData(DataGridReadDataEventArgs<MatchReport> e)
+    private void RegisterEvents()
     {
-        // TODO: Support filtering and sorting
-        var skip = this.pageSize * (e.Page - 1);
-        this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(skip, this.pageSize, CancellationToken.None);
-        this.matchReportMetadata = await this.watcherDataStore.GetMatchReportMetadataAsync(CancellationToken.None);
+        this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, async () =>
+        {
+            await this.UpdateDataAsync();
 
-        StateHasChanged();
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        });
     }
 
-    private bool RowSelected(MatchReport matchReport)
+    private async Task UpdateDataAsync()
     {
-        this.navigationManager.NavigateTo($"/match/{matchReport.Id}");
+        var stopwatch = Stopwatch.StartNew();
+        var metadataTask = Task.Run(async () =>
+        {
+            this.matchReportMetadata = await this.watcherDataStore.GetMatchReportsMetadataV2Async(CancellationToken.None);
+        });
 
-        return false;
-    }
+        var matchesTask = Task.Run(async () =>
+        {
+            this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(0, RazorConstants.PageSize, CancellationToken.None);
+        });
 
-    private string GetMatchReportCellClass(MatchReport matchReport)
-    {
-        return matchReport.Result ? "text-primary" : "text-danger";
+        await Task.WhenAll(
+            new[]
+            {
+                metadataTask,
+                matchesTask
+            });
+
+        var elapsed = stopwatch.Elapsed;
     }
 }

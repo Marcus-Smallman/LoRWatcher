@@ -1,6 +1,5 @@
 ﻿.watcher-tooltip {
     position: relative;
-    background-color: #f5f5f5;
 }
 
     .watcher-tooltip span {
@@ -19,3 +18,7 @@
         position: absolute;
         z-index: 1000;
     }
+
+.modal-lg {
+    max-width: 75rem;
+}
