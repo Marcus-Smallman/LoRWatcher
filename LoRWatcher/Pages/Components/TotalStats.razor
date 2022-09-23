@@ -5,6 +5,7 @@
 @using LoRWatcher.Utils;
 @using System.Threading;
 
+@inject IWatcherDataStore watcherDataStore
 @inject IWatcherEventHandler watcherEventHandler
 
 <div Class="col-4" Style="text-align: center">
@@ -49,14 +50,10 @@
 
     private void RegisterEvents()
     {
-        this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, () =>
+        this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, async () =>
         {
-#pragma warning disable CS4014
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
-#pragma warning restore CS4014
+            this.MatchReportMetadata = await this.watcherDataStore.GetMatchReportsMetadataV2Async(CancellationToken.None);
+            await HandleWinLossesChartRedrawAsync();
         });
     }
 
