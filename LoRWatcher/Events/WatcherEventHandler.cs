@@ -58,10 +58,13 @@ namespace LoRWatcher.Events
 
         public void InvokeEvent(WatcherEvents key)
         {
-            var events = this.events[key];
-            foreach (var @event in events)
+            if (this.events.ContainsKey(key) == true)
             {
-                @event.Value?.Invoke();
+                var events = this.events[key];
+                foreach (var @event in events)
+                {
+                    @event.Value?.Invoke();
+                }
             }
         }
 

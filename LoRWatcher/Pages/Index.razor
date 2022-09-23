@@ -77,10 +77,12 @@
         {
             await this.UpdateDataAsync();
 
+#pragma warning disable CS4014
             InvokeAsync(() =>
             {
                 StateHasChanged();
             });
+#pragma warning restore CS4014
         });
     }
 
