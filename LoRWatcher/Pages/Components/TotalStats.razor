@@ -1,12 +1,14 @@
 ﻿@namespace LoRWatcherComponents
 
 @using LoRWatcher.Events
+@using LoRWatcher.Logger
 @using LoRWatcher.Stores;
 @using LoRWatcher.Utils;
 @using System.Threading;
 
 @inject IWatcherDataStore watcherDataStore
 @inject IWatcherEventHandler watcherEventHandler
+@inject ILogger logger
 
 <div Class="col-4" Style="text-align: center">
     <div>
@@ -67,18 +69,25 @@
 
     private async Task HandleWinLossesChartRedrawAsync()
     {
-        await winsLossesChart.Clear();
-        await winsLossesChart.AddLabelsDatasetsAndUpdate(
-            new string[] { "Wins", "Losses" },
-            new DoughnutChartDataset<int>
-                {
-                    Label = "Wins and losses",
-                    Data = new List<int> { this.MatchReportMetadata.TotalWins, this.MatchReportMetadata.TotalLosses },
-                    BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
-                    BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
-                    BorderWidth = 1
-                }
-        );
+        try
+        {
+            await winsLossesChart.Clear();
+            await winsLossesChart.AddLabelsDatasetsAndUpdate(
+                new string[] { "Wins", "Losses" },
+                new DoughnutChartDataset<int>
+                    {
+                        Label = "Wins and losses",
+                        Data = new List<int> { this.MatchReportMetadata.TotalWins, this.MatchReportMetadata.TotalLosses },
+                        BackgroundColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 0.2f), ChartColor.FromRgba(244, 67, 54, 0.2f) },
+                        BorderColor = new List<string> { ChartColor.FromRgba(156, 39, 176, 1f), ChartColor.FromRgba(244, 67, 54, 1f) },
+                        BorderWidth = 1
+                    }
+            );
+        }
+        catch (Exception ex)
+        {
+            this.logger.Warning($"Failed to redraw chart: {ex.Message}");
+        }
     }
 
     private string GetWinRate()
