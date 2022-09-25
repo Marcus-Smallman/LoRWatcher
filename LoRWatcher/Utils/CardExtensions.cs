@@ -24,7 +24,18 @@ namespace LoRWatcher.Utils
         {
             logger ??= new FileLogger();
 
-            var regions = cards.Select(c => c.CardCode.Substring(2, 2)).Distinct();
+            var regions = cards
+                .Select(c1 =>
+                {
+                    var regionRefs = GetCardData().FirstOrDefault(c2 => c2.CardCode == c1.CardCode).RegionRefs.OrderBy(s => s);
+                    if (regionRefs.Count() >= 2)
+                    {
+                        return $"[{string.Join(", ", regionRefs)}]";
+                    }
+
+                    return regionRefs.FirstOrDefault();
+                })
+                .Distinct();
 
             logger.Debug($"Deck regions: {string.Join(", ", regions)}");
 

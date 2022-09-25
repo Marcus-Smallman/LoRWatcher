@@ -102,28 +102,28 @@
                                         }
                                         <Badge Style="position: absolute; margin-top: 25px; margin-left: -15px; border: 1px grey solid; border-radius: 0px; font-size: smaller;" Color="Color.Light">
                                             x@(this.cards
-                            .Select(c =>
-                            {
-                            if (c.Regions != null &&
-                            c.Regions.Any())
-                            {
-                            var cRegions = string.Join(", ", c.Regions);
-                            var dRegions = string.Join(", ", regions.Regions);
+                                                .Select(c =>
+                                                {
+                                                    if (c.Regions != null &&
+                                                        c.Regions.Any())
+                                                    {
+                                                        var cRegions = string.Join(", ", c.Regions);
+                                                        var dRegions = string.Join(", ", regions.Regions);
 
-                            if (cRegions == dRegions)
-                            {
-                            return c.Count;
-                            }
-                            }
+                                                        if (cRegions == dRegions)
+                                                        {
+                                                            return c.Count;
+                                                        }
+                                                    }
 
-                            if (regions.Regions.SequenceEqual(new[] { c.Region }))
-                            {
-                            return c.Count;
-                            }
+                                                    if (regions.Regions.SequenceEqual(new[] { c.Region }))
+                                                    {
+                                                        return c.Count;
+                                                    }
 
-                            return 0;
-                            })
-                            .Sum())
+                                                    return 0;
+                                                })
+                                                .Sum())
                                         </Badge>
                                     </Tooltip>
                                 }

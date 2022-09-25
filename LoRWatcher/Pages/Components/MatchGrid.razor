@@ -29,7 +29,7 @@
                 @((context as MatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name" >
             <DisplayTemplate>
                 @((context as MatchReport)?.OpponentName.GetCardNameOpponentName())
             </DisplayTemplate>
@@ -41,7 +41,20 @@
         </DataGridColumn>
         <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Regions)" Caption="Region(s)">
             <DisplayTemplate>
-                @(string.Join(", ", (context as MatchReport)?.Regions ?? Enumerable.Empty<string>()))
+                @{ 
+                    var cards = (context as MatchReport)?.PlayerDeckCode.GetCardsFromCode();
+                    <Row Style="margin: auto">
+                        @foreach (var regions in this.GetCardRegions(cards))
+                        {
+                            <Tooltip Style="padding: 0px 2px 0px 2px;" Text=@(string.Join(", ", regions.Regions))>
+                                @foreach (var regionRefs in regions.RegionRefs)
+                                {
+                                    <img Style="max-height: 18px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{regionRefs.ToLower()}.png")">
+                                }
+                            </Tooltip>
+                        }
+                    </Row>
+                }
             </DisplayTemplate>
         </DataGridColumn>
     </DataGrid>
@@ -107,5 +120,26 @@
     private string GetMatchReportCellClass(MatchReport matchReport)
     {
         return matchReport.Result ? "text-primary" : "text-danger";
+    }
+
+    private IEnumerable<(IEnumerable<string> Regions, IEnumerable<string> RegionRefs)> GetCardRegions(IEnumerable<CardData> cards)
+    {
+        return cards
+            ?.Select(c =>
+            {
+                if (string.IsNullOrWhiteSpace(c.Region) &&
+                    string.IsNullOrWhiteSpace(c.RegionRef) &&
+                    c.Regions != null &&
+                    c.Regions.Any() &&
+                    c.RegionRefs != null &&
+                    c.RegionRefs.Any())
+                {
+                    return (c.Regions, c.RegionRefs);
+                }
+
+                return (new[] { c.Region }, new[] { c.RegionRef });
+            })
+            .DistinctBy(regions => string.Join(", ", regions.Regions))
+            .OrderBy(regions => string.Join(", ", regions.Regions));
     }
 }
