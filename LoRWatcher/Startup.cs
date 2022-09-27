@@ -43,7 +43,8 @@ namespace LoRWatcher
             services.AddSingleton<WatcherConfiguration>(s => new WatcherConfiguration(Program.GetConfigurationFilePath())
             {
                 Address = this.Configuration["Client:Address"],
-                Port = int.Parse(this.Configuration["Client:Port"])
+                Port = int.Parse(this.Configuration["Client:Port"]),
+                StartWithWindows = bool.Parse(this.Configuration["Client:StartWithWindows"])
             });
 
             var minimumLogLevel = LogLevel.Info;

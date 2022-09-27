@@ -10,7 +10,7 @@
 		<PackageIcon>favicon.ico</PackageIcon>
 		<PackageIconUrl />
 		<PlatformTarget>x86</PlatformTarget>
-		<Version>0.2.3</Version>
+		<Version>0.2.4</Version>
 		<UseWindowsForms>true</UseWindowsForms>
 	</PropertyGroup>
 

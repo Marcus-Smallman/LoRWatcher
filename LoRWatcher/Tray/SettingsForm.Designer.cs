@@ -46,6 +46,8 @@ namespace LoRWatcher.Tray
             this.label9 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.label10 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -131,7 +133,7 @@ namespace LoRWatcher.Tray
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label6.Location = new System.Drawing.Point(6, 98);
+            this.label6.Location = new System.Drawing.Point(6, 128);
             this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(51, 15);
@@ -141,7 +143,7 @@ namespace LoRWatcher.Tray
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(87, 117);
+            this.label7.Location = new System.Drawing.Point(88, 147);
             this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(74, 15);
@@ -151,7 +153,7 @@ namespace LoRWatcher.Tray
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(166, 118);
+            this.checkBox1.Location = new System.Drawing.Point(166, 148);
             this.checkBox1.Margin = new System.Windows.Forms.Padding(2, 1, 2, 1);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(15, 14);
@@ -161,7 +163,7 @@ namespace LoRWatcher.Tray
             // 
             // textBox4
             // 
-            this.textBox4.Location = new System.Drawing.Point(166, 139);
+            this.textBox4.Location = new System.Drawing.Point(166, 169);
             this.textBox4.Margin = new System.Windows.Forms.Padding(2, 1, 2, 1);
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(110, 23);
@@ -170,7 +172,7 @@ namespace LoRWatcher.Tray
             // 
             // textBox5
             // 
-            this.textBox5.Location = new System.Drawing.Point(166, 165);
+            this.textBox5.Location = new System.Drawing.Point(166, 195);
             this.textBox5.Margin = new System.Windows.Forms.Padding(2, 1, 2, 1);
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(110, 23);
@@ -180,7 +182,7 @@ namespace LoRWatcher.Tray
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(83, 142);
+            this.label8.Location = new System.Drawing.Point(83, 172);
             this.label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(79, 15);
@@ -190,7 +192,7 @@ namespace LoRWatcher.Tray
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(26, 168);
+            this.label9.Location = new System.Drawing.Point(26, 198);
             this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(137, 15);
@@ -199,7 +201,7 @@ namespace LoRWatcher.Tray
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(146, 198);
+            this.button1.Location = new System.Drawing.Point(146, 228);
             this.button1.Margin = new System.Windows.Forms.Padding(2, 1, 2, 1);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(74, 22);
@@ -210,7 +212,7 @@ namespace LoRWatcher.Tray
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(69, 198);
+            this.button2.Location = new System.Drawing.Point(69, 228);
             this.button2.Margin = new System.Windows.Forms.Padding(2, 1, 2, 1);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(74, 22);
@@ -219,11 +221,34 @@ namespace LoRWatcher.Tray
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
+            // checkBox2
+            // 
+            this.checkBox2.AutoSize = true;
+            this.checkBox2.Location = new System.Drawing.Point(166, 109);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.checkBox2.Size = new System.Drawing.Size(15, 14);
+            this.checkBox2.TabIndex = 17;
+            this.checkBox2.UseVisualStyleBackColor = true;
+            this.checkBox2.Checked = watcherConfiguration.StartWithWindows;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(48, 108);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(114, 15);
+            this.label10.TabIndex = 18;
+            this.label10.Text = "Start With Windows:";
+
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(281, 225);
+            this.ClientSize = new System.Drawing.Size(281, 254);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label9);
@@ -271,5 +296,7 @@ namespace LoRWatcher.Tray
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.Label label10;
     }
 }

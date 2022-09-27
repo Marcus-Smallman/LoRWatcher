@@ -1,11 +1,12 @@
 ﻿using LoRWatcher.Configuration;
 using LoRWatcher.Logger;
-using Microsoft.Extensions.Configuration;
+using LoRWatcher.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -60,22 +61,27 @@ namespace LoRWatcher.Tray
             {
                 try
                 {
-                    var configJson = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(watcherConfiguration.ConfigurationFilePath));
+                    var configJson = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(this.watcherConfiguration.ConfigurationFilePath));
 
                     configJson["LoR"]["Address"] = this.textBox1.Text;
                     configJson["LoR"]["Port"] = int.Parse(this.textBox2.Text);
 
                     configJson["Client"]["Port"] = int.Parse(this.textBox3.Text);
 
+                    var startWithWindows = this.checkBox2.Checked;
+                    configJson["Client"]["StartWithWindows"] = startWithWindows;
+
                     configJson["LoggerSettings"]["WriteToFile"] = this.checkBox1.Checked;
                     configJson["LoggerSettings"]["FileDirectory"] = this.textBox4.Text;
                     configJson["LoggerSettings"]["CleanupPeriodMinutes"] = int.Parse(this.textBox5.Text);
 
-                    File.WriteAllText(watcherConfiguration.ConfigurationFilePath, JsonConvert.SerializeObject(configJson, Formatting.Indented));
-
                     var confirmResult = MessageBox.Show("Restart for changes to take affect", "Restart Watcher", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
                     if (confirmResult == DialogResult.Yes)
                     {
+                        File.WriteAllText(this.watcherConfiguration.ConfigurationFilePath, JsonConvert.SerializeObject(configJson, Formatting.Indented));
+
+                        this.CheckStartWithWindows(startWithWindows);
+
                         this.trayIcon.Dispose();
                         this.cancellationTokenSource.Cancel();
 
@@ -134,6 +140,30 @@ namespace LoRWatcher.Tray
             }
 
             return true;
+        }
+
+        private void CheckStartWithWindows(bool startWithWindows)
+        {
+            var lorWatcherStartupFilePath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.Startup)}\LoR Watcher.lnk";
+            if (string.IsNullOrWhiteSpace(lorWatcherStartupFilePath) == false)
+            {
+                var shortcutExists = File.Exists(lorWatcherStartupFilePath);
+                if (startWithWindows == true &&
+                    shortcutExists == false)
+                {
+                    var link = (IShellLink)new ShellLink();
+                    link.SetWorkingDirectory(Application.StartupPath);
+                    link.SetPath(Application.ExecutablePath);
+
+                    var file = (IPersistFile)link;
+                    file.Save(lorWatcherStartupFilePath, false);
+                }
+                else if (startWithWindows == false &&
+                         shortcutExists == true)
+                {
+                    File.Delete(lorWatcherStartupFilePath);
+                }
+            }
         }
     }
 }

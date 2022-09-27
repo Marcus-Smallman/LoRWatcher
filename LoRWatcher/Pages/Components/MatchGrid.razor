@@ -39,7 +39,7 @@
                 @((context as MatchReport)?.Result == true ? "Won" : "Lost")
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Regions)" Caption="Region(s)">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Regions)" Caption="Regions">
             <DisplayTemplate>
                 @{ 
                     var cards = (context as MatchReport)?.PlayerDeckCode.GetCardsFromCode();
