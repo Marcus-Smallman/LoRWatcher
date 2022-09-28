@@ -89,26 +89,28 @@ namespace LoRWatcher.Tray
                             {
                                 MessageBox.Show("No new version found.", "Update Watcher");
                             }
-
-                            var confirmResult = MessageBox.Show($"New version found: {latestRelease.TagName}\n\nDownload update and start installation?", "Update Watcher", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-                            if (confirmResult == DialogResult.Yes)
+                            else
                             {
-                                var installerNameExe = $"LoR.Watcher.Installer.{latestRelease.TagName}.exe";
-                                var installerFilePath = await this.DownloadInstallerAsync(latestRelease.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(installerNameExe)).DownloadUrl, installerNameExe);
-
-                                var installerStartInfo = new ProcessStartInfo();
-                                installerStartInfo.CreateNoWindow = false;
-                                installerStartInfo.UseShellExecute = false;
-                                installerStartInfo.FileName = installerFilePath;
-                                installerStartInfo.WindowStyle = ProcessWindowStyle.Normal;
-
-                                try
+                                var confirmResult = MessageBox.Show($"New version found: {latestRelease.TagName}\n\nDownload update and start installation?", "Update Watcher", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                                if (confirmResult == DialogResult.Yes)
                                 {
-                                    using var installerExe = Process.Start(installerStartInfo);
-                                }
-                                catch (Exception ex)
-                                {
-                                    logger.Error($"Failed to wait for installer to complete: {ex.Message}");
+                                    var installerNameExe = $"LoR.Watcher.Installer.{latestRelease.TagName}.exe";
+                                    var installerFilePath = await this.DownloadInstallerAsync(latestRelease.Assets.FirstOrDefault(a => a.DownloadUrl.EndsWith(installerNameExe)).DownloadUrl, installerNameExe);
+
+                                    var installerStartInfo = new ProcessStartInfo();
+                                    installerStartInfo.CreateNoWindow = false;
+                                    installerStartInfo.UseShellExecute = false;
+                                    installerStartInfo.FileName = installerFilePath;
+                                    installerStartInfo.WindowStyle = ProcessWindowStyle.Normal;
+
+                                    try
+                                    {
+                                        using var installerExe = Process.Start(installerStartInfo);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        logger.Error($"Failed to wait for installer to complete: {ex.Message}");
+                                    }
                                 }
                             }
                         }
