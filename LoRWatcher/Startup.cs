@@ -4,6 +4,7 @@ using Blazorise.Material;
 using LiteDB;
 using LoRWatcher.Caches;
 using LoRWatcher.Clients;
+using LoRWatcher.Clients.GitHub;
 using LoRWatcher.Configuration;
 using LoRWatcher.Events;
 using LoRWatcher.Logger;
@@ -66,6 +67,7 @@ namespace LoRWatcher
             services.AddSingleton<ITrayIcon, TrayIcon>();
 
             services.AddSingleton<IGameClient, LoRClient>();
+            services.AddSingleton<IGitHubClient, GitHubClient>();
 
             services.AddSingleton<IWatcherService, WatcherService>();
             services.AddSingleton<IWatcherDataStore, LiteDBWatcherDataStore>();
