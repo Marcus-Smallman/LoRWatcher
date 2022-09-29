@@ -14,6 +14,8 @@ namespace LoRWatcher.Stores
 
         Task<IEnumerable<MatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken);
 
+        Task<IEnumerable<MatchReport>> GetAllMatchReportsAsync(CancellationToken cancellationToken);
+
         Task<MatchReportMetadata> SetMatchReportsMetadataAsync(MatchReportMetadata matchReportMetadata, CancellationToken cancellationToken);
 
         Task<MatchReportMetadata> GetMatchReportsMetadataAsync(CancellationToken cancellationToken);
@@ -21,5 +23,11 @@ namespace LoRWatcher.Stores
         Task<MatchReportMetadata> GetMatchReportsMetadataV2Async(CancellationToken cancellationToken);
 
         Task<MatchReportMetadata> UpdateMatchReportsMetadataAsync(MatchReport matchReport, CancellationToken cancellationToken);
+
+        Task<bool> ReportReplayAsync(MatchReport matchReport, CancellationToken cancellationToken);
+
+        Task<SortedList<string, Snapshot>> GetReplayByIdAsync(string id, CancellationToken cancellationToken);
+
+        Task<bool> ClearMatchReplayAsync(MatchReport matchReport, CancellationToken cancellationToken);
     }
 }

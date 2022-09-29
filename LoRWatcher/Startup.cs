@@ -41,11 +41,12 @@ namespace LoRWatcher
                 Port = int.Parse(this.Configuration["LoR:Port"])
             });
 
+            var startWithWindows = this.Configuration["Client:StartWithWindows"] ?? false.ToString();
             services.AddSingleton<WatcherConfiguration>(s => new WatcherConfiguration(Program.GetConfigurationFilePath())
             {
                 Address = this.Configuration["Client:Address"],
                 Port = int.Parse(this.Configuration["Client:Port"]),
-                StartWithWindows = bool.Parse(this.Configuration["Client:StartWithWindows"])
+                StartWithWindows = bool.Parse(startWithWindows)
             });
 
             var minimumLogLevel = LogLevel.Info;

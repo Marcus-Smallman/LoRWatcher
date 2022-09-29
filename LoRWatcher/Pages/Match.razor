@@ -6,6 +6,7 @@
 @using LoRWatcher.Logger;
 @using System.Threading;
 @using System.Diagnostics
+@using LoRWatcherComponents
 
 @inject IJSRuntime JSRuntime
 @inject IWatcherDataStore watcherDataStore
@@ -129,18 +130,10 @@
                                 }
                             </Row>
                         </Row>
-                        <Row Class="my-4" Style="text-align: center; display: block;">
-                            <h5 Class="text-black-hint">Mana Cost</h5>
-                            <Row>
-                                <div Class="col-1" />
-                                <div Class="col-10">
-                                    <Row>
-                                        <!-- TODO: When possible change card count from tooltip to value above bar -->
-                                        <BarChart OptionsObject="@manaChartOptions" @ref="manaChart" TItem="int" />
-                                    </Row>
-                                </div>
-                            </Row>
-                        </Row>
+                        @if (this.cards != null)
+                        {
+                            <ManaChart Cards="@this.cards" />
+                        }
                     </div>
                 </Row>
             }
@@ -289,8 +282,6 @@
     private MatchReport matchReport;
 
     private IEnumerable<CardData> cards;
-
-    private BarChart<int> manaChart;
 
     private Modal modalRef;
 
@@ -509,83 +500,12 @@
         {
             var stopwatch = Stopwatch.StartNew();
             this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
+            this.matchReport.Snapshots = await this.watcherDataStore.GetReplayByIdAsync(this.Id, CancellationToken.None);
             var elapsed = stopwatch.Elapsed;
+
+
             this.cards = this.matchReport?.PlayerDeckCode.GetCardsFromCode();
         }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await manaChart.Clear();
-
-            await manaChart.AddLabelsDatasetsAndUpdate(Labels, GetManaChartDataset());
-        }
-    }
-
-
-    private object manaChartOptions = new
-    {
-        AspectRatio = 2,
-        Tooltips = new
-        {
-            Enabled = true
-        },
-        Legend = new
-        {
-            Display = false
-        },
-        Scales = new
-        {
-            Y = new
-            {
-                Grid = new
-                {
-                    Display = false
-                },
-                Ticks = new
-                {
-                    Display = false,
-                    BeginAtZero = true
-                }
-            }
-        },
-        Animation = new
-        {
-            Duration = 0
-        },
-        ResponsiveAnimationDuration = 0
-    };
-
-    private BarChartDataset<int> GetManaChartDataset()
-    {
-        return new BarChartDataset<int>
-            {
-                Label = "Card Count",
-                Data = GetDeckMana(),
-                BackgroundColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 0.2f), 8).ToArray(),
-                BorderColor = Enumerable.Repeat<string>(ChartColor.FromRgba(54, 162, 235, 1f), 8).ToArray(),
-                BorderWidth = 1
-            };
-    }
-
-    private string[] Labels = { "0", "1", "2", "3", "4", "5", "6", "+" };
-
-    private List<int> GetDeckMana()
-    {
-
-        return new List<int>
-        {
-            this.cards.Where(c => c.Cost == 0).Sum(c => c.Count),
-            this.cards.Where(c => c.Cost == 1).Sum(c => c.Count),
-            this.cards.Where(c => c.Cost == 2).Sum(c => c.Count),
-            this.cards.Where(c => c.Cost == 3).Sum(c => c.Count),
-            this.cards.Where(c => c.Cost == 4).Sum(c => c.Count),
-            this.cards.Where(c => c.Cost == 5).Sum(c => c.Count),
-            this.cards.Where(c => c.Cost == 6).Sum(c => c.Count),
-            this.cards.Where(c => c.Cost > 6).Sum(c => c.Count),
-        };
     }
 
     private void GoHome()

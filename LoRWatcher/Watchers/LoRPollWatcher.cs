@@ -175,6 +175,7 @@ namespace LoRWatcher.Watchers
                         this.logger.Info("Reporting match");
 
                         await this.watcherDataStore.ReportGameAsync(matchReport, cancellationToken);
+                        await this.watcherDataStore.ReportReplayAsync(matchReport, cancellationToken);
                         await this.watcherDataStore.UpdateMatchReportsMetadataAsync(matchReport, cancellationToken);
 
                         this.watcherEventHandler.InvokeEvent(WatcherEvents.GameFinished);

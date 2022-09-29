@@ -19,6 +19,8 @@ namespace LoRWatcher.Stores
 
         private const string MatchReportsMetadataCollectionName = "matchreportsmetadata";
 
+        private const string MatchReplaysCollectionName = "matchreplays";
+
         private readonly IConnection<LiteDatabase> connection;
 
         private readonly ILogger logger;
@@ -48,7 +50,6 @@ namespace LoRWatcher.Stores
                             PlayerName = matchReport.PlayerName,
                             OpponentName = matchReport.OpponentName,
                             Regions = matchReport.Regions,
-                            Snapshots = matchReport.Snapshots.Adapt<SortedList<string, SnapshotDocument>>(),
                             Result = matchReport.Result,
                             FinishTime = matchReport.FinishTime.UtcDateTime
                         };
@@ -56,6 +57,47 @@ namespace LoRWatcher.Stores
                         collection.Insert(doc);
 
                         this.logger.Info("Match report stored");
+
+                        return true;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred storing match report: {ex.Message}");
+
+                    return false;
+                }
+            });
+        }
+
+        public async Task<bool> ClearMatchReplayAsync(MatchReport matchReport, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<MatchReportDocument>(MatchReportsCollectionName);
+
+                        var doc = new MatchReportDocument
+                        {
+                            Id = matchReport.Id,
+                            PlayerDeckCode = matchReport.PlayerDeckCode,
+                            PlayerName = matchReport.PlayerName,
+                            OpponentName = matchReport.OpponentName,
+                            Regions = matchReport.Regions,
+                            Snapshots = null,
+                            Result = matchReport.Result,
+                            FinishTime = matchReport.FinishTime.UtcDateTime
+                        };
+
+                        collection.Update(doc);
+
+                        this.logger.Info("Match report replay cleared");
 
                         return true;
                     }
@@ -125,6 +167,52 @@ namespace LoRWatcher.Stores
 
                         var query = Query.All(nameof(MatchReportDocument.FinishTime), Query.Descending);
                         var matchReportDocs = collection.Find(query, skip, limit);
+
+                        this.logger.Debug("Match reports retrieved");
+
+                        var matchReports = new List<MatchReport>();
+                        foreach (var matchReportDoc in matchReportDocs)
+                        {
+                            matchReports.Add(new MatchReport
+                            {
+                                Id = matchReportDoc.Id,
+                                PlayerDeckCode = matchReportDoc.PlayerDeckCode,
+                                PlayerName = matchReportDoc.PlayerName,
+                                OpponentName = matchReportDoc.OpponentName,
+                                Regions = matchReportDoc.Regions,
+                                Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
+                                Result = matchReportDoc.Result,
+                                FinishTime = matchReportDoc.FinishTime
+                            });
+                        }
+
+                        return matchReports.OrderByDescending(mr => mr.FinishTime).ToList();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving match reports: {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
+
+        public async Task<IEnumerable<MatchReport>> GetAllMatchReportsAsync(CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<IEnumerable<MatchReport>>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<MatchReportDocument>(MatchReportsCollectionName);
+
+                        var query = Query.All(nameof(MatchReportDocument.FinishTime), Query.Descending);
+                        var matchReportDocs = collection.FindAll().ToArray();
 
                         this.logger.Debug("Match reports retrieved");
 
@@ -265,20 +353,21 @@ namespace LoRWatcher.Stores
                         var collection = connection.GetCollection<MatchReportMetadataDocument>(MatchReportsMetadataCollectionName);
 
                         var metadata = collection.FindOne(Query.All());
-
-                        var result = new MatchReportMetadata();
                         if (metadata != null)
                         {
                             this.logger.Debug("Match report metadata retrieved");
 
+                            var result = new MatchReportMetadata();
                             result.PlayerName = metadata.PlayerName;
                             result.TotalGames = metadata.TotalWins + metadata.TotalLosses;
                             result.TotalWins = metadata.TotalWins;
                             result.TotalLosses = metadata.TotalLosses;
-                        }
 
-                        return result;
+                            return result;
+                        }
                     }
+
+                    return null;
 
                 }
                 catch (Exception ex)
@@ -339,6 +428,70 @@ namespace LoRWatcher.Stores
                 catch (Exception ex)
                 {
                     this.logger.Error($"Error occurred retrieving match report metadata: {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
+
+        public async Task<bool> ReportReplayAsync(MatchReport matchReport, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<ReplayDocument>(MatchReplaysCollectionName);
+
+                        var doc = new ReplayDocument
+                        {
+                            Id = matchReport.Id,
+                            Snapshots = matchReport.Snapshots.Adapt<SortedList<string, SnapshotDocument>>()
+                        };
+
+                        collection.Insert(doc);
+
+                        this.logger.Info("Match replay stored");
+
+                        return true;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred storing match replay: {ex.Message}");
+
+                    return false;
+                }
+            });
+        }
+
+        public async Task<SortedList<string, Snapshot>> GetReplayByIdAsync(string id, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<SortedList<string, Snapshot>>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<ReplayDocument>(MatchReplaysCollectionName);
+
+                        var replayDoc = collection.FindById(id);
+
+                        this.logger.Debug($"Replay with id '{id}' retrieved");
+
+                        return replayDoc.Snapshots?.Adapt<SortedList<string, Snapshot>>();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving replay with id '{id}': {ex.Message}");
 
                     return null;
                 }
