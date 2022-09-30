@@ -1,0 +1,63 @@
+﻿@namespace LoRWatcherComponents
+
+@using LoRWatcher.Caches
+@using LoRWatcher.Clients
+@using LoRWatcher.Events
+
+@inject IWatcherEventHandler watcherEventHandler
+@inject IGameStateCache gameStateCache
+
+<div style="display: flex; justify-content: flex-end;">
+    <Tooltip Style="display: flex; min-height: min-content;" Text="Game Client Status">
+        <a Style="margin: 4px 8px; width: 10px; height: 10px; border-style: solid; border-color: @GetStatusColour(); background-color: @GetStatusColour(); border-width: 1px; border-radius: 2px"> </a>
+        @GameStateCacheExtensions.GetHumanReadableGameState(this.gameState)
+    </Tooltip>
+</div>
+
+@code {
+    private const string Source = "ClientStatus";
+
+    private GameState gameState;
+
+    protected override void OnInitialized()
+    {
+        this.gameState = this.gameStateCache.GetGameState();
+
+        this.RegisterEvents();
+    }
+
+    private void RegisterEvents()
+    {
+        this.watcherEventHandler.TryAddEvent(WatcherEvents.ClientStatusChanged, Source, () =>
+        {
+            this.gameState = this.gameStateCache.GetGameState();
+
+#pragma warning disable CS4014
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+#pragma warning restore CS4014
+        });
+    }
+
+    private string GetStatusColour()
+    {
+        var statusColour = "rgba(255, 0, 0, 0.5)";
+        switch (this.gameState)
+        {
+            case GameState.Startup:
+                statusColour = "rgba(255, 255, 0, 0.5)";
+                break;
+            case GameState.InProgress:
+                statusColour = "rgba(0, 0, 255, 0.5)";
+                break;
+            case GameState.Menus:
+                statusColour = "rgba(0, 255, 0, 0.5)";
+                break;
+            default:
+                break;
+        }
+        return statusColour;
+    }
+}

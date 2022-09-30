@@ -3,6 +3,7 @@
     public enum WatcherEvents
     {
         GameStarted,
-        GameFinished
+        GameFinished,
+        ClientStatusChanged
     }
 }
