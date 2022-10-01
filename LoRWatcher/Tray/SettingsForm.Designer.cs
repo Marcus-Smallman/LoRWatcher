@@ -127,6 +127,7 @@ namespace LoRWatcher.Tray
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(110, 23);
             this.textBox3.TabIndex = 7;
+            this.textBox3.Text = watcherConfiguration.Port.ToString();
             // 
             // label6
             // 
