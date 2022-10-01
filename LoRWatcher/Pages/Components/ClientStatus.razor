@@ -9,8 +9,8 @@
 
 <div style="display: flex; justify-content: flex-end;">
     <Tooltip Style="display: flex; min-height: min-content;" Text="Game Client Status">
-        <a Style="margin: 4px 8px; width: 10px; height: 10px; border-style: solid; border-color: @GetStatusColour(); background-color: @GetStatusColour(); border-width: 1px; border-radius: 2px"> </a>
         @GameStateCacheExtensions.GetHumanReadableGameState(this.gameState)
+        <a Style="margin: 4px 8px; width: 10px; height: 10px; border-style: solid; border-color: @GetStatusColour(); background-color: @GetStatusColour(); border-width: 1px; border-radius: 2px"> </a>
     </Tooltip>
 </div>
 
