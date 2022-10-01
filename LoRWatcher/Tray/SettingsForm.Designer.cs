@@ -99,6 +99,7 @@ namespace LoRWatcher.Tray
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(110, 23);
             this.textBox1.TabIndex = 4;
+            this.textBox1.Text = lorConfiguration.Address;
             // 
             // textBox2
             // 
@@ -107,6 +108,7 @@ namespace LoRWatcher.Tray
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(110, 23);
             this.textBox2.TabIndex = 5;
+            this.textBox2.Text = lorConfiguration.Port.ToString();
             // 
             // label5
             // 
@@ -156,6 +158,7 @@ namespace LoRWatcher.Tray
             this.checkBox1.Size = new System.Drawing.Size(15, 14);
             this.checkBox1.TabIndex = 10;
             this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.Checked = loggerSettings.WriteToFile;
             // 
             // textBox4
             // 
@@ -164,6 +167,7 @@ namespace LoRWatcher.Tray
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(110, 23);
             this.textBox4.TabIndex = 11;
+            this.textBox4.Text = loggerSettings.FileDirectory;
             // 
             // textBox5
             // 
@@ -172,6 +176,7 @@ namespace LoRWatcher.Tray
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(110, 23);
             this.textBox5.TabIndex = 12;
+            this.textBox5.Text = loggerSettings.CleanupPeriodMinutes.ToString();
             // 
             // label8
             // 
@@ -224,6 +229,7 @@ namespace LoRWatcher.Tray
             this.checkBox2.Size = new System.Drawing.Size(15, 14);
             this.checkBox2.TabIndex = 17;
             this.checkBox2.UseVisualStyleBackColor = true;
+            this.checkBox2.Checked = watcherConfiguration.StartWithWindows;
             // 
             // label10
             // 
