@@ -13,11 +13,11 @@
 
 <Container>
     <!-- TODO: Flickers occur when loading homepage... this is possibly due to this if/else here and the data taking a short time to load in. This could be made smoother somehow. -->
-    @if (this.matchReportMetadata == null || this.matchReports == null)
+    @if (this.matchReports == null)
     {
         <p><em>Loading...</em></p>
     }
-    else if (matchReportMetadata.TotalGames <= 0)
+    else if (this.matchReportMetadata == null || matchReportMetadata.TotalGames <= 0)
     {
         <div Class="col-12">
             <h2 class="text-black-hint" style="text-align: center; margin: 20px">
@@ -28,8 +28,16 @@
     else
     {
         <Row Class="my-4">
-            <div Class="col-4">
+            <div Class="col-4" style="display: flex;">
                 <h1><b>@this.matchReportMetadata.PlayerName</b></h1>
+                <div>
+                    <a Style="display: flex; cursor: pointer; width: 20px; height: 20px; border-style: solid; border-color: rgba(0, 0, 0, 0.1); border-width: 1px; border-radius: 2px; margin: 2px 5px 2px 5px; padding: 5px">
+                        <Icon Style="color: rgba(0,0,0,0.75); font-size: 8px;" Name="@("fa-wrench")" />
+                        </a>
+                    <a Style="display: flex; cursor: pointer; width: 20px; height: 20px; border-style: solid; border-color: rgba(0, 0, 0, 0.1); border-width: 1px; border-radius: 2px; margin: 2px 5px 5px 5px; padding: 5px">
+                        <Icon Style="color: rgba(0,0,0,0.75); font-size: 8px;" Name="@("fa-sync")" />
+                        </a>
+                </div>
             </div>
             <div Class="col-6">
                 <Row>
