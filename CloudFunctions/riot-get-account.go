@@ -21,8 +21,13 @@ func Main(args map[string]interface{}) map[string]interface{} {
 		return msg
 	}
 
+	region, ok := args["region"].(string)
+	if !ok {
+		region = "europe"
+	}
+
 	client := &http.Client{}
-	url := fmt.Sprintf("https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/%s/%s", gameName, tagLine)
+	url := fmt.Sprintf("https://%s.api.riotgames.com/riot/account/v1/accounts/by-riot-id/%s/%s", region, gameName, tagLine)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Println(err)
