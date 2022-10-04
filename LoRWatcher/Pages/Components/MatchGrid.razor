@@ -46,7 +46,7 @@
                     <Row Style="margin: auto">
                         @foreach (var regions in this.GetCardRegions(cards))
                         {
-                            <Tooltip Style="padding: 0px 2px 0px 2px;" Text=@(string.Join(", ", regions.Regions))>
+                            <Tooltip Style="margin: 0px 2px; border-radius: 2px; border: solid 1px rgba(0, 0, 0, 0.1);" Text=@(string.Join(", ", regions.Regions))>
                                 @foreach (var regionRefs in regions.RegionRefs)
                                 {
                                     <img Style="max-height: 18px;" src="@($"./assets/core-en_us/en_us/img/regions/icon-{regionRefs.ToLower()}.png")">
