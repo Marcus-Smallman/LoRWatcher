@@ -18,6 +18,8 @@ namespace LoRWatcher.Stores
 
         Task<MatchReportMetadata> SetMatchReportsMetadataAsync(MatchReportMetadata matchReportMetadata, CancellationToken cancellationToken);
 
+        Task<MatchReportMetadata> SetTagLineAsync(string tagLine, CancellationToken cancellationToken);
+
         Task<MatchReportMetadata> GetMatchReportsMetadataAsync(CancellationToken cancellationToken);
 
         Task<MatchReportMetadata> GetMatchReportsMetadataV2Async(CancellationToken cancellationToken);

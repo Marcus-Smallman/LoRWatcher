@@ -58,20 +58,19 @@
 
 <Modal @ref="modalRef">
     <ModalContent Size="ModalSize.Small" Centered>
-        <ModalBody>
-            <Row>
-                <h4>@this.matchReportMetadata.PlayerName</h4><a>#</a><h5>EUW</h5>
+        <ModalBody Style="padding-bottom: 0px;">
+            <Row style="display: flex; justify-content: center; align-items: baseline;">
+                <h4>@this.matchReportMetadata.PlayerName</h4><a style="padding: 5px;">#</a><TextEdit Size="Size.Small" Placeholder="Tag Line" Style="width: 20%;" @bind-Text="@this.tagLine" />
             </Row>
         </ModalBody>
         <ModalFooter>
             <div Class="col-12" style="flex: auto">
                 <Row>
                     <div Class="col-6" Style="justify-content: left;">
-                        <Button Color="Color.Secondary">Close</Button>
+                        <Button Clicked="@(async () => await CloseModalAsync())" Color="Color.Secondary">Close</Button>
                     </div>
                     <div Class="col-6" Style="display: grid; justify-content: right;">
-
-                        <Button Color="Color.Primary">Save</Button>
+                        <Button Clicked="@(async () => await SaveTagLineAsync())" Disabled=@(this.tagLine == this.matchReportMetadata.TagLine) Color="Color.Primary">Save</Button>
                     </div>
                 </Row>
             </div>
@@ -88,6 +87,8 @@
 
     private Modal modalRef;
 
+    private string tagLine;
+
     protected override async Task OnInitializedAsync()
     {
         this.RegisterEvents();
@@ -97,7 +98,21 @@
 
     private async Task ShowModalAsync()
     {
+        this.tagLine = this.matchReportMetadata.TagLine;
+
         await modalRef.Show();
+    }
+
+    private async Task CloseModalAsync()
+    {
+        await modalRef.Close(CloseReason.UserClosing);
+    }
+
+    private async Task SaveTagLineAsync()
+    {
+        this.matchReportMetadata = await this.watcherDataStore.SetTagLineAsync(this.tagLine, CancellationToken.None);
+
+        await CloseModalAsync();
     }
 
     private void RegisterEvents()

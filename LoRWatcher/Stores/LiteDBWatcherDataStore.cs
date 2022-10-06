@@ -284,10 +284,55 @@ namespace LoRWatcher.Stores
                         return new MatchReportMetadata
                         {
                             PlayerName = metadata.PlayerName,
+                            TagLine = metadata.TagLine,
                             TotalWins = metadata.TotalWins,
                             TotalLosses = metadata.TotalLosses,
                             TotalGames = metadata.TotalWins + metadata.TotalLosses
                         };
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred setting match report metadata: {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
+
+        public async Task<MatchReportMetadata> SetTagLineAsync(string tagLine, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<MatchReportMetadata>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<MatchReportMetadataDocument>(MatchReportsMetadataCollectionName);
+
+                        var metadata = collection.FindOne(Query.All());
+                        if (metadata != null)
+                        {
+                            metadata.TagLine = tagLine;
+
+                            collection.Update(metadata);
+
+                            this.logger.Debug("Tag line in metadata updated");
+
+                            return new MatchReportMetadata
+                            {
+                                PlayerName = metadata.PlayerName,
+                                TagLine = metadata.TagLine,
+                                TotalWins = metadata.TotalWins,
+                                TotalLosses = metadata.TotalLosses,
+                                TotalGames = metadata.TotalWins + metadata.TotalLosses
+                            };
+                        }
+
+                        return null;
                     }
 
                 }
@@ -359,6 +404,7 @@ namespace LoRWatcher.Stores
 
                             var result = new MatchReportMetadata();
                             result.PlayerName = metadata.PlayerName;
+                            result.TagLine = metadata.TagLine;
                             result.TotalGames = metadata.TotalWins + metadata.TotalLosses;
                             result.TotalWins = metadata.TotalWins;
                             result.TotalLosses = metadata.TotalLosses;
