@@ -20,7 +20,7 @@ namespace LoRWatcher.Services
             this.logger = logger;
         }
 
-        public async Task<bool> InitialiseMetadataAsync(CancellationToken cancellationToken)
+        public async Task<bool> InitialiseMetadataAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -56,6 +56,15 @@ namespace LoRWatcher.Services
             }
 
             return true;
+        }
+
+        public async Task<bool> SyncMatchReportsAsync(CancellationToken cancellationToken = default)
+        {
+            // TODO:
+            // 1. Call the digital ocean function to get the match report for the player
+            // 2. Get the match data for each match that has not beed stored in its own collection
+            // 3. Attempt to match the stored game data from the functions and the match reports stored from the watcher
+            // 4. Update watcher game reports if found
         }
     }
 }

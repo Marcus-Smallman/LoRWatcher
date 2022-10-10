@@ -1,5 +1,6 @@
 ﻿@page "/"
 
+@using LoRWatcher.Services
 @using LoRWatcherComponents
 @using LoRWatcher.Caches
 @using LoRWatcher.Events
@@ -9,10 +10,10 @@
 @using System.Diagnostics
 
 @inject IWatcherDataStore watcherDataStore
+@inject IWatcherService watcherService
 @inject IWatcherEventHandler watcherEventHandler
 
 <Container>
-    <!-- TODO: Flickers occur when loading homepage... this is possibly due to this if/else here and the data taking a short time to load in. This could be made smoother somehow. -->
     @if (this.matchReports == null)
     {
         <p><em>Loading...</em></p>
@@ -34,7 +35,7 @@
                     <a onclick="@(async () => await ShowModalAsync())" Style="display: flex; cursor: pointer; width: 20px; height: 20px; border-style: solid; border-color: rgba(0, 0, 0, 0.1); border-width: 1px; border-radius: 2px; margin: 2px 5px 2px 5px; padding: 5px">
                         <Icon Style="color: rgba(0,0,0,0.75); font-size: 8px;" Name="@("fa-wrench")" />
                     </a>
-                    <a Style="display: flex; cursor: pointer; width: 20px; height: 20px; border-style: solid; border-color: rgba(0, 0, 0, 0.1); border-width: 1px; border-radius: 2px; margin: 2px 5px 5px 5px; padding: 5px">
+                    <a onclick="@(async () => await SyncAsync())" Style="display: flex; cursor: pointer; width: 20px; height: 20px; border-style: solid; border-color: rgba(0, 0, 0, 0.1); border-width: 1px; border-radius: 2px; margin: 2px 5px 5px 5px; padding: 5px">
                         <Icon Style="color: rgba(0,0,0,0.75); font-size: 8px;" Name="@("fa-sync")" />
                     </a>
                 </div>
@@ -101,6 +102,20 @@
         this.tagLine = this.matchReportMetadata.TagLine;
 
         await modalRef.Show();
+    }
+
+    private async Task SyncAsync()
+    {
+        await this.watcherService.SyncMatchReportsAsync();
+
+        await this.UpdateDataAsync();
+
+#pragma warning disable CS4014
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+#pragma warning restore CS4014
     }
 
     private async Task CloseModalAsync()

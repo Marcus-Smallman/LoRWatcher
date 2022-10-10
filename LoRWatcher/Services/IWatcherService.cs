@@ -5,6 +5,8 @@ namespace LoRWatcher.Services
 {
     public interface IWatcherService
     {
-        Task<bool> InitialiseMetadataAsync(CancellationToken cancellationToken);
+        Task<bool> InitialiseMetadataAsync(CancellationToken cancellationToken = default);
+
+        Task<bool> SyncMatchReportsAsync(CancellationToken cancellationToken = default);
     }
 }
