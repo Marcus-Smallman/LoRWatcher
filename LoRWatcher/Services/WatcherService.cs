@@ -1,4 +1,5 @@
-﻿using LoRWatcher.Logger;
+﻿using LoRWatcher.Clients.Functions;
+using LoRWatcher.Logger;
 using LoRWatcher.Stores;
 using System;
 using System.Linq;
@@ -12,11 +13,14 @@ namespace LoRWatcher.Services
     {
         private readonly IWatcherDataStore watcherDataStore;
 
+        private readonly IFunctionsClient functionsClient;
+
         private readonly ILogger logger;
 
-        public WatcherService(IWatcherDataStore watcherDataStore, ILogger logger)
+        public WatcherService(IWatcherDataStore watcherDataStore, IFunctionsClient functionsClient, ILogger logger)
         {
             this.watcherDataStore = watcherDataStore;
+            this.functionsClient = functionsClient;
             this.logger = logger;
         }
 
@@ -60,11 +64,25 @@ namespace LoRWatcher.Services
 
         public async Task<bool> SyncMatchReportsAsync(CancellationToken cancellationToken = default)
         {
-            // TODO:
-            // 1. Call the digital ocean function to get the match report for the player
-            // 2. Get the match data for each match that has not beed stored in its own collection
-            // 3. Attempt to match the stored game data from the functions and the match reports stored from the watcher
-            // 4. Update watcher game reports if found
+            var metadata = await this.watcherDataStore.GetMatchReportsMetadataV2Async(cancellationToken);
+
+            var player = await this.playerDataStore.GetPlayerAsync(metadata.PlayerName, metadata.TagLine, cancellationToken);
+            if (player == null)
+            {
+                // TODO: support region select
+                var account = await this.functionsClient.GetAccountAsync(metadata.PlayerName, metadata.TagLine, "Europe", cancellationToken);
+
+                player = await this.playerDataStore.AddPlayerAsync(account.PlayerId, account.GameName, account.TagLine, cancellationToken);
+            }
+
+            // 1. Get up to the last 20 matches
+            // 2. Check if they have been synced
+            // 3. If all have been synced, return
+            // 4. If there any that have not been synced retrieve the list of match ids 
+            // 5. Then call the get match function for match ids that have not already been synced and store the data in the player datastore
+            // 6. Once all recent match ids have been stored sync up the watcher store data and link them using the match id
+
+            return true;
         }
     }
 }
