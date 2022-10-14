@@ -33,6 +33,7 @@ namespace LoRWatcher
                     var store = host.Services.GetRequiredService<IWatcherService>();
 
                     await store.InitialiseMetadataAsync(CancellationToken.None);
+                    await store.SyncMatchReportsAsync(CancellationToken.None);
                 }
                 catch (Exception ex)
                 {

@@ -92,7 +92,7 @@ namespace LoRWatcher.Utils
         /// </summary>
         /// <param name="func">A function that should return a non null object if no more retires need to occur; else null to carry on retrying.</param>
         /// <returns>A task.</returns>
-        public static T Invoke<T>(Func<T> func)
+        public static T Invoke<T>(Func<T> func, int? waitTimeMS = null)
             where T : class
         {
             var retryCount = 0;
@@ -104,7 +104,7 @@ namespace LoRWatcher.Utils
                     return result;
                 }
 
-                Task.Delay(WaitTimeMS);
+                Task.Delay(waitTimeMS ?? WaitTimeMS).Wait();
 
                 retryCount++;
             }
@@ -128,7 +128,7 @@ namespace LoRWatcher.Utils
                     return result;
                 }
 
-                Task.Delay(WaitTimeMS);
+                Task.Delay(WaitTimeMS).Wait();
 
                 retryCount++;
             }

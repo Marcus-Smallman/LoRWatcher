@@ -13,13 +13,20 @@ namespace LoRWatcher.Services
     {
         private readonly IWatcherDataStore watcherDataStore;
 
+        private readonly IPlayerDataStore playerDataStore;
+
         private readonly IFunctionsClient functionsClient;
 
         private readonly ILogger logger;
 
-        public WatcherService(IWatcherDataStore watcherDataStore, IFunctionsClient functionsClient, ILogger logger)
+        public WatcherService(
+            IWatcherDataStore watcherDataStore,
+            IPlayerDataStore playerDataStore,
+            IFunctionsClient functionsClient,
+            ILogger logger)
         {
             this.watcherDataStore = watcherDataStore;
+            this.playerDataStore = playerDataStore;
             this.functionsClient = functionsClient;
             this.logger = logger;
         }
@@ -66,13 +73,13 @@ namespace LoRWatcher.Services
         {
             var metadata = await this.watcherDataStore.GetMatchReportsMetadataV2Async(cancellationToken);
 
-            var player = await this.playerDataStore.GetPlayerAsync(metadata.PlayerName, metadata.TagLine, cancellationToken);
+            var player = await this.playerDataStore.GetAccountAsync(metadata.PlayerName, metadata.TagLine, cancellationToken);
             if (player == null)
             {
                 // TODO: support region select
                 var account = await this.functionsClient.GetAccountAsync(metadata.PlayerName, metadata.TagLine, "Europe", cancellationToken);
 
-                player = await this.playerDataStore.AddPlayerAsync(account.PlayerId, account.GameName, account.TagLine, cancellationToken);
+                player = await this.playerDataStore.AddAccountAsync(account.PlayerId, account.GameName, account.TagLine, cancellationToken);
             }
 
             // 1. Get up to the last 20 matches

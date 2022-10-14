@@ -74,6 +74,7 @@ namespace LoRWatcher
 
             services.AddSingleton<IWatcherService, WatcherService>();
             services.AddSingleton<IWatcherDataStore, LiteDBWatcherDataStore>();
+            services.AddSingleton<IPlayerDataStore, LiteDBPlayerDataStore>();
             services.AddSingleton<IWatcherEventHandler, WatcherEventHandler>();
 
             services.AddSingleton<IConnection<LiteDatabase>, LiteDBConnection>();

@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,13 +33,16 @@ namespace LoRWatcher.Clients.Functions
                     var getAccountFunctionUrl = "https://faas-lon1-917a94a7.doserverless.co/api/v1/web/fn-b47060c4-27f8-4dfb-8463-8bb3b963c7f6/default/riot-apis-get-account";
 
                     using var request = new HttpRequestMessage(HttpMethod.Post, getAccountFunctionUrl);
-                    request.Headers.Add("Content-Type", "application/json");
-                    request.Content = new StringContent(JsonConvert.SerializeObject(new AccountRequest
-                    {
-                        GameName = gameName,
-                        TagLine = tagLine,
-                        Region = region
-                    }));
+                    request.Content = new StringContent(
+                        JsonConvert.SerializeObject(
+                            new AccountRequest
+                            {
+                                GameName = gameName,
+                                TagLine = tagLine,
+                                Region = region
+                            }),
+                        Encoding.UTF8,
+                        "application/json");
                     var result = await this.httpClient.SendAsync(request, cancellationToken);
                     if (result.IsSuccessStatusCode == true)
                     {
@@ -80,12 +84,14 @@ namespace LoRWatcher.Clients.Functions
                     var getMatchFunctionUrl = "https://faas-lon1-917a94a7.doserverless.co/api/v1/web/fn-b47060c4-27f8-4dfb-8463-8bb3b963c7f6/default/riot-apis-get-match";
 
                     using var request = new HttpRequestMessage(HttpMethod.Post, getMatchFunctionUrl);
-                    request.Headers.Add("Content-Type", "application/json");
-                    request.Content = new StringContent(JsonConvert.SerializeObject(new MatchRequest
-                    {
-                        MatchId = matchId,
-                        Region = region
-                    }));
+                    request.Content = new StringContent(
+                        JsonConvert.SerializeObject(new MatchRequest
+                        {
+                            MatchId = matchId,
+                            Region = region
+                        }),
+                        Encoding.UTF8,
+                        "application/json");
                     var result = await this.httpClient.SendAsync(request, cancellationToken);
                     if (result.IsSuccessStatusCode == true)
                     {
@@ -127,12 +133,14 @@ namespace LoRWatcher.Clients.Functions
                     var getMatchIdsFunctionUrl = "https://faas-lon1-917a94a7.doserverless.co/api/v1/web/fn-b47060c4-27f8-4dfb-8463-8bb3b963c7f6/default/riot-apis-get-match-ids";
 
                     using var request = new HttpRequestMessage(HttpMethod.Post, getMatchIdsFunctionUrl);
-                    request.Headers.Add("Content-Type", "application/json");
-                    request.Content = new StringContent(JsonConvert.SerializeObject(new MatchIdsRequest
-                    {
-                        PlayerId = playerId,
-                        Region = region
-                    }));
+                    request.Content = new StringContent(
+                        JsonConvert.SerializeObject(new MatchIdsRequest
+                        {
+                            PlayerId = playerId,
+                            Region = region
+                        }),
+                        Encoding.UTF8,
+                        "application/json");
                     var result = await this.httpClient.SendAsync(request, cancellationToken);
                     if (result.IsSuccessStatusCode == true)
                     {
