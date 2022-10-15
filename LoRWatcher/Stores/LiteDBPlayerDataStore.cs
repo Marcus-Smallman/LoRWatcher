@@ -73,8 +73,8 @@ namespace LoRWatcher.Stores
 
                         var accountDoc = collection.FindOne(
                             Query.And(
-                                Query.Contains(nameof(AccountDocument.GameName), gameName),
-                                Query.Contains(nameof(AccountDocument.TagLine), tagLine)));
+                                Query.EQ(nameof(AccountDocument.GameName), gameName),
+                                Query.EQ(nameof(AccountDocument.TagLine), tagLine)));
 
                         this.logger.Debug($"Account with name '{gameName}' and tag line '{tagLine}' retrieved");
 

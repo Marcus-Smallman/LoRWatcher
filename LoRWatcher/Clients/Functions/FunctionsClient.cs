@@ -1,6 +1,7 @@
 ﻿using LoRWatcher.Logger;
 using LoRWatcher.Utils;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -49,7 +50,7 @@ namespace LoRWatcher.Clients.Functions
                         var content = await result.Content.ReadAsStringAsync();
                         try
                         {
-                            return JsonConvert.DeserializeObject<Account>(content);
+                            return JsonConvert.DeserializeObject<Account>(content); ;
                         }
                         catch
                         {
@@ -64,7 +65,8 @@ namespace LoRWatcher.Clients.Functions
                     this.logger.Error($"Unsuccessful response getting account from cloud function|Status code: {result.StatusCode}|Content: {await result.Content.ReadAsStringAsync()}");
 
                     return null;
-                });
+                },
+                true);
             }
             catch (Exception ex)
             {
@@ -113,7 +115,8 @@ namespace LoRWatcher.Clients.Functions
                     this.logger.Error($"Unsuccessful response getting match from cloud function|Status code: {result.StatusCode}|Content: {await result.Content.ReadAsStringAsync()}");
 
                     return null;
-                });
+                },
+                true);
             }
             catch (Exception ex)
             {
@@ -162,7 +165,8 @@ namespace LoRWatcher.Clients.Functions
                     this.logger.Error($"Unsuccessful response getting match ids from cloud function|Status code: {result.StatusCode}|Content: {await result.Content.ReadAsStringAsync()}");
 
                     return null;
-                });
+                },
+                true);
             }
             catch (Exception ex)
             {

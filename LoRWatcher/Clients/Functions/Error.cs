@@ -4,7 +4,7 @@ namespace LoRWatcher.Clients.Functions
 {
     public class Error
     {
-        [JsonProperty("status")]
+        [JsonProperty("status", Required = Required.Always)]
         public Status Status { get; set; }
     }
 }

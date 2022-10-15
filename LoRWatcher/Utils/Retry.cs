@@ -14,14 +14,16 @@ namespace LoRWatcher.Utils
         /// </summary>
         /// <param name="func">An async function that should return a non null object if no more retires need to occur; else null to carry on retrying.</param>
         /// <returns>A task.</returns>
-        public static async Task<T> InvokeAsync<T>(Func<Task<T>> func)
+        public static async Task<T> InvokeAsync<T>(Func<Task<T>> func, bool allowNull = false)
             where T : class
         {
             var retryCount = 0;
             while (retryCount < NumOfRetries)
             {
                 var result = await func();
-                if (result != null)
+                if (result != null ||
+                   (result  == null &&
+                    allowNull == true))
                 {
                     return result;
                 }

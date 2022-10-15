@@ -4,13 +4,13 @@ namespace LoRWatcher.Clients.Functions
 {
     public class Account
     {
-        [JsonProperty("puuid")]
+        [JsonProperty("puuid", Required = Required.Always)]
         public string PlayerId { get; set; }
 
-        [JsonProperty("gameName")]
+        [JsonProperty("gameName", Required = Required.Always)]
         public string GameName { get; set; }
 
-        [JsonProperty("tagLine")]
+        [JsonProperty("tagLine", Required = Required.Always)]
         public string TagLine { get; set; }
     }
 }
