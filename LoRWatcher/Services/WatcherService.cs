@@ -185,7 +185,7 @@ namespace LoRWatcher.Services
                         }
 
                         // false = Whether the match has been retrieved, so it only returns match ids that do not have a synced match
-                        var matchIds = await this.playerDataStore.GetMatchIdsAsync(false, cancellationToken);
+                        matchIds = await this.playerDataStore.GetMatchIdsAsync(false, cancellationToken);
                         if (matchIds != null &&
                             matchIds.Any() == true)
                         {

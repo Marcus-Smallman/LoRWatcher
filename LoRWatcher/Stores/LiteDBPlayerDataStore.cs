@@ -1,10 +1,13 @@
 ﻿using LiteDB;
+using LoRWatcher.Caches;
 using LoRWatcher.Clients.Functions;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores.Documents;
 using LoRWatcher.Utils;
 using Mapster;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +17,12 @@ namespace LoRWatcher.Stores
         : IPlayerDataStore
     {
         private const string AccountsCollectionName = "accounts";
+
+        private const string MatchIdsCollectionName = "matchids";
+
+        private const string MatchSyncCollectionName = "matchsync";
+
+        private const string PlayerMatchesCollectionName = "playermatches";
 
         private readonly IConnection<LiteDatabase> connection;
 
@@ -56,7 +65,37 @@ namespace LoRWatcher.Stores
 
                     return null;
                 }
-            }, 100);
+            });
+        }
+
+        public async Task<bool> AddMatchAsync(Match playerMatch, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using var connection = this.connection.GetConnection();
+                    var collection = connection.GetCollection<PlayerMatchDocument>(PlayerMatchesCollectionName);
+
+                    var doc = playerMatch.Adapt<PlayerMatchDocument>();
+                    doc.Id = playerMatch.Metadata.MatchId;
+
+                    collection.Insert(doc);
+
+                    this.logger.Info("Player match added");
+
+                    return true;
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred adding player match: {ex.Message}");
+
+                    return false;
+                }
+            });
         }
 
         public async Task<Account> GetAccountAsync(string gameName, string tagLine, CancellationToken cancellationToken = default)
@@ -88,7 +127,104 @@ namespace LoRWatcher.Stores
 
                     return null;
                 }
-            }, 100);
+            });
+        }
+
+        public async Task<IEnumerable<string>> GetMatchIdsAsync(bool includeSynced = true, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<IEnumerable<string>>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<MatchIdDocument>(MatchIdsCollectionName);
+
+                        var matchIds = Enumerable.Empty<MatchIdDocument>();
+                        if (includeSynced == false)
+                        {
+                            matchIds = collection.Find(Query.EQ(nameof(MatchIdDocument.Synced), false));
+                        }
+                        else
+                        {
+                            matchIds = collection.Find(Query.All());
+                        }
+
+                        this.logger.Debug($"Match ids retrieved. Include synced: {includeSynced}");
+
+                        return matchIds.Select(mId => mId.Id);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving match ids. Include synced: {includeSynced} | {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
+
+        public async Task<PlayerMatch> GetPlayerMatchAsync(string playerMatchId, MatchReport matchReport, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<PlayerMatch>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var startTime = DateTimeOffset.Parse(matchReport.Snapshots.First().Key);
+                        var lowerTime = startTime.Subtract(TimeSpan.FromSeconds(10));
+                        var upperTime = startTime.Add(TimeSpan.FromSeconds(10));
+
+                        var result = connection.Execute($@"SELECT $
+                                                           FROM {PlayerMatchesCollectionName}
+                                                           WHERE DATETIME_UTC($.Info.GameStartTimeUTC) >= DATETIME_UTC('{lowerTime}')
+                                                             AND DATETIME_UTC($.Info.GameStartTimeUTC) <= DATETIME_UTC('{upperTime}')
+                                                           LIMIT 1");
+
+                        this.logger.Debug($"Account with name '{gameName}' and tag line '{tagLine}' retrieved");
+
+                        return accountDoc?.Adapt<Account>();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving player match with id '{playerMatchId}': {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
+
+        public Task<bool> IsMatchSyncedAsync(string watchMatchId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> MatchNotFoundAsync(string watcherMatchId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SyncMatchAsync(string playerMatchId, string watcherMatchId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SyncMatchIdAsync(string matchId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdateMatchIdsAsync(IEnumerable<string> matchIds, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
     }
 }
