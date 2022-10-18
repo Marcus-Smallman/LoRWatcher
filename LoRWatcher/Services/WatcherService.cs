@@ -98,7 +98,7 @@ namespace LoRWatcher.Services
             {
                 foreach (var matchReport in matchReports)
                 {
-                    // Is mtach report id in the sync table, which will have the assocaiated player match id with it
+                    // Is match report id in the sync table, which will have the assocaiated player match id with it
                     var synced = await this.playerDataStore.IsMatchSyncedAsync(matchReport.Id, cancellationToken);
                     if (synced == false)
                     {

@@ -186,10 +186,8 @@ namespace LoRWatcher.Stores
                                                            WHERE DATETIME_UTC($.Info.GameStartTimeUTC) >= DATETIME_UTC('{lowerTime}')
                                                              AND DATETIME_UTC($.Info.GameStartTimeUTC) <= DATETIME_UTC('{upperTime}')
                                                            LIMIT 1");
-
-                        this.logger.Debug($"Account with name '{gameName}' and tag line '{tagLine}' retrieved");
-
-                        return accountDoc?.Adapt<Account>();
+                        //TODO: Debug this...
+                        return null;
                     }
 
                 }
@@ -202,29 +200,180 @@ namespace LoRWatcher.Stores
             });
         }
 
-        public Task<bool> IsMatchSyncedAsync(string watchMatchId, CancellationToken cancellationToken = default)
+        public async Task<bool> IsMatchSyncedAsync(string watcherMatchId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<MatchSyncDocument>(MatchSyncCollectionName);
+
+                        var syncDocument = collection.FindOne(Query.EQ(nameof(MatchSyncDocument.WatcherMatchId), false));
+                        if (syncDocument != null)
+                        {
+                            this.logger.Debug($"Sync match found. Watcher Match Id: {syncDocument.WatcherMatchId} | Player Match Id: {syncDocument.PlayerMatchId}");
+
+                            return true;
+                        }
+                        else
+                        {
+                            this.logger.Debug($"Sync match not found. Watcher Match Id: {watcherMatchId}");
+
+                            return false;
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving sync match. {ex.Message}");
+
+                    return false;
+                }
+            });
         }
 
-        public Task<bool> MatchNotFoundAsync(string watcherMatchId, CancellationToken cancellationToken = default)
+        public async Task<bool> MatchNotFoundAsync(string watcherMatchId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using var connection = this.connection.GetConnection();
+                    var collection = connection.GetCollection<MatchSyncDocument>(MatchSyncCollectionName);
+
+                    var doc = new MatchSyncDocument
+                    {
+                        WatcherMatchId = watcherMatchId,
+                        PlayerMatchId = null
+                    };
+
+                    collection.Insert(doc);
+
+                    this.logger.Info("Sync match added for not found");
+
+                    return true;
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred adding sync match for not found: {ex.Message}");
+
+                    return false;
+                }
+            });
         }
 
-        public Task<bool> SyncMatchAsync(string playerMatchId, string watcherMatchId, CancellationToken cancellationToken = default)
+        public async Task<bool> SyncMatchAsync(string playerMatchId, string watcherMatchId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using var connection = this.connection.GetConnection();
+                    var collection = connection.GetCollection<MatchSyncDocument>(MatchSyncCollectionName);
+
+                    var doc = new MatchSyncDocument
+                    {
+                        PlayerMatchId = playerMatchId,
+                        WatcherMatchId = watcherMatchId
+                    };
+
+                    collection.Insert(doc);
+
+                    this.logger.Info("Sync match added");
+
+                    return true;
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred adding sync match: {ex.Message}");
+
+                    return false;
+                }
+            });
         }
 
-        public Task<bool> SyncMatchIdAsync(string matchId, CancellationToken cancellationToken = default)
+        public async Task<bool> SyncMatchIdAsync(string matchId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using var connection = this.connection.GetConnection();
+                    var collection = connection.GetCollection<MatchIdDocument>(MatchIdsCollectionName);
+
+                    var doc = new MatchIdDocument
+                    {
+                        Id = matchId,
+                        Synced = true
+                    };
+
+                    collection.Update(matchId, doc);
+
+                    this.logger.Info("Match id synced");
+
+                    return true;
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred updating match id: {ex.Message}");
+
+                    return false;
+                }
+            });
         }
 
-        public Task<bool> UpdateMatchIdsAsync(IEnumerable<string> matchIds, CancellationToken cancellationToken = default)
+        public async Task<bool> UpdateMatchIdsAsync(IEnumerable<string> matchIds, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using var connection = this.connection.GetConnection();
+                    var collection = connection.GetCollection<MatchIdDocument>(MatchIdsCollectionName);
+
+                    foreach (var matchId in matchIds)
+                    {
+                        var result = collection.FindById(matchId);
+                        if (result == null)
+                        {
+                            var doc = new MatchIdDocument
+                            {
+                                Id = matchId,
+                                Synced = false
+                            };
+
+                            collection.Insert(doc);
+
+                            this.logger.Info("Match id added");
+                        }
+                    }
+
+                    return true;
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred updating match ids: {ex.Message}");
+
+                    return false;
+                }
+            });
         }
     }
 }

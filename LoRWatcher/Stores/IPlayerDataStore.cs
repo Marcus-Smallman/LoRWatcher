@@ -12,7 +12,7 @@ namespace LoRWatcher.Stores
 
         Task<Account> AddAccountAsync(string playerId, string gameName, string tagLine, CancellationToken cancellationToken = default);
 
-        Task<bool> IsMatchSyncedAsync(string watchMatchId, CancellationToken cancellationToken = default);
+        Task<bool> IsMatchSyncedAsync(string watcherMatchId, CancellationToken cancellationToken = default);
 
         Task<PlayerMatch> GetPlayerMatchAsync(string playerMatchId, MatchReport matchReport, CancellationToken cancellationToken = default);
 
