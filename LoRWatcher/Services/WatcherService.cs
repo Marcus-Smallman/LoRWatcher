@@ -109,17 +109,21 @@ namespace LoRWatcher.Services
 
             if (syncMatches.Any() == true)
             {
-                var allowGetMatchIds = true;
                 foreach (var syncMatch in syncMatches)
                 {
+                    var replay = await this.watcherDataStore.GetReplayByIdAsync(syncMatch.Id, cancellationToken);
+                    syncMatch.Snapshots = replay;
+
                     var playerMatch = await this.playerDataStore.GetPlayerMatchAsync(player.PlayerId, syncMatch, cancellationToken);
                     if (playerMatch != null)
                     {
-                        var syncResult = await this.playerDataStore.SyncMatchAsync(syncMatch.Id, playerMatch.Id, cancellationToken);
+                        var syncResult = await this.playerDataStore.SyncMatchAsync(playerMatch.Id, syncMatch.Id, cancellationToken);
                         if (syncResult == false)
                         {
                             return false;
                         }
+
+                        continue;
                     }
                     else
                     {
@@ -155,7 +159,7 @@ namespace LoRWatcher.Services
                             playerMatch = await this.playerDataStore.GetPlayerMatchAsync(player.PlayerId, syncMatch, cancellationToken);
                             if (playerMatch != null)
                             {
-                                var syncResult = await this.playerDataStore.SyncMatchAsync(syncMatch.Id, playerMatch.Id, cancellationToken);
+                                var syncResult = await this.playerDataStore.SyncMatchAsync(playerMatch.Id, syncMatch.Id, cancellationToken);
                                 if (syncResult == false)
                                 {
                                     return false;
@@ -164,24 +168,20 @@ namespace LoRWatcher.Services
                                 continue;
                             }
                         }
-                        
-                        if (allowGetMatchIds == true)
+
+                        // TODO: support region select
+                        // TODO: Limit how often this is called
+                        var playerMatchIds = await this.functionsClient.GetMatchIdsAsync(player.PlayerId, "Europe", cancellationToken);
+                        if (playerMatchIds == null ||
+                            playerMatchIds?.Any() == false)
                         {
-                            // TODO: support region select
-                            var playerMatchIds = await this.functionsClient.GetMatchIdsAsync(player.PlayerId, "Europe", cancellationToken);
-                            if (playerMatchIds == null ||
-                                playerMatchIds?.Any() == false)
-                            {
-                                return false;
-                            }
+                            return false;
+                        }
 
-                            var updateMatchIdsResult = await this.playerDataStore.UpdateMatchIdsAsync(matchIds, cancellationToken);
-                            if (updateMatchIdsResult == false)
-                            {
-                                return false;
-                            }
-
-                            allowGetMatchIds = false;
+                        var updateMatchIdsResult = await this.playerDataStore.UpdateMatchIdsAsync(playerMatchIds, cancellationToken);
+                        if (updateMatchIdsResult == false)
+                        {
+                            return false;
                         }
 
                         // false = Whether the match has been retrieved, so it only returns match ids that do not have a synced match
@@ -212,25 +212,25 @@ namespace LoRWatcher.Services
                                     return false;
                                 }
                             }
+                        }
 
-                            playerMatch = await this.playerDataStore.GetPlayerMatchAsync(player.PlayerId, syncMatch, cancellationToken);
-                            if (playerMatch != null)
+                        playerMatch = await this.playerDataStore.GetPlayerMatchAsync(player.PlayerId, syncMatch, cancellationToken);
+                        if (playerMatch != null)
+                        {
+                            var syncResult = await this.playerDataStore.SyncMatchAsync(playerMatch.Id, syncMatch.Id, cancellationToken);
+                            if (syncResult == false)
                             {
-                                var syncResult = await this.playerDataStore.SyncMatchAsync(syncMatch.Id, playerMatch.Id, cancellationToken);
-                                if (syncResult == false)
-                                {
-                                    return false;
-                                }
+                                return false;
                             }
-                            else
+                        }
+                        else
+                        {
+                            // Update sync table to include the match id but not the player match id and possibly a state to say it's 'NotFound'
+                            // We know it's not found because we have retrieved all player match data from the riot apis and there are no matches that match this match so we report it as not found so that we do not attempt to find it again.
+                            var matchNotFoundResult = await this.playerDataStore.MatchNotFoundAsync(syncMatch.Id, cancellationToken);
+                            if (matchNotFoundResult == false)
                             {
-                                // Update sync table to include the match id but not the player match id and possibly a state to say it's 'NotFound'
-                                // We know it's not found because we have retrieved all player match data from the riot apis and there are no matches that match this match so we report it as not found so that we do not attempt to find it again.
-                                var matchNotFoundResult = await this.playerDataStore.MatchNotFoundAsync(syncMatch.Id, cancellationToken);
-                                if (matchNotFoundResult == false)
-                                {
-                                    return false;
-                                }
+                                return false;
                             }
                         }
                     }

@@ -119,7 +119,7 @@ namespace LoRWatcher.Utils
         /// </summary>
         /// <param name="func">A function that should return true if no more retires need to occur; else false to carry on retrying.</param>
         /// <returns>True if successful; else false.</returns>
-        public static bool Invoke(Func<bool> func)
+        public static bool Invoke(Func<bool> func, int? waitTimeMS = null)
         {
             var retryCount = 0;
             while (retryCount < NumOfRetries)
@@ -130,7 +130,7 @@ namespace LoRWatcher.Utils
                     return result;
                 }
 
-                Task.Delay(WaitTimeMS).Wait();
+                Task.Delay(waitTimeMS ?? WaitTimeMS).Wait();
 
                 retryCount++;
             }

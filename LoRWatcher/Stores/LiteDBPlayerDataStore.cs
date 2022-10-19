@@ -127,7 +127,7 @@ namespace LoRWatcher.Stores
 
                     return null;
                 }
-            });
+            }, 100);
         }
 
         public async Task<IEnumerable<string>> GetMatchIdsAsync(bool includeSynced = true, CancellationToken cancellationToken = default)
@@ -145,11 +145,11 @@ namespace LoRWatcher.Stores
                         var matchIds = Enumerable.Empty<MatchIdDocument>();
                         if (includeSynced == false)
                         {
-                            matchIds = collection.Find(Query.EQ(nameof(MatchIdDocument.Synced), false));
+                            matchIds = collection.Find(doc => doc.Synced == false).ToArray();
                         }
                         else
                         {
-                            matchIds = collection.Find(Query.All());
+                            matchIds = collection.Find(Query.All()).ToArray();
                         }
 
                         this.logger.Debug($"Match ids retrieved. Include synced: {includeSynced}");
@@ -167,7 +167,7 @@ namespace LoRWatcher.Stores
             });
         }
 
-        public async Task<PlayerMatch> GetPlayerMatchAsync(string playerMatchId, MatchReport matchReport, CancellationToken cancellationToken = default)
+        public async Task<PlayerMatch> GetPlayerMatchAsync(string playerId, MatchReport matchReport, CancellationToken cancellationToken = default)
         {
             await Task.Yield();
 
@@ -186,55 +186,69 @@ namespace LoRWatcher.Stores
                                                            WHERE DATETIME_UTC($.Info.GameStartTimeUTC) >= DATETIME_UTC('{lowerTime}')
                                                              AND DATETIME_UTC($.Info.GameStartTimeUTC) <= DATETIME_UTC('{upperTime}')
                                                            LIMIT 1");
-                        //TODO: Debug this...
+
+                        //TODO: Improve this..
+                        if (result.HasValues == true)
+                        {
+                            var docs = result.ToArray();
+                            if (docs.Length == 1)
+                            {
+                                var doc = docs[0];
+                                var playerMatchDocument = BsonMapper.Global.Deserialize<PlayerMatchDocument>(doc);
+                                var player = playerMatchDocument.Info.Players.FirstOrDefault(player => player.PlayerId == playerId);
+                                if (player != null &&
+                                    player.GameOutcome == (matchReport.Result ? "win" : "loss"))
+                                {
+                                    return playerMatchDocument.Adapt<PlayerMatch>();
+                                }
+                            }
+                        }
+
                         return null;
                     }
 
                 }
                 catch (Exception ex)
                 {
-                    this.logger.Error($"Error occurred retrieving player match with id '{playerMatchId}': {ex.Message}");
+                    this.logger.Error($"Error occurred retrieving player match with player id '{playerId}': {ex.Message}");
 
                     return null;
                 }
-            });
+            }, 100);
         }
 
         public async Task<bool> IsMatchSyncedAsync(string watcherMatchId, CancellationToken cancellationToken = default)
         {
             await Task.Yield();
 
-            return Retry.Invoke(() =>
+            try
             {
-                try
+                using (var connection = this.connection.GetConnection())
                 {
-                    using (var connection = this.connection.GetConnection())
+                    var collection = connection.GetCollection<MatchSyncDocument>(MatchSyncCollectionName);
+
+                    var syncDocument = collection.FindOne(doc => doc.WatcherMatchId == watcherMatchId);
+                    if (syncDocument != null)
                     {
-                        var collection = connection.GetCollection<MatchSyncDocument>(MatchSyncCollectionName);
+                        this.logger.Debug($"Sync match found. Watcher Match Id: {syncDocument.WatcherMatchId} | Player Match Id: {syncDocument.PlayerMatchId}");
 
-                        var syncDocument = collection.FindOne(Query.EQ(nameof(MatchSyncDocument.WatcherMatchId), false));
-                        if (syncDocument != null)
-                        {
-                            this.logger.Debug($"Sync match found. Watcher Match Id: {syncDocument.WatcherMatchId} | Player Match Id: {syncDocument.PlayerMatchId}");
-
-                            return true;
-                        }
-                        else
-                        {
-                            this.logger.Debug($"Sync match not found. Watcher Match Id: {watcherMatchId}");
-
-                            return false;
-                        }
+                        return true;
                     }
+                    else
+                    {
+                        this.logger.Debug($"Sync match not found. Watcher Match Id: {watcherMatchId}");
 
+                        return false;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    this.logger.Error($"Error occurred retrieving sync match. {ex.Message}");
 
-                    return false;
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error($"Error occurred retrieving sync match. {ex.Message}");
+
+                return false;
+            }
         }
 
         public async Task<bool> MatchNotFoundAsync(string watcherMatchId, CancellationToken cancellationToken = default)

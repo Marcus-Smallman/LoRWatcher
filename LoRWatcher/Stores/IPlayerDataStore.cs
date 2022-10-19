@@ -14,7 +14,7 @@ namespace LoRWatcher.Stores
 
         Task<bool> IsMatchSyncedAsync(string watcherMatchId, CancellationToken cancellationToken = default);
 
-        Task<PlayerMatch> GetPlayerMatchAsync(string playerMatchId, MatchReport matchReport, CancellationToken cancellationToken = default);
+        Task<PlayerMatch> GetPlayerMatchAsync(string playerId, MatchReport matchReport, CancellationToken cancellationToken = default);
 
         Task<bool> SyncMatchAsync(string playerMatchId, string watcherMatchId, CancellationToken cancellationToken = default);
 
