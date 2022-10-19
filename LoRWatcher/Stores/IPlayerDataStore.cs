@@ -27,5 +27,9 @@ namespace LoRWatcher.Stores
         Task<bool> UpdateMatchIdsAsync(IEnumerable<string> matchIds, CancellationToken cancellationToken = default);
 
         Task<bool> MatchNotFoundAsync(string watcherMatchId, CancellationToken cancellationToken = default);
+
+        Task<MatchSync> GetSyncedMatchByIdAsync(string watcherMatchId, CancellationToken cancellationToken = default);
+
+        Task<PlayerMatch> GetPlayerMatchByIdAsync(string playerMatchId, CancellationToken cancellationToken = default);
     }
 }

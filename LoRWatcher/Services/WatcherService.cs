@@ -2,6 +2,7 @@
 using LoRWatcher.Clients.Functions;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores;
+using Mapster;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,36 @@ namespace LoRWatcher.Services
             this.playerDataStore = playerDataStore;
             this.functionsClient = functionsClient;
             this.logger = logger;
+        }
+
+        public async Task<IEnumerable<ServiceMatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken = default)
+        {
+            var serviceMatchReports = new List<ServiceMatchReport>();
+
+            var matchReports = await this.watcherDataStore.GetMatchReportsAsync(skip, limit, cancellationToken);
+            foreach (var matchReport in matchReports)
+            {
+                string gameMode = null;
+                string gameType = null;
+                var syncedMatch = await this.playerDataStore.GetSyncedMatchByIdAsync(matchReport.Id, cancellationToken);
+                if (syncedMatch != null)
+                {
+                    var playerMatch = await this.playerDataStore.GetPlayerMatchByIdAsync(syncedMatch.PlayerMatchId, cancellationToken);
+                    if (playerMatch != null)
+                    {
+                        gameMode = playerMatch.Info.GameMode;
+                        gameType = playerMatch.Info.GameType;
+                    }
+                }
+
+                var serviceMatchReport = matchReport.Adapt<ServiceMatchReport>();
+                serviceMatchReport.GameMode = gameMode;
+                serviceMatchReport.GameType = gameType;
+
+                serviceMatchReports.Add(serviceMatchReport);
+            }
+
+            return serviceMatchReports;
         }
 
         public async Task<bool> InitialiseMetadataAsync(CancellationToken cancellationToken = default)

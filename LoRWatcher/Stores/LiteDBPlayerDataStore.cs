@@ -178,8 +178,8 @@ namespace LoRWatcher.Stores
                     using (var connection = this.connection.GetConnection())
                     {
                         var startTime = DateTimeOffset.Parse(matchReport.Snapshots.First().Key);
-                        var lowerTime = startTime.Subtract(TimeSpan.FromSeconds(10));
-                        var upperTime = startTime.Add(TimeSpan.FromSeconds(10));
+                        var lowerTime = startTime.Subtract(TimeSpan.FromSeconds(15));
+                        var upperTime = startTime.Add(TimeSpan.FromSeconds(15));
 
                         var result = connection.Execute($@"SELECT $
                                                            FROM {PlayerMatchesCollectionName}
@@ -215,6 +215,58 @@ namespace LoRWatcher.Stores
                     return null;
                 }
             }, 100);
+        }
+
+        public async Task<PlayerMatch> GetPlayerMatchByIdAsync(string playerMatchId, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            try
+            {
+                using (var connection = this.connection.GetConnection())
+                {
+                    var collection = connection.GetCollection<PlayerMatchDocument>(PlayerMatchesCollectionName);
+
+                    var playerMatchDoc = collection.FindOne(doc => doc.Id == playerMatchId);
+
+                    this.logger.Debug($"Player match document for player match id '{playerMatchId}' retrieved");
+
+                    return playerMatchDoc?.Adapt<PlayerMatch>();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error($"Error occurred retrieving player match document for player match id '{playerMatchId}': {ex.Message}");
+
+                return null;
+            }
+        }
+
+        public async Task<MatchSync> GetSyncedMatchByIdAsync(string watcherMatchId, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            try
+            {
+                using (var connection = this.connection.GetConnection())
+                {
+                    var collection = connection.GetCollection<MatchSyncDocument>(MatchSyncCollectionName);
+
+                    var matchSyncDoc = collection.FindOne(doc => doc.WatcherMatchId == watcherMatchId);
+
+                    this.logger.Debug($"Match sync document for watcher match id '{watcherMatchId}' retrieved");
+
+                    return matchSyncDoc?.Adapt<MatchSync>();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error($"Error occurred retrieving match sync document for watcher match id '{watcherMatchId}' : {ex.Message}");
+
+                return null;
+            }
         }
 
         public async Task<bool> IsMatchSyncedAsync(string watcherMatchId, CancellationToken cancellationToken = default)

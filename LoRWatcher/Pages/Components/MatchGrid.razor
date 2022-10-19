@@ -3,18 +3,19 @@
 @using LoRWatcher.Caches;
 @using LoRWatcher.Events
 @using LoRWatcher.Pages
+@using LoRWatcher.Services
 @using LoRWatcher.Stores;
 @using LoRWatcher.Utils;
 @using System.Threading;
 @using System.Diagnostics;
 
-@inject IWatcherDataStore watcherDataStore
+@inject IWatcherService watcherService
 @inject IWatcherEventHandler watcherEventHandler
 @inject NavigationManager navigationManager
 
 @if (matchReports != null)
 {
-    <DataGrid TItem="MatchReport"
+    <DataGrid TItem="ServiceMatchReport"
           Data="@matchReports"
           ShowPager="@showPager"
           PageSize="@RazorConstants.PageSize"
@@ -23,26 +24,26 @@
           @bind-SelectedRow="@selectedMatchReport"
           RowSelectable="@((matchReport) => this.RowSelected(matchReport.Item))"
           Hoverable="true">
-        <DataGridCommandColumn TItem="MatchReport" />
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
+        <DataGridCommandColumn TItem="ServiceMatchReport" />
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.FinishTime)" Caption="Finish Time">
             <DisplayTemplate>
-                @((context as MatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
+                @((context as ServiceMatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name" >
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.OpponentName)" Caption="Opponent Name" >
             <DisplayTemplate>
-                @((context as MatchReport)?.OpponentName.GetCardNameOpponentName())
+                @((context as ServiceMatchReport)?.OpponentName.GetCardNameOpponentName())
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Result)" Caption="Result">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.Result)" Caption="Result">
             <DisplayTemplate>
-                @((context as MatchReport)?.Result == true ? "Won" : "Lost")
+                @((context as ServiceMatchReport)?.Result == true ? "Won" : "Lost")
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Regions)" Caption="Regions">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.Regions)" Caption="Regions">
             <DisplayTemplate>
                 @{ 
-                    var cards = (context as MatchReport)?.PlayerDeckCode.GetCardsFromCode();
+                    var cards = (context as ServiceMatchReport)?.PlayerDeckCode.GetCardsFromCode();
                     <Row Style="margin: auto">
                         @foreach (var regions in this.GetCardRegions(cards))
                         {
@@ -57,6 +58,16 @@
                 }
             </DisplayTemplate>
         </DataGridColumn>
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.GameMode)" Caption="Game Mode" >
+            <DisplayTemplate>
+                @((context as ServiceMatchReport)?.GameMode ?? string.Empty)
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.GameType)" Caption="Game Type" >
+            <DisplayTemplate>
+                @((context as ServiceMatchReport)?.GameType ?? string.Empty)
+            </DisplayTemplate>
+        </DataGridColumn>
     </DataGrid>
 }
 
@@ -65,15 +76,15 @@
     public int TotalGames { get; set; }
 
     [Parameter]
-    public IEnumerable<MatchReport> InitialMatchReports { get; set; }
+    public IEnumerable<ServiceMatchReport> InitialMatchReports { get; set; }
 
     private const string Source = "MatchGrid";
 
     private bool showPager = true;
 
-    private MatchReport selectedMatchReport;
+    private ServiceMatchReport selectedMatchReport;
 
-    private IEnumerable<MatchReport> matchReports;
+    private IEnumerable<ServiceMatchReport> matchReports;
 
     private int skip;
 
@@ -90,7 +101,9 @@
     {
         this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, async () =>
         {
-            this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+            await this.watcherService.SyncMatchReportsAsync();
+
+            this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
 
 #pragma warning disable CS4014
             InvokeAsync(() =>
@@ -101,23 +114,23 @@
         });
     }
 
-    private async Task OnReadData(DataGridReadDataEventArgs<MatchReport> e)
+    private async Task OnReadData(DataGridReadDataEventArgs<ServiceMatchReport> e)
     {
         // TODO: Support filtering and sorting
         this.skip = RazorConstants.PageSize * (e.Page - 1);
-        this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+        this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
 
         StateHasChanged();
     }
 
-    private bool RowSelected(MatchReport matchReport)
+    private bool RowSelected(ServiceMatchReport matchReport)
     {
         this.navigationManager.NavigateTo($"/match/{matchReport.Id}");
 
         return false;
     }
 
-    private string GetMatchReportCellClass(MatchReport matchReport)
+    private string GetMatchReportCellClass(ServiceMatchReport matchReport)
     {
         return matchReport.Result ? "text-primary" : "text-danger";
     }

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LoRWatcher.Services
@@ -8,5 +9,7 @@ namespace LoRWatcher.Services
         Task<bool> InitialiseMetadataAsync(CancellationToken cancellationToken = default);
 
         Task<bool> SyncMatchReportsAsync(CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<ServiceMatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken = default);
     }
 }

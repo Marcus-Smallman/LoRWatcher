@@ -1,4 +1,5 @@
-﻿using LoRWatcher.Logger;
+﻿using LoRWatcher.Events;
+using LoRWatcher.Logger;
 using LoRWatcher.Services;
 using LoRWatcher.Tray;
 using Microsoft.AspNetCore.Hosting;
@@ -30,10 +31,17 @@ namespace LoRWatcher
             {
                 try
                 {
-                    var store = host.Services.GetRequiredService<IWatcherService>();
+                    var watcherService = host.Services.GetRequiredService<IWatcherService>();
 
-                    await store.InitialiseMetadataAsync(CancellationToken.None);
-                    await store.SyncMatchReportsAsync(CancellationToken.None);
+                    await watcherService.InitialiseMetadataAsync();
+                    await watcherService.SyncMatchReportsAsync();
+
+                    var eventHandler = host.Services.GetRequiredService<IWatcherEventHandler>();
+                    eventHandler.TryAddEvent(WatcherEvents.GameFinished, "Startup", async () =>
+                    {
+                        // TODO: Test this works
+                        await watcherService.SyncMatchReportsAsync();
+                    });
                 }
                 catch (Exception ex)
                 {

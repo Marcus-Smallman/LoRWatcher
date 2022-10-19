@@ -84,7 +84,7 @@
 
     private MatchReportMetadata matchReportMetadata;
 
-    private IEnumerable<MatchReport> matchReports;
+    private IEnumerable<ServiceMatchReport> matchReports;
 
     private Modal modalRef;
 
@@ -155,7 +155,7 @@
 
         var matchesTask = Task.Run(async () =>
         {
-            this.matchReports = await this.watcherDataStore.GetMatchReportsAsync(0, RazorConstants.PageSize, CancellationToken.None);
+            this.matchReports = await this.watcherService.GetMatchReportsAsync(0, RazorConstants.PageSize, CancellationToken.None);
         });
 
         await Task.WhenAll(
