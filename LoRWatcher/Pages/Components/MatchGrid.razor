@@ -101,6 +101,15 @@
     {
         this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, async () =>
         {
+            this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+
+#pragma warning disable CS4014
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+#pragma warning restore CS4014
+
             await this.watcherService.SyncMatchReportsAsync();
 
             this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
