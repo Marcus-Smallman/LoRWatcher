@@ -31,9 +31,7 @@ namespace LoRWatcher.Clients.Functions
                 return await Retry.InvokeAsync(async () =>
                 {
                     // TODO: Have possibly other functions on other regions for faster responses for users over the world
-                    var getAccountFunctionUrl = "https://faas-lon1-917a94a7.doserverless.co/api/v1/web/fn-b47060c4-27f8-4dfb-8463-8bb3b963c7f6/default/riot-apis-get-account";
-
-                    using var request = new HttpRequestMessage(HttpMethod.Post, getAccountFunctionUrl);
+                    using var request = new HttpRequestMessage(HttpMethod.Post, FunctionUrls.GetAccount);
                     request.Content = new StringContent(
                         JsonConvert.SerializeObject(
                             new AccountRequest
@@ -83,9 +81,7 @@ namespace LoRWatcher.Clients.Functions
                 return await Retry.InvokeAsync(async () =>
                 {
                     // TODO: Have possibly other functions on other regions for faster responses for users over the world
-                    var getMatchFunctionUrl = "https://faas-lon1-917a94a7.doserverless.co/api/v1/web/fn-b47060c4-27f8-4dfb-8463-8bb3b963c7f6/default/riot-apis-get-match";
-
-                    using var request = new HttpRequestMessage(HttpMethod.Post, getMatchFunctionUrl);
+                    using var request = new HttpRequestMessage(HttpMethod.Post, FunctionUrls.GetMatch);
                     request.Content = new StringContent(
                         JsonConvert.SerializeObject(new MatchRequest
                         {
@@ -133,9 +129,7 @@ namespace LoRWatcher.Clients.Functions
                 return await Retry.InvokeAsync(async () =>
                 {
                     // TODO: Have possibly other functions on other regions for faster responses for users over the world
-                    var getMatchIdsFunctionUrl = "https://faas-lon1-917a94a7.doserverless.co/api/v1/web/fn-b47060c4-27f8-4dfb-8463-8bb3b963c7f6/default/riot-apis-get-match-ids";
-
-                    using var request = new HttpRequestMessage(HttpMethod.Post, getMatchIdsFunctionUrl);
+                    using var request = new HttpRequestMessage(HttpMethod.Post, FunctionUrls.GetMatchIds);
                     request.Content = new StringContent(
                         JsonConvert.SerializeObject(new MatchIdsRequest
                         {
