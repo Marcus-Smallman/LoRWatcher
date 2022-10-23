@@ -1,6 +1,8 @@
 ﻿@page "/match/{id}"
 
 @using LoRWatcher.Caches;
+@using LoRWatcher.Events
+@using LoRWatcher.Services
 @using LoRWatcher.Stores;
 @using LoRWatcher.Utils;
 @using LoRWatcher.Logger;
@@ -9,7 +11,9 @@
 @using LoRWatcherComponents
 
 @inject IJSRuntime JSRuntime
+@inject IWatcherService watcherService
 @inject IWatcherDataStore watcherDataStore
+@inject IWatcherEventHandler watcherEventHandler
 @inject NavigationManager navigationManager
 @inject ILogger logger;
 
@@ -37,7 +41,9 @@
             </div>
         </Row>
         <Row>
-            <div Class="col-5" />
+            <div Class="col-5" Style="text-align: center">
+                <a Class="text-black-hint" Style="margin: auto">@(this.GetGameType())</a>
+            </div>
             <div Class="col-2" Style="text-align: center; display: flex">
                 <a Class="text-black-hint" Style="margin: auto">@(matchReport?.Result == true ? "Won" : "Lost")</a>
             </div>
@@ -279,7 +285,9 @@
     [Parameter]
     public string Id { get; set; }
 
-    private MatchReport matchReport;
+    private const string Source = "Match";
+
+    private ServiceMatchReport matchReport;
 
     private IEnumerable<CardData> cards;
 
@@ -327,6 +335,17 @@
             }
         });
 #pragma warning restore 4014
+    }
+
+    private string GetGameType()
+    {
+        var result = this.matchReport?.GameMode;
+        if (string.IsNullOrEmpty(this.matchReport?.GameType) == false)
+        {
+            result += $" ({this.matchReport?.GameType})";
+        }
+
+        return result;
     }
 
     private double GetReplayLineWidth(string snapshotKey)
@@ -496,13 +515,32 @@
 
     protected override async Task OnInitializedAsync()
     {
+        this.RegisterEvents();
+
+        await this.GetMatchReportAsync();
+    }
+
+    private void RegisterEvents()
+    {
+        this.watcherEventHandler.TryAddEvent(WatcherEvents.GamesSynced, Source, async () =>
+        {
+            await this.GetMatchReportAsync();
+
+#pragma warning disable CS4014
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+#pragma warning restore CS4014
+        });
+    }
+
+    private async Task GetMatchReportAsync()
+    {
         if (this.Id != null)
         {
-            var stopwatch = Stopwatch.StartNew();
-            this.matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
+            this.matchReport = await this.watcherService.GetMatchReportByIdAsync(this.Id, CancellationToken.None);
             this.matchReport.Snapshots = await this.watcherDataStore.GetReplayByIdAsync(this.Id, CancellationToken.None);
-            var elapsed = stopwatch.Elapsed;
-
 
             this.cards = this.matchReport?.PlayerDeckCode.GetCardsFromCode();
         }

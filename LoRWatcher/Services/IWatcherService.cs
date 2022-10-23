@@ -11,5 +11,7 @@ namespace LoRWatcher.Services
         Task<bool> SyncMatchReportsAsync(CancellationToken cancellationToken = default);
 
         Task<IEnumerable<ServiceMatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken = default);
+
+        Task<ServiceMatchReport> GetMatchReportByIdAsync(string id, CancellationToken cancellationToken = default);
     }
 }

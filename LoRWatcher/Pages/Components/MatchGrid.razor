@@ -60,7 +60,7 @@
         </DataGridColumn>
         <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.GameType)" Caption="Type">
             <DisplayTemplate>
-                @(this.GetType((context as ServiceMatchReport)))
+                @(this.GetGameType((context as ServiceMatchReport)))
             </DisplayTemplate>
         </DataGridColumn>
     </DataGrid>
@@ -117,7 +117,7 @@
 #pragma warning restore CS4014
     }
 
-    private string GetType(ServiceMatchReport serviceMatchReport)
+    private string GetGameType(ServiceMatchReport serviceMatchReport)
     {
         var result = serviceMatchReport?.GameMode;
         if (string.IsNullOrEmpty(serviceMatchReport?.GameType) == false)

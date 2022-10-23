@@ -69,6 +69,30 @@ namespace LoRWatcher.Services
             return serviceMatchReports;
         }
 
+        public async Task<ServiceMatchReport> GetMatchReportByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            var matchReport = await this.watcherDataStore.GetMatchReportByIdAsync(id, cancellationToken);
+
+            string gameMode = null;
+            string gameType = null;
+            var syncedMatch = await this.playerDataStore.GetSyncedMatchByIdAsync(matchReport.Id, cancellationToken);
+            if (syncedMatch != null)
+            {
+                var playerMatch = await this.playerDataStore.GetPlayerMatchByIdAsync(syncedMatch.PlayerMatchId, cancellationToken);
+                if (playerMatch != null)
+                {
+                    gameMode = playerMatch.Info.GameMode;
+                    gameType = playerMatch.Info.GameType;
+                }
+            }
+
+            var serviceMatchReport = matchReport.Adapt<ServiceMatchReport>();
+            serviceMatchReport.GameMode = gameMode;
+            serviceMatchReport.GameType = gameType;
+
+            return serviceMatchReport;
+        }
+
         public async Task<bool> InitialiseMetadataAsync(CancellationToken cancellationToken = default)
         {
             try
