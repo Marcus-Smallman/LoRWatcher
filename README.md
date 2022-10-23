@@ -36,8 +36,8 @@ and **In Progress** if you are currently playing a match*)
 # UI
 When you access the UI for the first time without playing a game, there will be no match history.  
 <img src="https://user-images.githubusercontent.com/10182314/187091200-142139ac-aa1d-4095-81cb-6c008afaafcf.png" width="800">  
-After playing a few games you will start to see your match history with some overall stats.  
-<img src="https://user-images.githubusercontent.com/10182314/187091348-5e9bc63d-dca4-4219-8dfc-36afbf96e827.png" width="800">  
+After playing a few games you will start to see your match history with some overall stats.
+<img src="https://user-images.githubusercontent.com/10182314/197385717-e1aae431-944b-4759-95c6-68d68f98fe47.png" width="800">  
 You can then view the match you played by clicking on the record in the table.  
 <img src="https://user-images.githubusercontent.com/10182314/187091440-723f5d0b-9073-4ce7-a438-5a4e13a16766.png" width="800">  
 
