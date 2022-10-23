@@ -1,5 +1,6 @@
 ﻿using LoRWatcher.Caches;
 using LoRWatcher.Clients.Functions;
+using LoRWatcher.Events;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores;
 using Mapster;
@@ -18,6 +19,8 @@ namespace LoRWatcher.Services
 
         private readonly IPlayerDataStore playerDataStore;
 
+        private readonly IWatcherEventHandler watcherEventHandler;
+
         private readonly IFunctionsClient functionsClient;
 
         private readonly ILogger logger;
@@ -25,11 +28,13 @@ namespace LoRWatcher.Services
         public WatcherService(
             IWatcherDataStore watcherDataStore,
             IPlayerDataStore playerDataStore,
+            IWatcherEventHandler watcherEventHandler,
             IFunctionsClient functionsClient,
             ILogger logger)
         {
             this.watcherDataStore = watcherDataStore;
             this.playerDataStore = playerDataStore;
+            this.watcherEventHandler = watcherEventHandler;
             this.functionsClient = functionsClient;
             this.logger = logger;
         }
@@ -268,12 +273,7 @@ namespace LoRWatcher.Services
                 }
             }
 
-            // 1. Get up to the last 20 matches
-            // 2. Check if they have been synced
-            // 3. If all have been synced, return
-            // 4. If there any that have not been synced retrieve the list of match ids 
-            // 5. Then call the get match function for match ids that have not already been synced and store the data in the player datastore
-            // 6. Once all recent match ids have been stored sync up the watcher store data and link them using the match id
+            this.watcherEventHandler.InvokeEvent(WatcherEvents.GamesSynced);
 
             return true;
         }

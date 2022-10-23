@@ -4,6 +4,7 @@
     {
         GameStarted,
         GameFinished,
-        ClientStatusChanged
+        ClientStatusChanged,
+        GamesSynced
     }
 }

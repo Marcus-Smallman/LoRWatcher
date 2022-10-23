@@ -30,7 +30,7 @@
                 @((context as ServiceMatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.OpponentName)" Caption="Opponent Name" >
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.OpponentName)" Caption="Opponent Name">
             <DisplayTemplate>
                 @((context as ServiceMatchReport)?.OpponentName.GetCardNameOpponentName())
             </DisplayTemplate>
@@ -42,7 +42,7 @@
         </DataGridColumn>
         <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.Regions)" Caption="Regions">
             <DisplayTemplate>
-                @{ 
+                @{
                     var cards = (context as ServiceMatchReport)?.PlayerDeckCode.GetCardsFromCode();
                     <Row Style="margin: auto">
                         @foreach (var regions in this.GetCardRegions(cards))
@@ -58,14 +58,9 @@
                 }
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.GameMode)" Caption="Game Mode" >
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.GameType)" Caption="Type">
             <DisplayTemplate>
-                @((context as ServiceMatchReport)?.GameMode ?? string.Empty)
-            </DisplayTemplate>
-        </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.GameType)" Caption="Game Type" >
-            <DisplayTemplate>
-                @((context as ServiceMatchReport)?.GameType ?? string.Empty)
+                @(this.GetType((context as ServiceMatchReport)))
             </DisplayTemplate>
         </DataGridColumn>
     </DataGrid>
@@ -101,26 +96,36 @@
     {
         this.watcherEventHandler.TryAddEvent(WatcherEvents.GameFinished, Source, async () =>
         {
-            this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
-
-#pragma warning disable CS4014
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
-#pragma warning restore CS4014
-
-            await this.watcherService.SyncMatchReportsAsync();
-
-            this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
-
-#pragma warning disable CS4014
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
-#pragma warning restore CS4014
+            await this.GetMatchReportsAsync();
         });
+
+        this.watcherEventHandler.TryAddEvent(WatcherEvents.GamesSynced, Source, async () =>
+        {
+            await this.GetMatchReportsAsync();
+        });
+    }
+
+    private async Task GetMatchReportsAsync()
+    {
+        this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+
+#pragma warning disable CS4014
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+#pragma warning restore CS4014
+    }
+
+    private string GetType(ServiceMatchReport serviceMatchReport)
+    {
+        var result = serviceMatchReport?.GameMode;
+        if (string.IsNullOrEmpty(serviceMatchReport?.GameType) == false)
+        {
+            result += $" ({serviceMatchReport?.GameType})";
+        }
+
+        return result;
     }
 
     private async Task OnReadData(DataGridReadDataEventArgs<ServiceMatchReport> e)

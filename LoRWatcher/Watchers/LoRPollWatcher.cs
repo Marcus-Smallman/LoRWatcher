@@ -29,7 +29,7 @@ namespace LoRWatcher.Watchers
 
         private readonly IWatcherDataStore watcherDataStore;
 
-        private readonly IWatcherEventHandler watcherEventHandler; 
+        private readonly IWatcherEventHandler watcherEventHandler;
 
         private readonly ILogger logger;
 
@@ -60,28 +60,22 @@ namespace LoRWatcher.Watchers
             this.IsClientActive = false;
         }
 
-        protected override Task ExecuteAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            return Task.Run(async () =>
+            this.logger.Info("Starting watcher");
+            while (cancellationToken.IsCancellationRequested == false)
             {
-                this.logger.Info("Starting watcher");
-
-                var running = true;
-                while (running)
+                if (this.IsClientActive == false)
                 {
-                    if (this.IsClientActive == false)
-                    {
-                        await IsClientActiveAsync(cancellationToken);
-                    }
-                    else
-                    {
-                        await PollClientAsync(cancellationToken);
-                    }
-
-                    await Task.Delay(this.PollIntervalMilliseconds, cancellationToken);
+                    await IsClientActiveAsync(cancellationToken);
                 }
-            },
-            cancellationToken);
+                else
+                {
+                    await PollClientAsync(cancellationToken);
+                }
+
+                await Task.Delay(this.PollIntervalMilliseconds, cancellationToken);
+            }
         }
 
         private async Task IsClientActiveAsync(CancellationToken cancellationToken)
