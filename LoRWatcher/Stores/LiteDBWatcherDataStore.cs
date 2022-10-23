@@ -51,6 +51,7 @@ namespace LoRWatcher.Stores
                             OpponentName = matchReport.OpponentName,
                             Regions = matchReport.Regions,
                             Result = matchReport.Result,
+                            StartTime = matchReport.StartTime.UtcDateTime,
                             FinishTime = matchReport.FinishTime.UtcDateTime
                         };
 
@@ -92,7 +93,8 @@ namespace LoRWatcher.Stores
                             Regions = matchReport.Regions,
                             Snapshots = null,
                             Result = matchReport.Result,
-                            FinishTime = matchReport.FinishTime.UtcDateTime
+                            FinishTime = matchReport.FinishTime.UtcDateTime,
+                            StartTime = matchReport.StartTime.UtcDateTime
                         };
 
                         collection.Update(doc);
@@ -137,6 +139,7 @@ namespace LoRWatcher.Stores
                             Regions = matchReportDoc.Regions,
                             Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                             Result = matchReportDoc.Result,
+                            StartTime = matchReportDoc.StartTime,
                             FinishTime = matchReportDoc.FinishTime
                         };
 
@@ -182,6 +185,7 @@ namespace LoRWatcher.Stores
                                 Regions = matchReportDoc.Regions,
                                 Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                                 Result = matchReportDoc.Result,
+                                StartTime = matchReportDoc.StartTime,
                                 FinishTime = matchReportDoc.FinishTime
                             });
                         }
@@ -228,6 +232,7 @@ namespace LoRWatcher.Stores
                                 Regions = matchReportDoc.Regions,
                                 Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                                 Result = matchReportDoc.Result,
+                                StartTime = matchReportDoc.StartTime,
                                 FinishTime = matchReportDoc.FinishTime
                             });
                         }

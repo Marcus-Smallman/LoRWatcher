@@ -177,7 +177,7 @@ namespace LoRWatcher.Stores
                 {
                     using (var connection = this.connection.GetConnection())
                     {
-                        var startTime = DateTimeOffset.Parse(matchReport.Snapshots.First().Key);
+                        var startTime = matchReport.StartTime;
                         var lowerTime = startTime.Subtract(TimeSpan.FromSeconds(15));
                         var upperTime = startTime.Add(TimeSpan.FromSeconds(15));
 

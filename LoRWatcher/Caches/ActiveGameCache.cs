@@ -127,6 +127,7 @@ namespace LoRWatcher.Caches
                     OpponentName = positionalRectangles.OpponentName,
                     PlayerDeckCode = activeDeckCode,
                     Regions = cards.GetRegions(),
+                    StartTime = DateTimeOffset.UtcNow,
                     Snapshots = new SortedList<string, Snapshot>()
                 };
             }
