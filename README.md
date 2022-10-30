@@ -7,6 +7,7 @@ which the LoR Watcher application hosts.
 [Install](#install)  
 &nbsp;&nbsp;[Tray Icon](#tray-icon)  
 [UI](#ui)  
+&nbsp;&nbsp;[Game Type](#game-type)  
 &nbsp;&nbsp;[Basic Replay](#basic-replay)  
 
 # Install
@@ -29,9 +30,10 @@ If you right click on the tray Icon, the following information/options appear:
 and **In Progress** if you are currently playing a match*)
  - A quick link to the UI in the browser (http://lor.watcher)
  - An option to modify some settings
+ - An option to check for updates
  - An option to exit the LoR Watcher
  
- ![image](https://user-images.githubusercontent.com/10182314/187091008-6eb3398a-5109-4792-a3cd-09eb019a89c7.png)
+ ![image](https://user-images.githubusercontent.com/10182314/197396620-0da292ea-043b-4bc2-a558-d8972b376fb9.png)
 
 # UI
 When you access the UI for the first time without playing a game, there will be no match history.  
@@ -40,6 +42,15 @@ After playing a few games you will start to see your match history with some ove
 <img src="https://user-images.githubusercontent.com/10182314/197385717-e1aae431-944b-4759-95c6-68d68f98fe47.png" width="800">  
 You can then view the match you played by clicking on the record in the table.  
 <img src="https://user-images.githubusercontent.com/10182314/187091440-723f5d0b-9073-4ce7-a438-5a4e13a16766.png" width="800">  
+
+## Game Type
+For the LoR Watcher tool to know what game type a match is, it needs to sync with the Riot APIs to retrieve this information. In order for the LoR Watcher to do this, you need to provide your tag line. This can be found in the LoR Game Client:
+<img src="https://user-images.githubusercontent.com/10182314/197396459-d842a218-ceb7-496a-b50a-9e872994f8f7.png" width="800">  
+This can then be set in the LoR Watcher UI:
+<img src="https://user-images.githubusercontent.com/10182314/197396511-5e4fbfe4-d05a-41e8-ba73-1aca6c21328e.png" width="800">  
+<img src="https://user-images.githubusercontent.com/10182314/197396560-ef212358-00b9-4fe8-8228-d81b05a35776.png" width="200">  
+
+
 
 ## Basic Replay
 
