@@ -23,9 +23,11 @@
           TotalItems="@TotalGames"
           @bind-SelectedRow="@selectedMatchReport"
           RowSelectable="@((matchReport) => this.RowSelected(matchReport.Item))"
-          Hoverable="true">
+          Hoverable="true"
+          Sortable="true"
+          Filterable="true">
         <DataGridCommandColumn TItem="ServiceMatchReport" />
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.FinishTime)" Caption="Finish Time">
+        <DataGridColumn Filterable="false" Sortable="false" CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.FinishTime)" Caption="Finish Time">
             <DisplayTemplate>
                 @((context as ServiceMatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
             </DisplayTemplate>
@@ -131,6 +133,25 @@
     private async Task OnReadData(DataGridReadDataEventArgs<ServiceMatchReport> e)
     {
         // TODO: Support filtering and sorting
+
+        var opponentNameColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.OpponentName));
+        var opponentNameFilter = opponentNameColumn.SearchValue;
+        var opponentNameSortDirection = opponentNameColumn.SortDirection;
+
+        var resultColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.Result));
+        var resultFilter = resultColumn.SearchValue;
+        var resultSortDirection = resultColumn.SortDirection;
+
+        var regionsColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.Regions));
+        var regionsFilter = regionsColumn.SearchValue;
+        var regionsSortDirection = regionsColumn.SortDirection;
+
+        var gameTypeColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.GameType));
+        var gameTypeFilter = gameTypeColumn.SearchValue;
+        var gameTypeSortDirection = gameTypeColumn.SortDirection;
+
+        // TODO: Finish this search and update metadata graph based on this
+
         this.skip = RazorConstants.PageSize * (e.Page - 1);
         this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
 
