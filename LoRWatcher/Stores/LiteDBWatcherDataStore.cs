@@ -156,7 +156,18 @@ namespace LoRWatcher.Stores
             });
         }
 
-        public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(
+            int skip,
+            int limit,
+            string opponentNameFilter = null,
+            int opponentNameSortDirection = 0,
+            string resultFilter = null,
+            int resultSortDirection = 0,
+            string regionsFilter = null,
+            int regionsSortDirection = 0,
+            string gameTypeFilter = null,
+            int gameTypeSortDirection = 0,
+            CancellationToken cancellationToken = default)
         {
             await Task.Yield();
 
@@ -169,6 +180,13 @@ namespace LoRWatcher.Stores
                         var collection = connection.GetCollection<MatchReportDocument>(MatchReportsCollectionName);
 
                         var query = Query.All(nameof(MatchReportDocument.FinishTime), Query.Descending);
+
+                        var filters
+                        if (string.IsNullOrWhiteSpace(opponentNameFilter) == false)
+                        {
+                            expression = Query.And
+                        }
+
                         var matchReportDocs = collection.Find(query, skip, limit);
 
                         this.logger.Debug("Match reports retrieved");

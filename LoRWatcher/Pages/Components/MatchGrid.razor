@@ -24,8 +24,9 @@
           @bind-SelectedRow="@selectedMatchReport"
           RowSelectable="@((matchReport) => this.RowSelected(matchReport.Item))"
           Hoverable="true"
+          Filterable="true"
           Sortable="true"
-          Filterable="true">
+          SortMode="DataGridSortMode.Single">
         <DataGridCommandColumn TItem="ServiceMatchReport" />
         <DataGridColumn Filterable="false" Sortable="false" CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.FinishTime)" Caption="Finish Time">
             <DisplayTemplate>
@@ -135,25 +136,36 @@
         // TODO: Support filtering and sorting
 
         var opponentNameColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.OpponentName));
-        var opponentNameFilter = opponentNameColumn.SearchValue;
-        var opponentNameSortDirection = opponentNameColumn.SortDirection;
+        var opponentNameFilter = opponentNameColumn.SearchValue?.ToString();
+        var opponentNameSortDirection = (int)opponentNameColumn.SortDirection;
 
         var resultColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.Result));
-        var resultFilter = resultColumn.SearchValue;
-        var resultSortDirection = resultColumn.SortDirection;
+        var resultFilter = resultColumn.SearchValue?.ToString();
+        var resultSortDirection = (int)resultColumn.SortDirection;
 
         var regionsColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.Regions));
-        var regionsFilter = regionsColumn.SearchValue;
-        var regionsSortDirection = regionsColumn.SortDirection;
+        var regionsFilter = regionsColumn.SearchValue?.ToString();
+        var regionsSortDirection = (int)regionsColumn.SortDirection;
 
         var gameTypeColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.GameType));
-        var gameTypeFilter = gameTypeColumn.SearchValue;
-        var gameTypeSortDirection = gameTypeColumn.SortDirection;
+        var gameTypeFilter = gameTypeColumn.SearchValue?.ToString();
+        var gameTypeSortDirection = (int)gameTypeColumn.SortDirection;
 
         // TODO: Finish this search and update metadata graph based on this
 
         this.skip = RazorConstants.PageSize * (e.Page - 1);
-        this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+        this.matchReports = await this.watcherService.GetMatchReportsAsync(
+            this.skip,
+            RazorConstants.PageSize,
+            opponentNameFilter,
+            opponentNameSortDirection,
+            resultFilter,
+            resultSortDirection,
+            regionsFilter,
+            regionsSortDirection,
+            gameTypeFilter,
+            gameTypeSortDirection,
+            CancellationToken.None);
 
         StateHasChanged();
     }

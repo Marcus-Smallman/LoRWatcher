@@ -39,11 +39,33 @@ namespace LoRWatcher.Services
             this.logger = logger;
         }
 
-        public async Task<IEnumerable<ServiceMatchReport>> GetMatchReportsAsync(int skip, int limit, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ServiceMatchReport>> GetMatchReportsAsync(
+            int skip,
+            int limit,
+            string opponentNameFilter = null,
+            int opponentNameSortDirection = 0,
+            string resultFilter = null,
+            int resultSortDirection = 0,
+            string regionsFilter = null,
+            int regionsSortDirection = 0,
+            string gameTypeFilter = null,
+            int gameTypeSortDirection = 0,
+            CancellationToken cancellationToken = default)
         {
             var serviceMatchReports = new List<ServiceMatchReport>();
 
-            var matchReports = await this.watcherDataStore.GetMatchReportsAsync(skip, limit, cancellationToken);
+            var matchReports = await this.watcherDataStore.GetMatchReportsAsync(
+                skip,
+                limit,
+                opponentNameFilter,
+                opponentNameSortDirection,
+                resultFilter,
+                resultSortDirection,
+                regionsFilter,
+                regionsSortDirection,
+                gameTypeFilter,
+                gameTypeSortDirection,
+                cancellationToken);
             foreach (var matchReport in matchReports)
             {
                 string gameMode = null;
