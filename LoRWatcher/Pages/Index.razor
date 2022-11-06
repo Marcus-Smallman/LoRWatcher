@@ -153,7 +153,7 @@
 
         var matchesTask = Task.Run(async () =>
         {
-            this.matchReports = await this.watcherService.GetMatchReportsAsync(0, RazorConstants.PageSize, CancellationToken.None);
+            this.matchReports = await this.watcherService.GetMatchReportsAsync(0, RazorConstants.PageSize, cancellationToken: CancellationToken.None);
         });
 
         await Task.WhenAll(

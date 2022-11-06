@@ -179,15 +179,90 @@ namespace LoRWatcher.Stores
                     {
                         var collection = connection.GetCollection<MatchReportDocument>(MatchReportsCollectionName);
 
-                        var query = Query.All(nameof(MatchReportDocument.FinishTime), Query.Descending);
-
-                        var filters
+                        var query = collection.Query();
                         if (string.IsNullOrWhiteSpace(opponentNameFilter) == false)
                         {
-                            expression = Query.And
+                            query = query
+                                .Where(doc => doc.OpponentName.StartsWith(opponentNameFilter, StringComparison.OrdinalIgnoreCase));
+                        }
+                        if (string.IsNullOrWhiteSpace(resultFilter) == false)
+                        {
+                            query = query
+                                .Where(doc => (doc.Result ? "won" : "lost").StartsWith(resultFilter, StringComparison.OrdinalIgnoreCase));
+                        }
+                        if (string.IsNullOrWhiteSpace(regionsFilter) == false)
+                        {
+                            query = query
+                                .Where(doc => string.Join(" ", doc.Regions ?? Enumerable.Empty<string>()).StartsWith(regionsFilter, StringComparison.OrdinalIgnoreCase));
+                        }
+                        if (string.IsNullOrWhiteSpace(gameTypeFilter) == false)
+                        {
+                            query = query
+                                .Where(doc => doc.Type == null ? false : doc.Type.ToString().StartsWith(gameTypeFilter, StringComparison.OrdinalIgnoreCase));
                         }
 
-                        var matchReportDocs = collection.Find(query, skip, limit);
+                        if (opponentNameSortDirection > 0)
+                        {
+                            if (opponentNameSortDirection == 1)
+                            {
+                                query = query
+                                    .OrderBy(doc => doc.OpponentName);
+                            }
+                            else if (opponentNameSortDirection == 2)
+                            {
+                                query = query
+                                    .OrderByDescending(doc => doc.OpponentName);
+                            }
+                        }
+                        else if (resultSortDirection > 0)
+                        {
+                            if (resultSortDirection == 1)
+                            {
+                                query = query
+                                    .OrderBy(doc => doc.Result ? "won" : "lost");
+                            }
+                            else if (resultSortDirection == 2)
+                            {
+                                query = query
+                                    .OrderByDescending(doc => doc.Result ? "won" : "lost");
+                            }
+                        }
+                        else if (regionsSortDirection > 0)
+                        {
+                            if (regionsSortDirection == 1)
+                            {
+                                query = query
+                                    .OrderBy(doc => string.Join(" ", doc.Regions ?? Enumerable.Empty<string>()));
+                            }
+                            else if (regionsSortDirection == 2)
+                            {
+                                query = query
+                                    .OrderByDescending(doc => string.Join(" ", doc.Regions ?? Enumerable.Empty<string>()));
+                            }
+                        }
+                        else if (gameTypeSortDirection > 0)
+                        {
+                            if (gameTypeSortDirection == 1)
+                            {
+                                query = query
+                                    .OrderBy(doc => doc.Type == null ? string.Empty : doc.Type.ToString());
+                            }
+                            else if (gameTypeSortDirection == 2)
+                            {
+                                query = query
+                                    .OrderByDescending(doc => doc.Type == null ? string.Empty : doc.Type.ToString());
+                            }
+                        }
+                        else
+                        {
+                            query = query
+                                .OrderByDescending(doc => doc.FinishTime);
+                        }
+
+                        var matchReportDocs = query
+                            .Skip(skip)
+                            .Limit(limit)
+                            .ToList();
 
                         this.logger.Debug("Match reports retrieved");
 

@@ -3,6 +3,7 @@ using LoRWatcher.Clients.Functions;
 using LoRWatcher.Events;
 using LoRWatcher.Logger;
 using LoRWatcher.Stores;
+using LoRWatcher.Stores.Documents;
 using Mapster;
 using System;
 using System.Collections.Generic;
@@ -174,7 +175,7 @@ namespace LoRWatcher.Services
 
             var syncMatches = new List<MatchReport>();
 
-            var matchReports = await this.watcherDataStore.GetMatchReportsAsync(0, 20, cancellationToken);
+            var matchReports = await this.watcherDataStore.GetMatchReportsAsync(0, 20, cancellationToken: cancellationToken);
             if (matchReports != null &&
                 matchReports.Any() == true)
             {

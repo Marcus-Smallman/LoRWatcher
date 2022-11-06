@@ -23,6 +23,6 @@ namespace LoRWatcher.Stores.Documents
 
         public DateTime FinishTime { get; set; }
 
-        public GameType Type { get; set; }
+        public GameType? Type { get; set; }
     }
 }

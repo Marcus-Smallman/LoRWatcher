@@ -110,7 +110,7 @@
 
     private async Task GetMatchReportsAsync()
     {
-        this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, CancellationToken.None);
+        this.matchReports = await this.watcherService.GetMatchReportsAsync(this.skip, RazorConstants.PageSize, cancellationToken: CancellationToken.None);
 
 #pragma warning disable CS4014
         InvokeAsync(() =>
