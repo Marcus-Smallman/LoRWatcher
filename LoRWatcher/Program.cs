@@ -39,7 +39,6 @@ namespace LoRWatcher
                     var eventHandler = host.Services.GetRequiredService<IWatcherEventHandler>();
                     eventHandler.TryAddEvent(WatcherEvents.GameFinished, "Startup", async () =>
                     {
-                        // TODO: Test this works
                         await watcherService.SyncMatchReportsAsync();
                     });
                 }

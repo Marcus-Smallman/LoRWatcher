@@ -198,7 +198,7 @@ namespace LoRWatcher.Stores
                         if (string.IsNullOrWhiteSpace(gameTypeFilter) == false)
                         {
                             query = query
-                                .Where(doc => doc.Type == null ? false : doc.Type.ToString().StartsWith(gameTypeFilter, StringComparison.OrdinalIgnoreCase));
+                                .Where(doc => doc.Type == null ? false : doc.Type.StartsWith(gameTypeFilter, StringComparison.OrdinalIgnoreCase));
                         }
 
                         if (opponentNameSortDirection > 0)
@@ -326,7 +326,8 @@ namespace LoRWatcher.Stores
                                 Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                                 Result = matchReportDoc.Result,
                                 StartTime = matchReportDoc.StartTime,
-                                FinishTime = matchReportDoc.FinishTime
+                                FinishTime = matchReportDoc.FinishTime,
+                                Type = matchReportDoc.Type
                             });
                         }
 
