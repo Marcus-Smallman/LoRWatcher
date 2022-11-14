@@ -28,8 +28,12 @@ namespace LoRWatcher.Stores
 
         Task<bool> MatchNotFoundAsync(string watcherMatchId, CancellationToken cancellationToken = default);
 
-        Task<MatchSync> GetSyncedMatchByIdAsync(string watcherMatchId, CancellationToken cancellationToken = default);
+        Task<MatchSync> GetSyncedMatchByWatcherIdAsync(string watcherMatchId, CancellationToken cancellationToken = default);
+
+        Task<MatchSync> GetSyncedMatchByPlayerIdAsync(string playerMatchId, CancellationToken cancellationToken = default);
 
         Task<PlayerMatch> GetPlayerMatchByIdAsync(string playerMatchId, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<PlayerMatch>> GetPlayerMatchesAsync(int skip, int limit, int gameTypeSortDirection, CancellationToken cancellationToken = default);
     }
 }

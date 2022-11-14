@@ -243,7 +243,69 @@ namespace LoRWatcher.Stores
             }
         }
 
-        public async Task<MatchSync> GetSyncedMatchByIdAsync(string watcherMatchId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<PlayerMatch>> GetPlayerMatchesAsync(
+            int skip,
+            int limit,
+            int gameTypeSortDirection = 0,
+            CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke<IEnumerable<PlayerMatch>>(() =>
+            {
+                try
+                {
+                    using (var connection = this.connection.GetConnection())
+                    {
+                        var collection = connection.GetCollection<PlayerMatchDocument>(PlayerMatchesCollectionName);
+
+                        var query = collection.Query();
+                        if (gameTypeSortDirection > 0)
+                        {
+                            if (gameTypeSortDirection == 1)
+                            {
+                                query = query
+                                    .OrderBy(doc => doc.Info.GameType);
+                            }
+                            else if (gameTypeSortDirection == 2)
+                            {
+                                query = query
+                                    .OrderByDescending(doc => doc.Info.GameType);
+                            }
+                        }
+                        else
+                        {
+                            query = query
+                                .OrderByDescending(doc => DateTime.Parse(doc.Info.GameStartTimeUTC));
+                        }
+
+                        var playerMatchesDocs = query
+                            .Skip(skip)
+                            .Limit(limit)
+                            .ToList();
+
+                        this.logger.Debug("Player matches retrieved");
+
+                        var playerMatches = new List<PlayerMatch>();
+                        foreach (var playerMatchDoc in playerMatchesDocs)
+                        {
+                            playerMatches.Add(playerMatchDoc.Adapt<PlayerMatch>());
+                        }
+
+                        return playerMatches.ToList();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred retrieving player matches: {ex.Message}");
+
+                    return null;
+                }
+            });
+        }
+
+        public async Task<MatchSync> GetSyncedMatchByWatcherIdAsync(string watcherMatchId, CancellationToken cancellationToken = default)
         {
             await Task.Yield();
 
@@ -264,6 +326,32 @@ namespace LoRWatcher.Stores
             catch (Exception ex)
             {
                 this.logger.Error($"Error occurred retrieving match sync document for watcher match id '{watcherMatchId}' : {ex.Message}");
+
+                return null;
+            }
+        }
+
+        public async Task<MatchSync> GetSyncedMatchByPlayerIdAsync(string playerMatchId, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            try
+            {
+                using (var connection = this.connection.GetConnection())
+                {
+                    var collection = connection.GetCollection<MatchSyncDocument>(MatchSyncCollectionName);
+
+                    var matchSyncDoc = collection.FindOne(doc => doc.PlayerMatchId == playerMatchId);
+
+                    this.logger.Debug($"Match sync document for player match id '{playerMatchId}' retrieved");
+
+                    return matchSyncDoc?.Adapt<MatchSync>();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error($"Error occurred retrieving match sync document for player match id '{playerMatchId}' : {ex.Message}");
 
                 return null;
             }

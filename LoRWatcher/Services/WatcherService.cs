@@ -54,39 +54,63 @@ namespace LoRWatcher.Services
             CancellationToken cancellationToken = default)
         {
             var serviceMatchReports = new List<ServiceMatchReport>();
-
-            var matchReports = await this.watcherDataStore.GetMatchReportsAsync(
-                skip,
-                limit,
-                opponentNameFilter,
-                opponentNameSortDirection,
-                resultFilter,
-                resultSortDirection,
-                regionsFilter,
-                regionsSortDirection,
-                gameTypeFilter,
-                gameTypeSortDirection,
-                cancellationToken);
-            foreach (var matchReport in matchReports)
+            // TODO: Figure out total games based on filters and sort
+            if (gameTypeSortDirection > 0)
             {
-                string gameMode = null;
-                string gameType = null;
-                var syncedMatch = await this.playerDataStore.GetSyncedMatchByIdAsync(matchReport.Id, cancellationToken);
-                if (syncedMatch != null)
+                var playerReports = await this.playerDataStore.GetPlayerMatchesAsync(
+                    skip,
+                    limit,
+                    gameTypeSortDirection,
+                    cancellationToken);
+
+                foreach (var playerReport in playerReports)
                 {
-                    var playerMatch = await this.playerDataStore.GetPlayerMatchByIdAsync(syncedMatch.PlayerMatchId, cancellationToken);
-                    if (playerMatch != null)
+                    var syncedMatch = await this.playerDataStore.GetSyncedMatchByPlayerIdAsync(playerReport.Id, cancellationToken);
+                    if (syncedMatch != null)
                     {
-                        gameMode = playerMatch.Info.GameMode;
-                        gameType = playerMatch.Info.GameType;
+                        var watcherMatch = await this.watcherDataStore.GetMatchReportByIdAsync(syncedMatch.WatcherMatchId, cancellationToken);
+                        if (watcherMatch != null)
+                        {
+                            var serviceMatchReport = watcherMatch.Adapt<ServiceMatchReport>();
+                            serviceMatchReport.GameMode = playerReport.Info.GameMode;
+                            serviceMatchReport.GameType = playerReport.Info.GameType;
+
+                            serviceMatchReports.Add(serviceMatchReport);
+                        }
                     }
                 }
+            }
+            else
+            {
+                var matchReports = await this.watcherDataStore.GetMatchReportsAsync(
+                    skip,
+                    limit,
+                    opponentNameSortDirection,
+                    resultSortDirection,
+                    regionsSortDirection,
+                    cancellationToken);
 
-                var serviceMatchReport = matchReport.Adapt<ServiceMatchReport>();
-                serviceMatchReport.GameMode = gameMode;
-                serviceMatchReport.GameType = gameType;
+                foreach (var matchReport in matchReports)
+                {
+                    string gameMode = null;
+                    string gameType = null;
+                    var syncedMatch = await this.playerDataStore.GetSyncedMatchByWatcherIdAsync(matchReport.Id, cancellationToken);
+                    if (syncedMatch != null)
+                    {
+                        var playerMatch = await this.playerDataStore.GetPlayerMatchByIdAsync(syncedMatch.PlayerMatchId, cancellationToken);
+                        if (playerMatch != null)
+                        {
+                            gameMode = playerMatch.Info.GameMode;
+                            gameType = playerMatch.Info.GameType;
+                        }
+                    }
 
-                serviceMatchReports.Add(serviceMatchReport);
+                    var serviceMatchReport = matchReport.Adapt<ServiceMatchReport>();
+                    serviceMatchReport.GameMode = gameMode;
+                    serviceMatchReport.GameType = gameType;
+
+                    serviceMatchReports.Add(serviceMatchReport);
+                }
             }
 
             return serviceMatchReports;
@@ -98,7 +122,7 @@ namespace LoRWatcher.Services
 
             string gameMode = null;
             string gameType = null;
-            var syncedMatch = await this.playerDataStore.GetSyncedMatchByIdAsync(matchReport.Id, cancellationToken);
+            var syncedMatch = await this.playerDataStore.GetSyncedMatchByWatcherIdAsync(matchReport.Id, cancellationToken);
             if (syncedMatch != null)
             {
                 var playerMatch = await this.playerDataStore.GetPlayerMatchByIdAsync(syncedMatch.PlayerMatchId, cancellationToken);

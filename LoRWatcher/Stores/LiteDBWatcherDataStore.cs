@@ -159,14 +159,9 @@ namespace LoRWatcher.Stores
         public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(
             int skip,
             int limit,
-            string opponentNameFilter = null,
             int opponentNameSortDirection = 0,
-            string resultFilter = null,
             int resultSortDirection = 0,
-            string regionsFilter = null,
             int regionsSortDirection = 0,
-            string gameTypeFilter = null,
-            int gameTypeSortDirection = 0,
             CancellationToken cancellationToken = default)
         {
             await Task.Yield();
@@ -180,27 +175,6 @@ namespace LoRWatcher.Stores
                         var collection = connection.GetCollection<MatchReportDocument>(MatchReportsCollectionName);
 
                         var query = collection.Query();
-                        if (string.IsNullOrWhiteSpace(opponentNameFilter) == false)
-                        {
-                            query = query
-                                .Where(doc => doc.OpponentName.StartsWith(opponentNameFilter, StringComparison.OrdinalIgnoreCase));
-                        }
-                        if (string.IsNullOrWhiteSpace(resultFilter) == false)
-                        {
-                            query = query
-                                .Where(doc => (doc.Result ? "won" : "lost").StartsWith(resultFilter, StringComparison.OrdinalIgnoreCase));
-                        }
-                        if (string.IsNullOrWhiteSpace(regionsFilter) == false)
-                        {
-                            query = query
-                                .Where(doc => string.Join(" ", doc.Regions ?? Enumerable.Empty<string>()).StartsWith(regionsFilter, StringComparison.OrdinalIgnoreCase));
-                        }
-                        if (string.IsNullOrWhiteSpace(gameTypeFilter) == false)
-                        {
-                            query = query
-                                .Where(doc => doc.Type == null ? false : doc.Type.StartsWith(gameTypeFilter, StringComparison.OrdinalIgnoreCase));
-                        }
-
                         if (opponentNameSortDirection > 0)
                         {
                             if (opponentNameSortDirection == 1)
@@ -240,19 +214,6 @@ namespace LoRWatcher.Stores
                                     .OrderByDescending(doc => string.Join(" ", doc.Regions ?? Enumerable.Empty<string>()));
                             }
                         }
-                        else if (gameTypeSortDirection > 0)
-                        {
-                            if (gameTypeSortDirection == 1)
-                            {
-                                query = query
-                                    .OrderBy(doc => doc.Type == null ? string.Empty : doc.Type.ToString());
-                            }
-                            else if (gameTypeSortDirection == 2)
-                            {
-                                query = query
-                                    .OrderByDescending(doc => doc.Type == null ? string.Empty : doc.Type.ToString());
-                            }
-                        }
                         else
                         {
                             query = query
@@ -283,7 +244,7 @@ namespace LoRWatcher.Stores
                             });
                         }
 
-                        return matchReports.OrderByDescending(mr => mr.FinishTime).ToList();
+                        return matchReports.ToList();
                     }
 
                 }
@@ -326,8 +287,7 @@ namespace LoRWatcher.Stores
                                 Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                                 Result = matchReportDoc.Result,
                                 StartTime = matchReportDoc.StartTime,
-                                FinishTime = matchReportDoc.FinishTime,
-                                Type = matchReportDoc.Type
+                                FinishTime = matchReportDoc.FinishTime
                             });
                         }
 
