@@ -15,7 +15,10 @@ namespace LoRWatcher.Caches
                 OpponentName = matchReport.OpponentName,
                 PlayerDeckCode = matchReport.PlayerDeckCode,
                 Regions = matchReport.Regions,
+                RegionsText = matchReport.RegionsText,
                 Result = matchReport.Result,
+                ResultText = matchReport.ResultText,
+                Type = matchReport.Type,
                 StartTime = matchReport.StartTime,
                 FinishTime = matchReport.FinishTime,
                 Snapshots = matchReport.Snapshots
@@ -28,11 +31,17 @@ namespace LoRWatcher.Caches
 
         public IEnumerable<string> Regions { get; set; }
 
+        public string RegionsText { get; set; }
+
         public string PlayerDeckCode { get; set; }
 
         public string OpponentName { get; set; }
 
         public bool Result { get; set; }
+
+        public string ResultText { get; set; }
+
+        public string Type { get; set; }
 
         public DateTimeOffset StartTime { get; set; }
 

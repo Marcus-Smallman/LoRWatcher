@@ -15,7 +15,7 @@
 
 @if (matchReports != null)
 {
-    <DataGrid TItem="ServiceMatchReport"
+    <DataGrid TItem="MatchReport"
           Data="@matchReports"
           ShowPager="@showPager"
           PageSize="@RazorConstants.PageSize"
@@ -27,28 +27,28 @@
           Filterable="true"
           Sortable="true"
           SortMode="DataGridSortMode.Single">
-        <DataGridCommandColumn TItem="ServiceMatchReport" />
-        <DataGridColumn Filterable="false" Sortable="false" CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.FinishTime)" Caption="Finish Time">
+        <DataGridCommandColumn TItem="MatchReport" />
+        <DataGridColumn Filterable="false" Sortable="false" CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
             <DisplayTemplate>
-                @((context as ServiceMatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
+                @((context as MatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.OpponentName)" Caption="Opponent Name">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.OpponentName)" Caption="Opponent Name">
             <DisplayTemplate>
-                @((context as ServiceMatchReport)?.OpponentName.GetCardNameOpponentName())
+                @((context as MatchReport)?.OpponentName)
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.Result)" Caption="Result">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.ResultText)" Caption="Result">
             <DisplayTemplate>
-                @((context as ServiceMatchReport)?.Result == true ? "Won" : "Lost")
+                @((context as MatchReport)?.ResultText)
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.Regions)" Caption="Regions">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.RegionsText)" Caption="Regions">
             <DisplayTemplate>
                 @{
-                    var cards = (context as ServiceMatchReport)?.PlayerDeckCode.GetCardsFromCode();
+                    var cards = (context as MatchReport)?.PlayerDeckCode.GetCardsFromCode();
                     <Row Style="margin: auto">
-                        @foreach (var regions in this.GetCardRegions(cards))
+                        @foreach (var regions in CardExtensions.GetRegionsData(cards))
                         {
                             <Tooltip Style="margin: 0px 2px; border-radius: 2px; border: solid 1px rgba(0, 0, 0, 0.1);" Text=@(string.Join(", ", regions.Regions))>
                                 @foreach (var regionRefs in regions.RegionRefs)
@@ -61,9 +61,9 @@
                 }
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="ServiceMatchReport" Field="@nameof(ServiceMatchReport.GameType)" Caption="Type">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.Type)" Caption="Type">
             <DisplayTemplate>
-                @(this.GetGameType((context as ServiceMatchReport)))
+                @((context as MatchReport)?.Type)
             </DisplayTemplate>
         </DataGridColumn>
     </DataGrid>
@@ -74,15 +74,15 @@
     public int TotalGames { get; set; }
 
     [Parameter]
-    public IEnumerable<ServiceMatchReport> InitialMatchReports { get; set; }
+    public IEnumerable<MatchReport> InitialMatchReports { get; set; }
 
     private const string Source = "MatchGrid";
 
     private bool showPager = true;
 
-    private ServiceMatchReport selectedMatchReport;
+    private MatchReport selectedMatchReport;
 
-    private IEnumerable<ServiceMatchReport> matchReports;
+    private IEnumerable<MatchReport> matchReports;
 
     private int skip;
 
@@ -120,34 +120,23 @@
 #pragma warning restore CS4014
     }
 
-    private string GetGameType(ServiceMatchReport serviceMatchReport)
-    {
-        var result = serviceMatchReport?.GameMode;
-        if (string.IsNullOrEmpty(serviceMatchReport?.GameType) == false)
-        {
-            result += $" ({serviceMatchReport?.GameType})";
-        }
-
-        return result;
-    }
-
-    private async Task OnReadData(DataGridReadDataEventArgs<ServiceMatchReport> e)
+    private async Task OnReadData(DataGridReadDataEventArgs<MatchReport> e)
     {
         // TODO: Support filtering and sorting
 
-        var opponentNameColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.OpponentName));
+        var opponentNameColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(MatchReport.OpponentName));
         var opponentNameFilter = opponentNameColumn.SearchValue?.ToString();
         var opponentNameSortDirection = (int)opponentNameColumn.SortDirection;
 
-        var resultColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.Result));
+        var resultColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(MatchReport.ResultText));
         var resultFilter = resultColumn.SearchValue?.ToString();
         var resultSortDirection = (int)resultColumn.SortDirection;
 
-        var regionsColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.Regions));
+        var regionsColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(MatchReport.RegionsText));
         var regionsFilter = regionsColumn.SearchValue?.ToString();
         var regionsSortDirection = (int)regionsColumn.SortDirection;
 
-        var gameTypeColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(ServiceMatchReport.GameType));
+        var gameTypeColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(MatchReport.Type));
         var gameTypeFilter = gameTypeColumn.SearchValue?.ToString();
         var gameTypeSortDirection = (int)gameTypeColumn.SortDirection;
 
@@ -170,36 +159,15 @@
         StateHasChanged();
     }
 
-    private bool RowSelected(ServiceMatchReport matchReport)
+    private bool RowSelected(MatchReport matchReport)
     {
         this.navigationManager.NavigateTo($"/match/{matchReport.Id}");
 
         return false;
     }
 
-    private string GetMatchReportCellClass(ServiceMatchReport matchReport)
+    private string GetMatchReportCellClass(MatchReport matchReport)
     {
         return matchReport.Result ? "text-primary" : "text-danger";
-    }
-
-    private IEnumerable<(IEnumerable<string> Regions, IEnumerable<string> RegionRefs)> GetCardRegions(IEnumerable<CardData> cards)
-    {
-        return cards
-            ?.Select(c =>
-            {
-                if (string.IsNullOrWhiteSpace(c.Region) &&
-                    string.IsNullOrWhiteSpace(c.RegionRef) &&
-                    c.Regions != null &&
-                    c.Regions.Any() &&
-                    c.RegionRefs != null &&
-                    c.RegionRefs.Any())
-                {
-                    return (c.Regions, c.RegionRefs);
-                }
-
-                return (new[] { c.Region }, new[] { c.RegionRef });
-            })
-            .DistinctBy(regions => string.Join(", ", regions.Regions))
-            .OrderBy(regions => string.Join(", ", regions.Regions));
     }
 }

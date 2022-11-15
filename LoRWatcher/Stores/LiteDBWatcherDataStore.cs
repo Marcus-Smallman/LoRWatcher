@@ -50,7 +50,10 @@ namespace LoRWatcher.Stores
                             PlayerName = matchReport.PlayerName,
                             OpponentName = matchReport.OpponentName,
                             Regions = matchReport.Regions,
+                            RegionsText = matchReport.RegionsText,
                             Result = matchReport.Result,
+                            ResultText = matchReport.ResultText,
+                            Type = matchReport.Type,
                             StartTime = matchReport.StartTime.UtcDateTime,
                             FinishTime = matchReport.FinishTime.UtcDateTime
                         };
@@ -91,8 +94,11 @@ namespace LoRWatcher.Stores
                             PlayerName = matchReport.PlayerName,
                             OpponentName = matchReport.OpponentName,
                             Regions = matchReport.Regions,
+                            RegionsText = matchReport.RegionsText,
                             Snapshots = null,
                             Result = matchReport.Result,
+                            ResultText = matchReport.ResultText,
+                            Type = matchReport.Type,
                             FinishTime = matchReport.FinishTime.UtcDateTime,
                             StartTime = matchReport.StartTime.UtcDateTime
                         };
@@ -108,6 +114,42 @@ namespace LoRWatcher.Stores
                 catch (Exception ex)
                 {
                     this.logger.Error($"Error occurred storing match report: {ex.Message}");
+
+                    return false;
+                }
+            });
+        }
+
+        public async Task<bool> UpdateGameTypeAsync(string id, string gameType, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            return Retry.Invoke(() =>
+            {
+                try
+                {
+                    using var connection = this.connection.GetConnection();
+                    var collection = connection.GetCollection<MatchReportDocument>(MatchReportsCollectionName);
+
+                    var matchReportDoc = collection.FindById(id);
+                    matchReportDoc.Type = gameType;
+
+                    var result = collection.Update(matchReportDoc);
+                    if (result == true)
+                    {
+                        this.logger.Info("Game type updated");
+                    }
+                    else
+                    {
+                        this.logger.Warning("Match not found");
+                    }
+
+                    return result;
+
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error($"Error occurred updating match ids: {ex.Message}");
 
                     return false;
                 }
@@ -137,8 +179,11 @@ namespace LoRWatcher.Stores
                             PlayerName = matchReportDoc.PlayerName,
                             OpponentName = matchReportDoc.OpponentName,
                             Regions = matchReportDoc.Regions,
-                            Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
+                            RegionsText = matchReportDoc.RegionsText,
                             Result = matchReportDoc.Result,
+                            ResultText = matchReportDoc.ResultText,
+                            Type = matchReportDoc.Type,
+                            Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                             StartTime = matchReportDoc.StartTime,
                             FinishTime = matchReportDoc.FinishTime
                         };
@@ -159,9 +204,14 @@ namespace LoRWatcher.Stores
         public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(
             int skip,
             int limit,
+            string opponentNameFilter = null,
             int opponentNameSortDirection = 0,
+            string resultFilter = null,
             int resultSortDirection = 0,
+            string regionsFilter = null,
             int regionsSortDirection = 0,
+            string gameTypeFilter = null,
+            int gameTypeSortDirection = 0,
             CancellationToken cancellationToken = default)
         {
             await Task.Yield();
@@ -175,17 +225,38 @@ namespace LoRWatcher.Stores
                         var collection = connection.GetCollection<MatchReportDocument>(MatchReportsCollectionName);
 
                         var query = collection.Query();
+                        if (string.IsNullOrWhiteSpace(opponentNameFilter) == false)
+                        {
+                            query = query
+                                .Where(doc => doc.OpponentName.StartsWith(opponentNameFilter, StringComparison.OrdinalIgnoreCase));
+                        }
+                        if (string.IsNullOrWhiteSpace(resultFilter) == false)
+                        {
+                            query = query
+                                .Where(doc => doc.ResultText.StartsWith(resultFilter, StringComparison.OrdinalIgnoreCase));
+                        }
+                        if (string.IsNullOrWhiteSpace(regionsFilter) == false)
+                        {
+                            query = query
+                                .Where(doc => doc.RegionsText.Contains(regionsFilter, StringComparison.OrdinalIgnoreCase));
+                        }
+                        if (string.IsNullOrWhiteSpace(gameTypeFilter) == false)
+                        {
+                            query = query
+                                .Where(doc => doc.Type.StartsWith(gameTypeFilter, StringComparison.OrdinalIgnoreCase));
+                        }
+
                         if (opponentNameSortDirection > 0)
                         {
                             if (opponentNameSortDirection == 1)
                             {
                                 query = query
-                                    .OrderBy(doc => doc.OpponentName);
+                                    .OrderBy(doc => doc.OpponentName.ToLower());
                             }
                             else if (opponentNameSortDirection == 2)
                             {
                                 query = query
-                                    .OrderByDescending(doc => doc.OpponentName);
+                                    .OrderByDescending(doc => doc.OpponentName.ToLower());
                             }
                         }
                         else if (resultSortDirection > 0)
@@ -193,12 +264,12 @@ namespace LoRWatcher.Stores
                             if (resultSortDirection == 1)
                             {
                                 query = query
-                                    .OrderBy(doc => doc.Result ? "won" : "lost");
+                                    .OrderBy(doc => doc.ResultText.ToLower());
                             }
                             else if (resultSortDirection == 2)
                             {
                                 query = query
-                                    .OrderByDescending(doc => doc.Result ? "won" : "lost");
+                                    .OrderByDescending(doc => doc.ResultText.ToLower());
                             }
                         }
                         else if (regionsSortDirection > 0)
@@ -206,12 +277,25 @@ namespace LoRWatcher.Stores
                             if (regionsSortDirection == 1)
                             {
                                 query = query
-                                    .OrderBy(doc => string.Join(" ", doc.Regions ?? Enumerable.Empty<string>()));
+                                    .OrderBy(doc => doc.RegionsText.ToLower());
                             }
                             else if (regionsSortDirection == 2)
                             {
                                 query = query
-                                    .OrderByDescending(doc => string.Join(" ", doc.Regions ?? Enumerable.Empty<string>()));
+                                    .OrderByDescending(doc => doc.RegionsText.ToLower());
+                            }
+                        }
+                        else if (gameTypeSortDirection > 0)
+                        {
+                            if (gameTypeSortDirection == 1)
+                            {
+                                query = query
+                                    .OrderBy(doc => doc.Type.ToLower());
+                            }
+                            else if (gameTypeSortDirection == 2)
+                            {
+                                query = query
+                                    .OrderByDescending(doc => doc.Type.ToLower());
                             }
                         }
                         else
@@ -237,8 +321,11 @@ namespace LoRWatcher.Stores
                                 PlayerName = matchReportDoc.PlayerName,
                                 OpponentName = matchReportDoc.OpponentName,
                                 Regions = matchReportDoc.Regions,
-                                Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
+                                RegionsText = matchReportDoc.RegionsText,
                                 Result = matchReportDoc.Result,
+                                ResultText = matchReportDoc.ResultText,
+                                Type = matchReportDoc.Type,
+                                Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                                 StartTime = matchReportDoc.StartTime,
                                 FinishTime = matchReportDoc.FinishTime
                             });
@@ -284,8 +371,11 @@ namespace LoRWatcher.Stores
                                 PlayerName = matchReportDoc.PlayerName,
                                 OpponentName = matchReportDoc.OpponentName,
                                 Regions = matchReportDoc.Regions,
-                                Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
+                                RegionsText = matchReportDoc.RegionsText,
                                 Result = matchReportDoc.Result,
+                                ResultText = matchReportDoc.ResultText,
+                                Type = matchReportDoc.Type,
+                                Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
                                 StartTime = matchReportDoc.StartTime,
                                 FinishTime = matchReportDoc.FinishTime
                             });
@@ -587,6 +677,12 @@ namespace LoRWatcher.Stores
                         var collection = connection.GetCollection<ReplayDocument>(MatchReplaysCollectionName);
 
                         var replayDoc = collection.FindById(id);
+                        if (replayDoc == null)
+                        {
+                            this.logger.Debug($"No replay found for match with id '{id}'");
+
+                            return new SortedList<string, Snapshot>();
+                        }
 
                         this.logger.Debug($"Replay with id '{id}' retrieved");
 

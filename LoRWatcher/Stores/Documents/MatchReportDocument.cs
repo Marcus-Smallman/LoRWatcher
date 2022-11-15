@@ -13,9 +13,15 @@ namespace LoRWatcher.Stores.Documents
 
         public IEnumerable<string> Regions { get; set;}
 
+        public string RegionsText { get; set; }
+
         public string OpponentName { get; set; }
 
         public bool Result { get; set; }
+
+        public string ResultText { get; set; }
+
+        public string Type { get; set; }
 
         public SortedList<string, SnapshotDocument> Snapshots { get; set; }
 

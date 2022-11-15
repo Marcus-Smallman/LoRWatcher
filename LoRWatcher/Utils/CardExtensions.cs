@@ -107,6 +107,35 @@ namespace LoRWatcher.Utils
             return CardData;
         }
 
+        public static IEnumerable<(IEnumerable<string> Regions, IEnumerable<string> RegionRefs)> GetRegionsData(IEnumerable<CardData> cards)
+        {
+            return cards
+                ?.Select(c =>
+                {
+                    if (string.IsNullOrWhiteSpace(c.Region) &&
+                        string.IsNullOrWhiteSpace(c.RegionRef) &&
+                        c.Regions != null &&
+                        c.Regions.Any() &&
+                        c.RegionRefs != null &&
+                        c.RegionRefs.Any())
+                    {
+                        return (c.Regions, c.RegionRefs);
+                    }
+
+                    return (new[] { c.Region }, new[] { c.RegionRef });
+                })
+                .DistinctBy(regions => string.Join(", ", regions.Regions))
+                .OrderBy(regions => string.Join(", ", regions.Regions));
+        }
+
+        public static string GetRegionsTextFromCode(string deckCode, ILogger logger = null)
+        {
+            var cards = GetCardsFromCode(deckCode, logger);
+            var regionsData = GetRegionsData(cards);
+
+            return string.Join(", ", regionsData.SelectMany(d => d.Regions).Distinct());
+        }
+
         public static IEnumerable<CardData> GetCardsFromCode(this string deckCode, ILogger logger = null)
         {
             logger ??= new FileLogger();

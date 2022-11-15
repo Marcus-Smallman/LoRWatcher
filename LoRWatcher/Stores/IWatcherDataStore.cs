@@ -16,10 +16,17 @@ namespace LoRWatcher.Stores
         Task<IEnumerable<MatchReport>> GetMatchReportsAsync(
             int skip,
             int limit,
+            string opponentNameFilter = null,
             int opponentNameSortDirection = 0,
+            string resultFilter = null,
             int resultSortDirection = 0,
+            string regionsFilter = null,
             int regionsSortDirection = 0,
+            string gameTypeFilter = null,
+            int gameTypeSortDirection = 0,
             CancellationToken cancellationToken = default);
+
+        Task<bool> UpdateGameTypeAsync(string id, string gameType, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<MatchReport>> GetAllMatchReportsAsync(CancellationToken cancellationToken = default);
 

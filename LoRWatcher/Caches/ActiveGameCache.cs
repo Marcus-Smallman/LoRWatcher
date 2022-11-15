@@ -40,6 +40,7 @@ namespace LoRWatcher.Caches
                     if (gameResult != null)
                     {
                         this.currentMatch.Result = bool.Parse(gameResult.LocalPlayerWon);
+                        this.currentMatch.ResultText = this.currentMatch.Result == true ? "Won" : "Lost";
                         this.currentMatch.FinishTime = DateTimeOffset.UtcNow;
 
                         matchReport = MatchReport.Create(this.currentMatch);
@@ -121,12 +122,15 @@ namespace LoRWatcher.Caches
 
                 cards.Print(this.logger);
 
+                var regionsText = CardExtensions.GetRegionsTextFromCode(activeDeckCode, this.logger);
+
                 this.currentMatch = new MatchReport
                 {
                     PlayerName = positionalRectangles.PlayerName,
-                    OpponentName = positionalRectangles.OpponentName,
+                    OpponentName = positionalRectangles.OpponentName.GetCardNameOpponentName(this.logger),
                     PlayerDeckCode = activeDeckCode,
                     Regions = cards.GetRegions(),
+                    RegionsText = regionsText,
                     StartTime = DateTimeOffset.UtcNow,
                     Snapshots = new SortedList<string, Snapshot>()
                 };

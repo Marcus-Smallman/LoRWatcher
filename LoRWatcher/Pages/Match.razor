@@ -37,19 +37,19 @@
                 <h4 Style="margin: auto"><b>V</b></h4>
             </div>
             <div Class="col-5" Style="text-align: center">
-                <h1 Style="margin: auto"><b>@(this.matchReport.OpponentName.GetCardNameOpponentName())</b></h1>
+                <h1 Style="margin: auto"><b>@(this.matchReport.OpponentName)</b></h1>
             </div>
         </Row>
         <Row>
             <div Class="col-5" Style="text-align: center">
-                <a Class="text-black-hint" Style="margin: auto">@(this.GetGameType())</a>
+                <a Class="text-black-hint" Style="margin: auto">@(this.matchReport.Type)</a>
             </div>
             <div Class="col-2" Style="text-align: center; display: flex">
-                <a Class="text-black-hint" Style="margin: auto">@(matchReport?.Result == true ? "Won" : "Lost")</a>
+                <a Class="text-black-hint" Style="margin: auto">@(this.matchReport.ResultText)</a>
             </div>
         </Row>
-        <Divider Type="DividerType.TextContent" Text="@(matchReport?.Result == true ? "Won" : "Lost")" />
-        @if (matchReport?.PlayerDeckCode != null)
+        <Divider Type="DividerType.TextContent" Text="@(this.matchReport.ResultText)" />
+        @if (this.matchReport?.PlayerDeckCode != null)
         {
             <Row>
                 <div Class="col-12" Style="margin: auto; display: flex;">
@@ -287,7 +287,7 @@
 
     private const string Source = "Match";
 
-    private ServiceMatchReport matchReport;
+    private MatchReport matchReport;
 
     private IEnumerable<CardData> cards;
 
@@ -335,17 +335,6 @@
             }
         });
 #pragma warning restore 4014
-    }
-
-    private string GetGameType()
-    {
-        var result = this.matchReport?.GameMode;
-        if (string.IsNullOrEmpty(this.matchReport?.GameType) == false)
-        {
-            result += $" ({this.matchReport?.GameType})";
-        }
-
-        return result;
     }
 
     private double GetReplayLineWidth(string snapshotKey)
