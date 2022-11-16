@@ -1,5 +1,5 @@
 ﻿using LoRWatcher.Caches;
-using System.Collections.Generic;
+using LoRWatcher.Stores;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +11,7 @@ namespace LoRWatcher.Services
 
         Task<bool> SyncMatchReportsAsync(CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<MatchReport>> GetMatchReportsAsync(
+        Task<MatchReports> GetMatchReportsAsync(
             int skip,
             int limit,
             string opponentNameFilter = null,

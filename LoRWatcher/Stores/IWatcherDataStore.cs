@@ -13,7 +13,7 @@ namespace LoRWatcher.Stores
 
         Task<MatchReport> GetMatchReportByIdAsync(string id, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<MatchReport>> GetMatchReportsAsync(
+        Task<MatchReports> GetMatchReportsAsync(
             int skip,
             int limit,
             string opponentNameFilter = null,

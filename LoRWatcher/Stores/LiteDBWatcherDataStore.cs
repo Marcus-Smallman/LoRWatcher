@@ -201,7 +201,7 @@ namespace LoRWatcher.Stores
             });
         }
 
-        public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(
+        public async Task<MatchReports> GetMatchReportsAsync(
             int skip,
             int limit,
             string opponentNameFilter = null,
@@ -216,7 +216,7 @@ namespace LoRWatcher.Stores
         {
             await Task.Yield();
 
-            return Retry.Invoke<IEnumerable<MatchReport>>(() =>
+            return Retry.Invoke<MatchReports>(() =>
             {
                 try
                 {
@@ -228,12 +228,12 @@ namespace LoRWatcher.Stores
                         if (string.IsNullOrWhiteSpace(opponentNameFilter) == false)
                         {
                             query = query
-                                .Where(doc => doc.OpponentName.StartsWith(opponentNameFilter, StringComparison.OrdinalIgnoreCase));
+                                .Where(doc => doc.OpponentName.Contains(opponentNameFilter, StringComparison.OrdinalIgnoreCase));
                         }
                         if (string.IsNullOrWhiteSpace(resultFilter) == false)
                         {
                             query = query
-                                .Where(doc => doc.ResultText.StartsWith(resultFilter, StringComparison.OrdinalIgnoreCase));
+                                .Where(doc => doc.ResultText.Contains(resultFilter, StringComparison.OrdinalIgnoreCase));
                         }
                         if (string.IsNullOrWhiteSpace(regionsFilter) == false)
                         {
@@ -243,7 +243,7 @@ namespace LoRWatcher.Stores
                         if (string.IsNullOrWhiteSpace(gameTypeFilter) == false)
                         {
                             query = query
-                                .Where(doc => doc.Type.StartsWith(gameTypeFilter, StringComparison.OrdinalIgnoreCase));
+                                .Where(doc => doc.Type.Contains(gameTypeFilter, StringComparison.OrdinalIgnoreCase));
                         }
 
                         if (opponentNameSortDirection > 0)
@@ -304,6 +304,8 @@ namespace LoRWatcher.Stores
                                 .OrderByDescending(doc => doc.FinishTime);
                         }
 
+                        var matchReportCount = query.Count();
+
                         var matchReportDocs = query
                             .Skip(skip)
                             .Limit(limit)
@@ -311,27 +313,13 @@ namespace LoRWatcher.Stores
 
                         this.logger.Debug("Match reports retrieved");
 
-                        var matchReports = new List<MatchReport>();
-                        foreach (var matchReportDoc in matchReportDocs)
+                        var matchReports = new MatchReports
                         {
-                            matchReports.Add(new MatchReport
-                            {
-                                Id = matchReportDoc.Id,
-                                PlayerDeckCode = matchReportDoc.PlayerDeckCode,
-                                PlayerName = matchReportDoc.PlayerName,
-                                OpponentName = matchReportDoc.OpponentName,
-                                Regions = matchReportDoc.Regions,
-                                RegionsText = matchReportDoc.RegionsText,
-                                Result = matchReportDoc.Result,
-                                ResultText = matchReportDoc.ResultText,
-                                Type = matchReportDoc.Type,
-                                Snapshots = matchReportDoc.Snapshots.Adapt<SortedList<string, Snapshot>>(),
-                                StartTime = matchReportDoc.StartTime,
-                                FinishTime = matchReportDoc.FinishTime
-                            });
-                        }
+                            Count = matchReportCount,
+                            Matches = matchReportDocs.Adapt<IEnumerable<MatchReport>>()
+                        };
 
-                        return matchReports.ToList();
+                        return matchReports;
                     }
 
                 }

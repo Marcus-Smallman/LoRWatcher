@@ -38,7 +38,7 @@ namespace LoRWatcher.Services
             this.logger = logger;
         }
 
-        public async Task<IEnumerable<MatchReport>> GetMatchReportsAsync(
+        public async Task<MatchReports> GetMatchReportsAsync(
             int skip,
             int limit,
             string opponentNameFilter = null,
@@ -131,9 +131,9 @@ namespace LoRWatcher.Services
 
             var matchReports = await this.watcherDataStore.GetMatchReportsAsync(0, 20, cancellationToken: cancellationToken);
             if (matchReports != null &&
-                matchReports.Any() == true)
+                matchReports.Matches?.Any() == true)
             {
-                foreach (var matchReport in matchReports)
+                foreach (var matchReport in matchReports.Matches.ToArray())
                 {
                     // Is match report id in the sync table, which will have the assocaiated player match id with it
                     var synced = await this.playerDataStore.IsMatchSyncedAsync(matchReport.Id, cancellationToken);
