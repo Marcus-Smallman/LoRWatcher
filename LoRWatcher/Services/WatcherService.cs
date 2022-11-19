@@ -111,6 +111,10 @@ namespace LoRWatcher.Services
         public async Task<bool> SyncMatchReportsAsync(CancellationToken cancellationToken = default)
         {
             var metadata = await this.watcherDataStore.GetMatchReportsMetadataV2Async(cancellationToken);
+            if (metadata == null)
+            {
+                return false;
+            }
 
             var player = await this.playerDataStore.GetAccountAsync(metadata.PlayerName, metadata.TagLine, cancellationToken);
             if (player == null)

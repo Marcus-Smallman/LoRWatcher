@@ -57,27 +57,30 @@
     }
 </Container>
 
-<Modal @ref="modalRef">
-    <ModalContent Size="ModalSize.Small" Centered>
-        <ModalBody Style="padding-bottom: 0px;">
-            <Row style="display: flex; justify-content: center; align-items: baseline;">
-                <h4>@this.matchReportMetadata.PlayerName</h4><a style="padding: 5px;">#</a><TextEdit Size="Size.Small" Placeholder="Tag Line" Style="width: 20%;" @bind-Text="@this.tagLine" />
-            </Row>
-        </ModalBody>
-        <ModalFooter>
-            <div Class="col-12" style="flex: auto">
-                <Row>
-                    <div Class="col-6" Style="justify-content: left;">
-                        <Button Clicked="@(async () => await CloseModalAsync())" Color="Color.Secondary">Close</Button>
-                    </div>
-                    <div Class="col-6" Style="display: grid; justify-content: right;">
-                        <Button Clicked="@(async () => await SaveTagLineAsync())" Disabled=@(this.tagLine == this.matchReportMetadata.TagLine) Color="Color.Primary">Save</Button>
-                    </div>
+@if (this.matchReportMetadata != null)
+{    
+    <Modal @ref="modalRef">
+        <ModalContent Size="ModalSize.Small" Centered>
+            <ModalBody Style="padding-bottom: 0px;">
+                <Row style="display: flex; justify-content: center; align-items: baseline;">
+                    <h4>@this.matchReportMetadata.PlayerName</h4><a style="padding: 5px;">#</a><TextEdit Size="Size.Small" Placeholder="Tag Line" Style="width: 20%;" @bind-Text="@this.tagLine" />
                 </Row>
-            </div>
-        </ModalFooter>
-    </ModalContent>
-</Modal>
+            </ModalBody>
+            <ModalFooter>
+                <div Class="col-12" style="flex: auto">
+                    <Row>
+                        <div Class="col-6" Style="justify-content: left;">
+                            <Button Clicked="@(async () => await CloseModalAsync())" Color="Color.Secondary">Close</Button>
+                        </div>
+                        <div Class="col-6" Style="display: grid; justify-content: right;">
+                            <Button Clicked="@(async () => await SaveTagLineAsync())" Disabled=@(this.tagLine == this.matchReportMetadata.TagLine) Color="Color.Primary">Save</Button>
+                        </div>
+                    </Row>
+                </div>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+}
 
 @code {
     private const string Source = "Home";
