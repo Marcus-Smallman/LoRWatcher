@@ -19,7 +19,9 @@
           Data="@matchReports"
           ShowPager="@showPager"
           PageSize="@RazorConstants.PageSize"
-          ReadData="@OnReadData"
+          ReadData="@(async (e) => await OnReadData(e))"
+          CurrentPage="@CurrentPage"
+          PageChanged="@PageChanged"
           TotalItems="@TotalGames"
           @bind-SelectedRow="@selectedMatchReport"
           RowSelectable="@((matchReport) => this.RowSelected(matchReport.Item))"
@@ -28,7 +30,7 @@
           Sortable="true"
           SortMode="DataGridSortMode.Single">
         <DataGridCommandColumn TItem="MatchReport" />
-        <DataGridColumn Filterable="false" Sortable="false" CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
+        <DataGridColumn Filterable="false" Sortable="false" CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" Width="140px" TItem="MatchReport" Field="@nameof(MatchReport.FinishTime)" Caption="Finish Time">
             <DisplayTemplate>
                 @((context as MatchReport)?.FinishTime.UtcDateTime.GetTimeSince() ?? string.Empty)
             </DisplayTemplate>
@@ -38,7 +40,7 @@
                 @((context as MatchReport)?.OpponentName)
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))" TItem="MatchReport" Field="@nameof(MatchReport.ResultText)" Caption="Result">
+        <DataGridColumn CellClass="@((matchReport) => this.GetMatchReportCellClass(matchReport))"  Width="50px" TItem="MatchReport" Field="@nameof(MatchReport.ResultText)" Caption="Result">
             <DisplayTemplate>
                 @((context as MatchReport)?.ResultText)
             </DisplayTemplate>
@@ -76,6 +78,8 @@
     [Parameter]
     public IEnumerable<MatchReport> InitialMatchReports { get; set; }
 
+    public int CurrentPage { get; set; } = 1;
+
     private const string Source = "MatchGrid";
 
     private bool showPager = true;
@@ -85,6 +89,14 @@
     private IEnumerable<MatchReport> matchReports;
 
     private int skip;
+
+    private string opponentNameFilter = null;
+
+    private string resultFilter = null;
+
+    private string regionsFilter = null;
+
+    private string gameTypeFilter = null;
 
     protected override void OnInitialized()
     {
@@ -123,25 +135,56 @@
 
     private async Task OnReadData(DataGridReadDataEventArgs<MatchReport> e)
     {
+        var filtersChanged = false;
+
         var opponentNameColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(MatchReport.OpponentName));
-        var opponentNameFilter = opponentNameColumn.SearchValue?.ToString();
         var opponentNameSortDirection = (int)opponentNameColumn.SortDirection;
+        var opponentNameFilter = opponentNameColumn.SearchValue?.ToString();
+        if (this.opponentNameFilter != opponentNameFilter)
+        {
+            this.opponentNameFilter = opponentNameFilter;
+            filtersChanged = true;
+        }
 
         var resultColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(MatchReport.ResultText));
-        var resultFilter = resultColumn.SearchValue?.ToString();
         var resultSortDirection = (int)resultColumn.SortDirection;
+        var resultFilter = resultColumn.SearchValue?.ToString();
+        if (this.resultFilter != resultFilter)
+        {
+            this.resultFilter = resultFilter;
+            filtersChanged = true;
+        }
 
         var regionsColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(MatchReport.RegionsText));
-        var regionsFilter = regionsColumn.SearchValue?.ToString();
         var regionsSortDirection = (int)regionsColumn.SortDirection;
+        var regionsFilter = regionsColumn.SearchValue?.ToString();
+        if (this.regionsFilter != regionsFilter)
+        {
+            this.regionsFilter = regionsFilter;
+            filtersChanged = true;
+        }
 
         var gameTypeColumn = e.Columns.FirstOrDefault(column => column.Field == nameof(MatchReport.Type));
-        var gameTypeFilter = gameTypeColumn.SearchValue?.ToString();
         var gameTypeSortDirection = (int)gameTypeColumn.SortDirection;
+        var gameTypeFilter = gameTypeColumn.SearchValue?.ToString();
+        if (this.gameTypeFilter != gameTypeFilter)
+        {
+            this.gameTypeFilter = gameTypeFilter;
+            filtersChanged = true;
+        }
 
-        // TODO: Finish this search and update metadata graph based on this
+        // TODO: Update metadata graph based on this
 
-        this.skip = RazorConstants.PageSize * (e.Page - 1);
+        if (filtersChanged == true)
+        {
+            this.skip = 0;
+            this.CurrentPage = 1;
+        }
+        else
+        {
+            this.skip = RazorConstants.PageSize * (e.Page - 1);
+        }
+
         var matchReportsResult = await this.watcherService.GetMatchReportsAsync(
             this.skip,
             RazorConstants.PageSize,
@@ -157,6 +200,11 @@
 
         this.matchReports = matchReportsResult.Matches;
         this.TotalGames = matchReportsResult.Count;
+    }
+
+    private void PageChanged(DataGridPageChangedEventArgs e)
+    {
+        this.CurrentPage = e.Page;
     }
 
     private bool RowSelected(MatchReport matchReport)
