@@ -61,8 +61,8 @@ You can then click on any one of these snapshot to see the status of your match 
 <img src="https://user-images.githubusercontent.com/10182314/191859241-c82316a8-5108-4d40-bbf5-89d00f3d9cfa.png" width="800">  
 
 ## Sorting / Filtering
-Filtering can be done via the search boxes above each column of the grid. The query that is done uses 'Contains' to match your games.  
-Sorting can be acheived by pressing each column header that you wish to sort. There are 3 stats, default, ascending and descending.  
+Filtering can be done via the search boxes above each column of the grid. The query that is done uses 'Contains' matcher to find your games.  
+Sorting can be acheived by pressing each column header that you wish to sort. There are 3 different types of sorting, default, ascending and descending.  
 An example filter can be for Ranked games.  
 <img src="https://user-images.githubusercontent.com/10182314/202858068-1bc6a47c-94aa-4067-bd66-07e8c8b19552.png" width="800">  
 
